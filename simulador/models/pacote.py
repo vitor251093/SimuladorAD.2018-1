@@ -45,42 +45,26 @@ class Pacote(object):
     def getTempoChegadaFila(self):
         return self.__tempoChegadaFila
 
-    def getTempoChegadaServicoVoz(self):
-        return self.__tempoChegadaServicoVoz
+    def getTempoChegadaServico(self):
+        return self.__tempoChegadaServico
 
-    def getTempoServicoVoz(self):
-        return self.__tempoServicoVoz
+    def getTempoServico(self):
+        return self.__tempoServico
 
-    def getTempoChegadaFilaDados(self):
-        return self.__tempoChegadaFilaDados
+    def getTempoTerminoServico(self):
+        return self.__tempoTerminoServico
 
-    def getTempoServicoDados(self):
-        return self.__tempoServicoDados
-
-    def getTempoTerminoServicoDados(self):
-        return self.__tempoTerminoServicoDados
-
-    def getTempoDecorridoServicoDados(self):
-        return self.__tempoDecorridoServicoDados
+    def getTempoDecorridoServico(self):
+        return self.__tempoDecorridoServico
 
     ### Getters para calculos estatisticos
-    def getTempoEsperaFilaVoz(self): # W1
-        return self.getTempoChegadaServicoVoz() - self.getTempoChegadaFila()
+    def getTempoEsperaFila(self): # W2
+        return self.getTempoTerminoServico() - self.getTempoChegadaFila() - self.getTempoServico()
 
-    def getTempoTotalFilaVoz(self): # T1
-        return self.getTempoEsperaFilaVoz() + self.getTempoServicoVoz()
+    def getTempoTotalFila(self): # T2
+        return self.getTempoTerminoServico() - self.getTempoChegadaFila()
 
-    def getVarianciaTempoEsperaFilaVoz(self, esperancaTempoEsperaFilaVoz): #VW1
-        return (self.getTempoEsperaFilaVoz() - esperancaTempoEsperaFilaVoz) ** 2
-
-
-    def getTempoEsperaFilaDados(self): # W2
-        return self.getTempoTerminoServicoDados() - self.getTempoChegadaFilaDados() - self.getTempoServicoDados()
-
-    def getTempoTotalFilaDados(self): # T2
-        return self.getTempoTerminoServicoDados() - self.getTempoChegadaFilaDados()
-
-    def getVarianciaTempoEsperaFilaDados(self, esperancaTempoEsperaFilaDados): # VW2
-        return (self.getTempoEsperaFilaDados() - esperancaTempoEsperaFilaDados) ** 2
+    def getVarianciaTempoEsperaFila(self, esperancaTempoEsperaFila): # VW2
+        return (self.getTempoEsperaFila() - esperancaTempoEsperaFila) ** 2
 
     

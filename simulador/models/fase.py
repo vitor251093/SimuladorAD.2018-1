@@ -5,6 +5,8 @@ class Fase(object):
     def __init__(self, id, tempoInicial):
         self.__id = id
         self.__pacotes = []
+        self.__pacotesDados = []
+        self.__pacotesVoz = []
         self.__tempoInicial = tempoInicial
 
         ### Atributos usados para calculos estatisticos
@@ -17,8 +19,12 @@ class Fase(object):
         self.__somatorioPessoasFilaDadosPorTempo = 0
         self.__somatorioPessoasFilaEspera2PorTempo = 0
         
-    def adicionarPacote(self, Pacote):
-        self.__pacotes.append(Pacote)
+    def adicionarPacote(self, pacote):
+        self.__pacotes.append(pacote)
+        if pacote.getCanal() == -1:
+            self.__pacotesDados.append(pacote)
+        else: 
+            self.__pacotesVoz.append(pacote)
 
     # Getters
     def getID(self):
@@ -53,48 +59,64 @@ class Fase(object):
         return (self.__somatorioPessoasFilaEspera2PorTempo)/(tempoAtual-self.__tempoInicial)
 
     def getEsperancaDeT1(self):
+        countT1 = 0
         somatorioT1 = 0.0
-        for Pacote in self.__pacotes:
-            if Pacote.getTempoChegadaFilaDados() != 0:
-                somatorioT1 += Pacote.getTempoTotalFilaVoz()
-        return somatorioT1/len(self.__pacotes)
+        for pacote in self.__pacotesVoz:
+            if pacote.getTempoTerminoServico() != 0:
+                countT1 += 1
+                somatorioT1 += pacote.getTempoTotalFila()
+        if countT1 == 0:
+            return -1
+        return somatorioT1/len(self.__pacotesVoz)
 
     def getEsperancaDeT2(self):
+        countT2 = 0
         somatorioT2 = 0.0
-        for Pacote in self.__pacotes:
-            if Pacote.getTempoTerminoServicoDados() != 0:
-                somatorioT2 += Pacote.getTempoTotalFilaDados()
-        return somatorioT2/len(self.__pacotes)
+        for pacote in self.__pacotesDados:
+            if pacote.getTempoTerminoServico() != 0:
+                countT2 += 1
+                somatorioT2 += pacote.getTempoTotalFila()
+        if countT2 == 0:
+            return -1
+        return somatorioT2/len(self.__pacotesDados)
 
     def getEsperancaDeW1(self):
+        countW1 = 0
         somatorioW1 = 0.0
-        for Pacote in self.__pacotes:
-            if Pacote.getTempoServicoVoz() != 0:
-                somatorioW1 += Pacote.getTempoEsperaFilaVoz()
-        return somatorioW1/len(self.__pacotes)
+        for pacote in self.__pacotesVoz:
+            if pacote.getTempoTerminoServico() != 0:
+                countW1 += 1
+                somatorioW1 += pacote.getTempoEsperaFila()
+        if countW1 == 0:
+            return -1
+        return somatorioW1/len(self.__pacotesVoz)
 
     def getEsperancaDeW2(self):
+        countW2 = 0
         somatorioW2 = 0.0
-        for Pacote in self.__pacotes:
-            if Pacote.getTempoTerminoServicoDados() != 0:
-                somatorioW2 += Pacote.getTempoEsperaFilaDados()
-        return somatorioW2/len(self.__pacotes)
+        for pacote in self.__pacotesDados:
+            if pacote.getTempoTerminoServico() != 0:
+                countW2 += 1
+                somatorioW2 += pacote.getTempoEsperaFila()
+        if countW2 == 0:
+            return -1
+        return somatorioW2/len(self.__pacotesDados)
 
     def getVarianciaDeW1(self):
         EW1 = self.getEsperancaDeW1()
         somatorioVW1 = 0.0
-        for Pacote in self.__pacotes:
-            if Pacote.getTempoServicoVoz() != 0:
-                somatorioVW1 += Pacote.getVarianciaTempoEsperaFilaVoz(EW1)
-        return somatorioVW1/len(self.__pacotes)
+        for Pacote in self.__pacotesVoz:
+            if Pacote.getTempoServico() != 0:
+                somatorioVW1 += Pacote.getVarianciaTempoEsperaFila(EW1)
+        return somatorioVW1/len(self.__pacotesVoz)
 
     def getVarianciaDeW2(self):
         EW2 = self.getEsperancaDeW2()
         somatorioVW2 = 0.0
-        for Pacote in self.__pacotes:
-            if Pacote.getTempoTerminoServicoDados() != 0:
-                somatorioVW2 += Pacote.getVarianciaTempoEsperaFilaDados(EW2)
-        return somatorioVW2/len(self.__pacotes)
+        for Pacote in self.__pacotesDados:
+            if Pacote.getTempoTerminoServico() != 0:
+                somatorioVW2 += Pacote.getVarianciaTempoEsperaFila(EW2)
+        return somatorioVW2/len(self.__pacotesDados)
 
     def inserirNumeroDePacotesPorTempoNaFilaVoz(self, numeroDePacotes, tempo):
         self.__pessoasFilaVozPorTempo.append(numeroDePacotes)
@@ -124,20 +146,20 @@ class Fase(object):
         somatorioT2 = 0.0
         somatorioW2 = 0.0
         for Pacote in self.__pacotes:
-            if Pacote.getTempoServicoVoz() != 0:
-                PacotesW1.append(Pacote.getTempoEsperaFilaVoz())
-                somatorioW1 += Pacote.getTempoEsperaFilaVoz()
+            if Pacote.getTempoServico() != 0:
+                PacotesW1.append(Pacote.getTempoEsperaFila())
+                somatorioW1 += Pacote.getTempoEsperaFila()
             
-            if Pacote.getTempoChegadaFilaDados() != 0:
-                PacotesT1.append(Pacote.getTempoTotalFilaVoz())
-                somatorioT1 += Pacote.getTempoTotalFilaVoz()
+            if Pacote.getTempoChegadaFila() != 0:
+                PacotesT1.append(Pacote.getTempoTotalFila())
+                somatorioT1 += Pacote.getTempoTotalFila()
             
-            if Pacote.getTempoTerminoServicoDados() != 0:
-                PacotesT2.append(Pacote.getTempoTotalFilaDados())
-                somatorioT2 += Pacote.getTempoTotalFilaDados()
+            if Pacote.getTempoTerminoServico() != 0:
+                PacotesT2.append(Pacote.getTempoTotalFila())
+                somatorioT2 += Pacote.getTempoTotalFila()
                 
-                PacotesW2.append(Pacote.getTempoEsperaFilaDados())
-                somatorioW2 += Pacote.getTempoEsperaFilaDados()
+                PacotesW2.append(Pacote.getTempoEsperaFila())
+                somatorioW2 += Pacote.getTempoEsperaFila()
 
         ET1 = somatorioT1/len(self.__pacotes)
         EW1 = somatorioW1/len(self.__pacotes)
@@ -149,13 +171,13 @@ class Fase(object):
         somatorioVW1 = 0.0
         somatorioVW2 = 0.0
         for Pacote in self.__pacotes:
-            if Pacote.getTempoServicoVoz() != 0:
-                PacotesVW1.append(Pacote.getVarianciaTempoEsperaFilaVoz(EW1))
-                somatorioVW1 += Pacote.getVarianciaTempoEsperaFilaVoz(EW1)
+            if Pacote.getTempoServico() != 0:
+                PacotesVW1.append(Pacote.getVarianciaTempoEsperaFila(EW1))
+                somatorioVW1 += Pacote.getVarianciaTempoEsperaFila(EW1)
             
-            if Pacote.getTempoTerminoServicoDados() != 0:
-                PacotesVW2.append(Pacote.getVarianciaTempoEsperaFilaDados(EW2))
-                somatorioVW2 += Pacote.getVarianciaTempoEsperaFilaDados(EW2)
+            if Pacote.getTempoTerminoServico() != 0:
+                PacotesVW2.append(Pacote.getVarianciaTempoEsperaFila(EW2))
+                somatorioVW2 += Pacote.getVarianciaTempoEsperaFila(EW2)
         EVW1 = somatorioVW1/len(self.__pacotes)
         EVW2 = somatorioVW2/len(self.__pacotes)
 
