@@ -52,7 +52,7 @@ class Simulacao(object):
         ### Todos iniciam com valores invalidos: -1
         self.__timerChegadaPacoteFilaVozPorCanal = []
         for indice in range(30):
-            self.__timerChegadaPacoteFilaVozPorCanal[indice] = -1
+            self.__timerChegadaPacoteFilaVozPorCanal.append(-1)
         self.__timerChegadaPacoteFilaVoz = -1
         self.__timerChegadaPacoteFilaDados = -1
         self.__timerFimDeServicoPacoteFilaVoz = -1
@@ -229,13 +229,13 @@ class Simulacao(object):
             Pacote.setTempoServico(self.__timerFimDeServicoPacoteFilaVoz)
 
         if self.__faseTransienteFinalizada == False:
-            self.__timerChegadaPacoteFilaVozPorCanal[Pacote.getCanal()] = self.__agendador.agendarChegadaFilaVoz(self.__lambd)
+            self.__timerChegadaPacoteFilaVozPorCanal[Pacote.getCanal()] = self.__agendador.agendarChegadaFilaVoz(self.__lambd, Pacote.getCanal())
             return
 
         if self.__fase.getID() + 1 == self.__numero_de_rodadas and self.__fase.quantidadeDePacotes() == self.__numero_de_pacotes_por_fase:
             self.__timerChegadaPacoteFilaVozPorCanal[Pacote.getCanal()] = -1
         else:    
-            self.__timerChegadaPacoteFilaVozPorCanal[Pacote.getCanal()] = self.__agendador.agendarChegadaFilaVoz(self.__lambd)
+            self.__timerChegadaPacoteFilaVozPorCanal[Pacote.getCanal()] = self.__agendador.agendarChegadaFilaVoz(self.__lambd, Pacote.getCanal())
 
 
     """Evento: Pacote entra na fila de dados
@@ -538,7 +538,7 @@ class Simulacao(object):
         # Comecamos agendando a chegada do primeiro Pacote no sistema.
         # A partir dela os proximos eventos sao gerados no loop principal da simulacao (mais abaixo).
         for indice in range(30):
-            self.__timerChegadaPacoteFilaVozPorCanal[indice] = self.__agendador.agendarChegadaFilaVoz(self.__lambd)
+            self.__timerChegadaPacoteFilaVozPorCanal[indice] = self.__agendador.agendarChegadaFilaVoz(self.__lambd, indice)
         
         self.__timerChegadaPacoteFilaDados = self.__agendador.agendarChegadaFilaDados(self.__lambd)
 
