@@ -1,5 +1,5 @@
-from controllers.calculadora_ic import *
-from views.view import *
+from ..controllers.calculadora_ic import *
+from ..views.view import *
 
 class Fase(object):
     def __init__(self, id, tempoInicial):

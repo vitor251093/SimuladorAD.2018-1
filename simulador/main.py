@@ -8,6 +8,8 @@ import math
 import sys
 import getopt
 import warnings
+from flask import Flask
+from flask import request
 """ Principal classe do simulador. Simulacao possui o metodo executarSimulacao que eh 
     chamado pelo main, o qual pode ser encontrado no fim deste arquivo. """
 
@@ -583,8 +585,7 @@ class Simulacao(object):
         if self.__output_type == 0:
             self.__fase.calcularEstatisticas(self.__tempoAtual, self.__view, self.__intervaloDeConfianca)
 
-        if hasOutputFile == True:
-            self.__view.gravarArquivoDeSaida()
+        return self.__view.gravarArquivoDeSaida()
         
 
 """randomNumber, randomNumberDistantFrom, printHelp, safeInt e safeFloat sao funcoes
@@ -704,6 +705,32 @@ def main(argv):
         newSeed = randomNumberDistantFrom(seedsList, seedsDistance)
         Simulacao().executarSimulacao(newSeed, lambdaValue, miValue, interrupcoes, numeroDePacotesPorRodada, rodadas, outputFile, variavelDeSaida, testeDeCorretude, intervaloDeConfianca)
         seedsList.append(newSeed)
+
+app = Flask(__name__)
+
+@app.route("/", methods=['GET', 'POST'])
+def mainFlask():
+    lambdaValue = float(request.args.get('lambda', default='0.3'))
+    miValue = float(request.args.get('mi', default='1.0'))
+    numeroDePacotesPorRodada = int(request.args.get('pacotesporrodada', default='20000'))
+    rodadas = int(request.args.get('rodadas', default='100'))
+    simulacoes = int(request.args.get('simulacoes', default='1'))
+    outputFile = False
+    interrupcoes = (request.args.get('interrupcoes', default='false') == 'true')
+    testeDeCorretude = (request.args.get('teste', default='false') == 'true')
+    variavelDeSaida = int(request.args.get('variavel', default='1'))
+    intervaloDeConfianca = float(request.args.get('confianca', default='0.95'))
+    
+    seedsDistance = 0.01
+    seedsList = []
+
+    output = ''
+    for i in range(simulacoes):
+        newSeed = randomNumberDistantFrom(seedsList, seedsDistance)
+        sOutput = Simulacao().executarSimulacao(newSeed, lambdaValue, miValue, interrupcoes, numeroDePacotesPorRodada, rodadas, outputFile, variavelDeSaida, testeDeCorretude, intervaloDeConfianca)
+        seedsList.append(newSeed)
+        output = "%s\n%s" % (output, sOutput)
+    return output
 
 if __name__ == "__main__":
     # Chama a funcao main repassando os argumentos usados na execucao do programa.

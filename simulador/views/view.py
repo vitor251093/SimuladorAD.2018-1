@@ -4,6 +4,7 @@ from time import gmtime, strftime
 class View(object):
     def __init__(self):
         self.__output_file = None
+        self.__output_text = ""
         
     def setImprimirEmArquivo(self, imprimirEmArquivo):
         if imprimirEmArquivo == True:
@@ -14,13 +15,17 @@ class View(object):
             self.__output_file = None
 
     def gravarArquivoDeSaida(self):
-        self.__output_file.close()
+        if self.__output_file == None:
+            return  self.__output_text
+        else:
+            self.__output_file.close()
+            return ''
 
     """Imprime textos para o programa"""
     def imprimir(self, texto):
         if self.__output_file == None:
             # Imprime um texto na tela
-            print texto
+            self.__output_text = "%s\n%s" % (self.__output_text, texto)
         else:
             # Imprime um texto no arquivo de texto
             self.__output_file.write("%s\n" % (texto))
