@@ -16,6 +16,7 @@ class Simulacao(object):
     def __init__(self):
         self.__mi = None
         self.__lambd = None
+        self.__interrupcoes = False
         self.__numero_de_pacotes_por_fase = None
         self.__numero_de_rodadas = None
         self.__intervaloDeConfianca = None
@@ -87,7 +88,8 @@ class Simulacao(object):
                 self.__fase.inserirNumeroDePacotesPorTempoNaFilaEspera2(0, tempo)
 
     def adicionarEvento (self, Pacote, evento, fila, momento):
-        # print "%f: Pacote %d (%d) %s na fila %d" % (momento, Pacote.getID(), Pacote.getIndiceDaCor(), evento, fila)
+        #tipo = "de voz" if Pacote.getCanal() != -1 else "de dados"
+        #print "%f: Pacote %s %d (%d) %s na fila %d" % (momento, tipo, Pacote.getID(), Pacote.getIndiceDaCor(), evento, fila)
         
         ENt = self.__fase.getEsperancaDeN(momento)
 
@@ -217,16 +219,25 @@ class Simulacao(object):
         self.__filaVoz.adicionarPacoteAFila(pacote)
 
         self.adicionarEvento(pacote, "chegou", self.__filaVoz.getID(), self.__tempoAtual)
-        if self.__filaVoz.numeroDePessoasNaFila() == 1:
-            if self.__filaDados.numeroDePessoasNaFila() > 0: # Interrompe individuo da fila de dados
-                PacoteInterrompido = self.__filaDados.PacoteEmAtendimento()
-                PacoteInterrompido.setTempoDecorridoServico(PacoteInterrompido.getTempoServico() - self.__timerFimDeServicoPacoteFilaDados)
-                self.__timerFimDeServicoPacoteFilaDados = -1
-            
-            pacote.setTempoChegadaServico(self.__tempoAtual)
-            
-            self.__timerFimDeServicoPacoteFilaVoz = self.__agendador.agendarTempoDeServicoFilaVoz()
-            pacote.setTempoServico(self.__timerFimDeServicoPacoteFilaVoz)
+        if self.__filaVoz.numeroDePessoasNaFila() == 1: # So o atual se encontra na fila
+            if self.__interrupcoes == False and self.__filaDados.numeroDePessoasNaFila() == 0:
+                pacote.setTempoChegadaServico(self.__tempoAtual)
+                #self.adicionarEvento(pacote, "comecou a ser atendido", self.__filaVoz.getID(), self.__tempoAtual)
+                
+                self.__timerFimDeServicoPacoteFilaVoz = self.__agendador.agendarTempoDeServicoFilaVoz()
+                pacote.setTempoServico(self.__timerFimDeServicoPacoteFilaVoz)
+            else:
+                if self.__interrupcoes == True:
+                    if self.__filaDados.numeroDePessoasNaFila() > 0: # Interrompe individuo da fila de dados
+                        PacoteInterrompido = self.__filaDados.PacoteEmAtendimento()
+                        PacoteInterrompido.setTempoDecorridoServico(PacoteInterrompido.getTempoDecorridoServico() + self.__timerFimDeServicoPacoteFilaVoz)
+                        self.__timerFimDeServicoPacoteFilaDados = -1
+                    
+                    pacote.setTempoChegadaServico(self.__tempoAtual)
+                    #self.adicionarEvento(pacote, "comecou a ser atendido", self.__filaVoz.getID(), self.__tempoAtual)
+                    
+                    self.__timerFimDeServicoPacoteFilaVoz = self.__agendador.agendarTempoDeServicoFilaVoz()
+                    pacote.setTempoServico(self.__timerFimDeServicoPacoteFilaVoz)
 
         if self.__faseTransienteFinalizada == False:
             self.__timerChegadaPacoteFilaVozPorCanal[pacote.getCanal()] = self.__agendador.agendarChegadaFilaVoz(pacote.getCanal())
@@ -271,8 +282,9 @@ class Simulacao(object):
         self.__filaDados.adicionarPacoteAFila(pacote)
 
         self.adicionarEvento(pacote, "chegou", self.__filaDados.getID(), self.__tempoAtual)
-        if self.__filaVoz.numeroDePessoasNaFila() == 0 and self.__filaDados.numeroDePessoasNaFila() == 0:
+        if self.__filaVoz.numeroDePessoasNaFila() == 0 and self.__filaDados.numeroDePessoasNaFila() == 1:
             pacote.setTempoChegadaServico(self.__tempoAtual)
+            #self.adicionarEvento(pacote, "comecou a ser atendido", self.__filaDados.getID(), self.__tempoAtual)
             
             self.__timerFimDeServicoPacoteFilaDados = self.__agendador.agendarTempoDeServicoFilaDados(self.__mi)
             pacote.setTempoServico(self.__timerFimDeServicoPacoteFilaDados)
@@ -297,12 +309,14 @@ class Simulacao(object):
     def PacoteTerminaServicoNaFilaVoz(self):
         Pacote = self.__filaVoz.retirarPacoteEmAtendimento()
         Pacote.setTempoTerminoServico(self.__tempoAtual)
+        self.__timerFimDeServicoPacoteFilaVoz = -1
 
         self.adicionarEvento(Pacote, "terminou o atendimento", self.__filaVoz.getID(), self.__tempoAtual)
 
         if self.__filaVoz.numeroDePessoasNaFila() > 0:
             novoPacote = self.__filaVoz.PacoteEmAtendimento()
             novoPacote.setTempoChegadaServico(self.__tempoAtual)
+            #self.adicionarEvento(novoPacote, "comecou a ser atendido", self.__filaVoz.getID(), self.__tempoAtual)
 
             self.__timerFimDeServicoPacoteFilaVoz = self.__agendador.agendarTempoDeServicoFilaVoz()
             novoPacote.setTempoServico(self.__timerFimDeServicoPacoteFilaVoz)
@@ -316,6 +330,9 @@ class Simulacao(object):
                     
                 else: 
                     # Pacote da fila de dados eh atendido pela primeira vez
+                    proximoPacote.setTempoChegadaServico(self.__tempoAtual)
+                    #self.adicionarEvento(proximoPacote, "comecou a ser atendido", self.__filaDados.getID(), self.__tempoAtual)
+
                     self.__timerFimDeServicoPacoteFilaDados = self.__agendador.agendarTempoDeServicoFilaDados(self.__mi)
                     proximoPacote.setTempoServico(self.__timerFimDeServicoPacoteFilaDados)
             else:
@@ -330,16 +347,25 @@ class Simulacao(object):
     def PacoteTerminaServicoNaFilaDados(self):
         Pacote = self.__filaDados.retirarPacoteEmAtendimento()
         Pacote.setTempoTerminoServico(self.__tempoAtual)
+        self.__timerFimDeServicoPacoteFilaDados = -1
 
         self.adicionarEvento(Pacote, "terminou o atendimento", self.__filaDados.getID(), self.__tempoAtual)
         
-        if self.__filaDados.numeroDePessoasNaFila() > 0:
-            proximoPacote = self.__filaDados.PacoteEmAtendimento()
-            
-            self.__timerFimDeServicoPacoteFilaDados = self.__agendador.agendarTempoDeServicoFilaDados(self.__mi)
-            proximoPacote.setTempoServico(self.__timerFimDeServicoPacoteFilaDados)
+        if self.__interrupcoes == False and self.__filaVoz.numeroDePessoasNaFila() > 0:
+            novoPacote = self.__filaVoz.PacoteEmAtendimento()
+            novoPacote.setTempoChegadaServico(self.__tempoAtual)
+            #self.adicionarEvento(novoPacote, "comecou a ser atendido", self.__filaVoz.getID(), self.__tempoAtual)
+
+            self.__timerFimDeServicoPacoteFilaVoz = self.__agendador.agendarTempoDeServicoFilaVoz()
+            novoPacote.setTempoServico(self.__timerFimDeServicoPacoteFilaVoz)
         else:
-            self.__timerFimDeServicoPacoteFilaDados = -1
+            if self.__filaDados.numeroDePessoasNaFila() > 0:
+                proximoPacote = self.__filaDados.PacoteEmAtendimento()
+                proximoPacote.setTempoChegadaServico(self.__tempoAtual)
+                #self.adicionarEvento(proximoPacote, "comecou a ser atendido", self.__filaDados.getID(), self.__tempoAtual)
+                
+                self.__timerFimDeServicoPacoteFilaDados = self.__agendador.agendarTempoDeServicoFilaDados(self.__mi)
+                proximoPacote.setTempoServico(self.__timerFimDeServicoPacoteFilaDados)
 
 
     """ eventoDeDuracaoMinima() ira cuidar da verificacao de qual evento ocorre antes.
@@ -527,9 +553,10 @@ class Simulacao(object):
         
 
     """ Principal metodo da classe Simulacao. Aqui a simulacao eh iniciada. """
-    def executarSimulacao(self, seed, lambdaValue, miValue, numeroDePacotesPorRodada, rodadas, hasOutputFile, variavelDeSaida, testeDeCorretude, intervaloDeConfianca):
+    def executarSimulacao(self, seed, lambdaValue, miValue, interrupcoes, numeroDePacotesPorRodada, rodadas, hasOutputFile, variavelDeSaida, testeDeCorretude, intervaloDeConfianca):
         self.__lambd = lambdaValue
         self.__mi = miValue
+        self.__interrupcoes = interrupcoes
         self.__numero_de_pacotes_por_fase = numeroDePacotesPorRodada
         self.__numero_de_rodadas = rodadas
         self.__intervaloDeConfianca = intervaloDeConfianca
@@ -635,12 +662,13 @@ def main(argv):
     rodadas = 100
     simulacoes = 1
     outputFile = False
+    interrupcoes = False
     testeDeCorretude = False
     variavelDeSaida = 1
     intervaloDeConfianca = 0.95
 
     try:
-        opts, args = getopt.getopt(argv,"hotl:m:t:c:r:s:v:",["help","csv-output","teste","lambda=","mi=","confianca=","Pacotes-por-rodada=","rodadas=","simulacoes=","variavel-de-saida="])
+        opts, args = getopt.getopt(argv,"ihotl:m:t:c:r:s:v:",["interrupcoes","help","csv-output","teste","lambda=","mi=","confianca=","Pacotes-por-rodada=","rodadas=","simulacoes=","variavel-de-saida="])
     except getopt.GetoptError:
         printHelp()
         sys.exit(2)
@@ -648,6 +676,8 @@ def main(argv):
         if opt in ("-h", "--help"):
             printHelp()
             sys.exit()
+        elif opt in ("-i", "--interrupcoes"):
+            interrupcoes = True
         elif opt in ("-l", "--lambda"):
             lambdaValue = safeFloat("lambda",arg)
         elif opt in ("-m", "--mi"):
@@ -672,7 +702,7 @@ def main(argv):
 
     for i in range(simulacoes):
         newSeed = randomNumberDistantFrom(seedsList, seedsDistance)
-        Simulacao().executarSimulacao(newSeed, lambdaValue, miValue, numeroDePacotesPorRodada, rodadas, outputFile, variavelDeSaida, testeDeCorretude, intervaloDeConfianca)
+        Simulacao().executarSimulacao(newSeed, lambdaValue, miValue, interrupcoes, numeroDePacotesPorRodada, rodadas, outputFile, variavelDeSaida, testeDeCorretude, intervaloDeConfianca)
         seedsList.append(newSeed)
 
 if __name__ == "__main__":
