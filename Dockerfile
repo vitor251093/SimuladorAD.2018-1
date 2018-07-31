@@ -13,4 +13,4 @@ RUN pip install numpy
 RUN pip install flask
 
 COPY simulador /simulador
-RUN FLASK_APP=/simulador/main.py flask run &
+

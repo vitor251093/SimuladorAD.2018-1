@@ -10,4 +10,5 @@ pip install scipy
 pip install numpy
 pip install flask
 
-FLASK_APP=/simulador/simulador/main.py flask run &
+chmod +x ./simulador/run.sh
+./simulador/run.sh

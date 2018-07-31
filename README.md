@@ -8,16 +8,18 @@ Diferentes métodos para executar o trabalho de forma apropriada. Primeiramente 
 #### Opção 1 (Sandbox)
 **Necessita ter Docker previamente instalado**
 
-Ir com o terminal até o diretório do repositório e usar o comando:
+Método compatível com Linux e macOS. Ir com o terminal até o diretório do repositório e usar o comando:
 ```
+chmod +x build-docker.sh 
 ./build-docker.sh
 ```
 
 Um docker será criado e iniciará a execução do backend.
 
 #### Opção 2 (Local)
-Ir com o terminal até o diretório do repositório e usar o comando:
+Método compatível com Linux apenas. Ir com o terminal até o diretório do repositório e usar o comando:
 ```
+chmod +x build-nodocker.sh 
 sudo ./build-nodocker.sh
 ```
 
