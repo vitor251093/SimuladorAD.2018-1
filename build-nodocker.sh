@@ -10,5 +10,5 @@ pip install scipy
 pip install numpy
 pip install flask
 
-chmod +x ./simulador/run.sh
-./simulador/run.sh
+chmod +x ./simulador/run-nodocker.sh
+./simulador/run-nodocker.sh
