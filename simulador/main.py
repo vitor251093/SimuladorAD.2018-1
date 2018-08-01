@@ -10,6 +10,7 @@ import getopt
 import warnings
 from flask import Flask
 from flask import request
+from flask import render_template
 """ Principal classe do simulador. Simulacao possui o metodo executarSimulacao que eh 
     chamado pelo main, o qual pode ser encontrado no fim deste arquivo. """
 
@@ -653,62 +654,21 @@ def safeFloat(key, stringValue):
         sys.exit(2)
 
 
-"""Funcao principal do programa. Interpreta as flags passadas como parametros para configurar 
-   e executar o simulador."""
-
-def main(argv):
-    lambdaValue = 0.3
-    miValue = 1.0
-    numeroDePacotesPorRodada = 20000
-    rodadas = 100
-    simulacoes = 1
-    outputFile = False
-    interrupcoes = False
-    testeDeCorretude = False
-    variavelDeSaida = 1
-    intervaloDeConfianca = 0.95
-
-    try:
-        opts, args = getopt.getopt(argv,"ihotl:m:t:c:r:s:v:",["interrupcoes","help","csv-output","teste","lambda=","mi=","confianca=","Pacotes-por-rodada=","rodadas=","simulacoes=","variavel-de-saida="])
-    except getopt.GetoptError:
-        printHelp()
-        sys.exit(2)
-    for opt, arg in opts:
-        if opt in ("-h", "--help"):
-            printHelp()
-            sys.exit()
-        elif opt in ("-i", "--interrupcoes"):
-            interrupcoes = True
-        elif opt in ("-l", "--lambda"):
-            lambdaValue = safeFloat("lambda",arg)
-        elif opt in ("-m", "--mi"):
-            miValue = safeFloat("mi",arg)
-        elif opt in ("-i", "--confianca"):
-            intervaloDeConfianca = safeFloat("intervalo de confianca",arg)
-        elif opt in ("-c", "--Pacotes-por-rodada"):
-            numeroDePacotesPorRodada = safeInt("Pacotes por rodada",arg)
-        elif opt in ("-r", "--rodadas"):
-            rodadas = safeInt("rodadas", arg)
-        elif opt in ("-s", "--simulacoes"):
-            simulacoes = safeInt("simulacoes", arg)
-        elif opt in ("-o", "--csv-output"):
-            outputFile = True
-        elif opt in ("-v", "--variavel-de-saida"):
-            variavelDeSaida = safeInt("variavel de saida", arg)
-        elif opt in ("-t", "--teste"):
-            testeDeCorretude = True
-    
-    seedsDistance = 0.01
-    seedsList = []
-
-    for i in range(simulacoes):
-        newSeed = randomNumberDistantFrom(seedsList, seedsDistance)
-        Simulacao().executarSimulacao(newSeed, lambdaValue, miValue, interrupcoes, numeroDePacotesPorRodada, rodadas, outputFile, variavelDeSaida, testeDeCorretude, intervaloDeConfianca)
-        seedsList.append(newSeed)
-
 app = Flask(__name__)
 
-@app.route("/", methods=['GET', 'POST'])
+@app.route("/")
+def indexPage():
+    return render_template('index.html')
+
+@app.route('/<string:page_name>/')
+def render_static(page_name):
+    return render_template('%s.html' % page_name)
+
+
+"""Funcao principal do programa. Interpreta as flags passadas como parametros para configurar
+    e executar o simulador."""
+
+@app.route("/simulator", methods=['GET', 'POST'])
 def mainFlask():
     lambdaValue = float(request.args.get('lambda', default='0.3'))
     miValue = float(request.args.get('mi', default='1.0'))
@@ -733,6 +693,5 @@ def mainFlask():
     return output
 
 if __name__ == "__main__":
-    # Chama a funcao main repassando os argumentos usados na execucao do programa.
-    # main(sys.argv[1:])
+    # Inicia o Flash se o arquivo do Python for chamado diretamente (o que nunca deve ser o caso)
     app.run(host='0.0.0.0')
