@@ -660,6 +660,10 @@ app = Flask(__name__)
 def indexPage():
     return render_template('index.html')
 
+@app.route("/js/Chart.bundle.js")
+def chartJsPage():
+    return render_template('js/Chart.bundle.js')
+
 @app.route('/<string:page_name>/')
 def render_static(page_name):
     return render_template('%s.html' % page_name)
