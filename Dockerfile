@@ -14,3 +14,4 @@ RUN pip install flask
 
 COPY simulador /simulador
 
+EXPOSE 5000

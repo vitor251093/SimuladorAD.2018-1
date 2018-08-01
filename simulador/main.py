@@ -734,4 +734,5 @@ def mainFlask():
 
 if __name__ == "__main__":
     # Chama a funcao main repassando os argumentos usados na execucao do programa.
-    main(sys.argv[1:])
+    # main(sys.argv[1:])
+    app.run(host='0.0.0.0')
