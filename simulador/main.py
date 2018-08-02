@@ -607,52 +607,6 @@ def randomNumberDistantFrom(numbersList, distance):
                 newNumber = 0
     return newNumber
 
-def printHelp():
-    # Imprime a ajuda do programa, que eh mostrada quando os parametros sao passados
-    # incorretamente ou quando ela eh chamada diretamente via -h ou --help.
-    print 'Uso: simulacao.py [args]'
-    print 'Opcoes e argumentos:'
-    print '-l, --lambda\t\t\tEspecifica o valor de lambda (Padrao: 0.3)'
-    print '-m, --mi\t\t\tEspecifica o valor de mi (Padrao: 1.0)'
-    print '-c, --Pacotes-por-rodada\tEspecifica o numero de Pacotes por rodada (Padrao: 20000)'
-    print '-r, --rodadas\t\t\tEspecifica o numero de rodadas (Padrao: 100)'
-    print '-s, --simulacoes\t\tEspecifica o numero de simulacoes (Padrao: 1)'
-    print '-t, --teste\t\t\tExecuta o programa em modo de Teste de Corretude'
-    print '-o, --csv-output\t\tDefine que a saida deve ser em um arquivo csv no diretorio \'plot\''
-    print '-v, --variavel-de-saida\t\tDefine o que sera calculado e impresso pelo programa'
-    print '   0:  Imprime as estatisticas de cada fase/rodada (nao parseavel pelo \'plot.py\')'
-    print '   1:  Imprime o E[N] durante cada evento'
-    print '   2:  Imprime o E[N1] durante cada evento'
-    print '   3:  Imprime o E[N2] durante cada evento'
-    print '   4:  Imprime o E[Nq1] durante cada evento'
-    print '   5:  Imprime o E[Nq2] durante cada evento'
-    print '   6:  Imprime o E[T1] durante cada evento'
-    print '   7:  Imprime o E[T2] durante cada evento'
-    print '   8:  Imprime o E[W1] durante cada evento'
-    print '   9:  Imprime o E[W2] durante cada evento'
-    print '  10:  Imprime o V(W1) durante cada evento'
-    print '  11:  Imprime o V(W2) durante cada evento'
-
-def safeInt(key, stringValue):
-    # Converte uma string passada como valor de um parametro para um numero inteiro. 
-    # Se a string nao for um numero inteiro, o programa encerra com uma mensagem
-    # de erro, alertando que o parametro esta incorreto.
-    try:
-        return int(stringValue)
-    except ValueError:
-        print "ERRO: A chave \"%s\" aceita apenas valores inteiros (int)." % (key)
-        sys.exit(2)
-
-def safeFloat(key, stringValue):
-    # Converte uma string passada como valor de um parametro para um numero float. 
-    # Se a string nao for um numero float, o programa encerra com uma mensagem
-    # de erro, alertando que o parametro esta incorreto.
-    try:
-        return float(stringValue)
-    except ValueError:
-        print "ERRO: A chave \"%s\" aceita apenas valores de ponto flutuante (float)." % (key)
-        sys.exit(2)
-
 
 app = Flask(__name__)
 
@@ -671,7 +625,7 @@ def mainFlask():
     numeroDePacotesPorRodada = int(request.args.get('pacotesporrodada', default='20000'))
     rodadas = int(request.args.get('rodadas', default='100'))
     simulacoes = int(request.args.get('simulacoes', default='1'))
-    outputFile = False
+    outputFile = True
     interrupcoes = (request.args.get('interrupcoes', default='false') == 'true')
     testeDeCorretude = (request.args.get('teste', default='false') == 'true')
     variavelDeSaida = int(request.args.get('variavel', default='1'))
