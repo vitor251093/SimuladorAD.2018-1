@@ -132,7 +132,7 @@
         document.getElementById('runSimulator').addEventListener('click', function () {
             console.log("UPDATE");
 
-            loadFile('/simulator?variavel=6&rodadas=1&pacotesporrodada=100',function(simulatorText){
+            loadFile('/simulator?rodadas=1&pacotesporrodada=100',function(simulatorText){
                 if (simulatorText == undefined) {
                     console.log("YOU NOT DEFINED?!");
                     return;
