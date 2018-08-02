@@ -132,42 +132,26 @@
         document.getElementById('runSimulator').addEventListener('click', function () {
             console.log("UPDATE");
 
-            loadFile('/simulator?variavel=6&rodadas=1&pacotesporrodada=10000',function(simulatorText){
+            loadFile('/simulator?variavel=6&rodadas=1&pacotesporrodada=100',function(simulatorText){
                 if (simulatorText == undefined) {
                     console.log("YOU NOT DEFINED?!");
                     return;
                 }
 
                 var simulatorComponents = simulatorText.split('\n');
+                for(var i = simulatorComponents.length - 1; i >= 0; i--) {
+                    if (simulatorComponents[i].indexOf(',') == -1) {
+                        simulatorComponents.splice(i, 1);
+                    }
+                }
                 simulatorComponents = simulatorComponents.map(function(comp) {
                     var entry = comp.split(',');
-                    if (entry.length == 2) {
-                        return {value:parseFloat(entry[0]), group:parseInt(entry[1])};
-                    }
-                    return {value:null, group:null};
+                    return {value:parseFloat(entry[0]), group:parseInt(entry[1])};
                 });
 
-                simulatorValues = simulatorComponents.map(function(entry) {
-                    return entry.value;
-                });
-                for(var i = simulatorValues.length - 1; i >= 0; i--) {
-                    if(simulatorValues[i] === null) {
-                        simulatorValues.splice(i, 1);
-                    }
-                }
-
-                simulatorColors = simulatorComponents.map(function(entry) {
-                    return entry.group;
-                });
-                for(var i = simulatorColors.length - 1; i >= 0; i--) {
-                    if (simulatorColors[i] === null) {
-                        simulatorColors.splice(i, 1);
-                    }
-                }
-
-                simulatorLabels = simulatorComponents.map(function(entry) {
-                    return "";
-                });
+                simulatorValues = simulatorComponents.map(function(entry) {return entry.value;});
+                //simulatorColors = simulatorComponents.map(function(entry) {return entry.group;});
+                simulatorLabels = simulatorComponents.map(function(entry) {return "";});
 
                 config.data.labels = simulatorLabels;
                 config.data.datasets[0].data = simulatorValues;
