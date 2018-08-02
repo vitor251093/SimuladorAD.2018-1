@@ -660,6 +660,10 @@ app = Flask(__name__)
 def indexPage():
     return render_template('index.html')
 
+@app.route("/favicon.ico")
+def faviconPage():
+    return render_template('favicon.ico')
+
 @app.route("/js/Chart.bundle.js")
 def chartJsPage():
     return render_template('js/Chart.bundle.js')
