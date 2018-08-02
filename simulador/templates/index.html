@@ -9,6 +9,7 @@
 </head>
 
 <body>
+    <div id="mask" style="position:absolute; opacity:0.7; width:100%; height:100%; background-color:#FFF; display:none;"></div>
     <div style="width:75%;">
         <canvas id="canvas"></canvas>
     </div>
@@ -47,50 +48,26 @@
         };
         Samples.utils.srand(Date.now());
 
-        var MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
         var config = {
             type: 'line',
             data: {
-                labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
+                labels: [],
                 datasets: [{
                     label: 'My First dataset',
                     backgroundColor: window.chartColors.red,
                     borderColor: window.chartColors.red,
-                    data: [
-                        randomScalingFactor(),
-                        randomScalingFactor(),
-                        randomScalingFactor(),
-                        randomScalingFactor(),
-                        randomScalingFactor(),
-                        randomScalingFactor(),
-                        randomScalingFactor()
-                    ],
+                    data: [],
                     fill: false,
-                }, {
-                    label: 'My Second dataset',
-                    fill: false,
-                    backgroundColor: window.chartColors.blue,
-                    borderColor: window.chartColors.blue,
-                    data: [
-                        randomScalingFactor(),
-                        randomScalingFactor(),
-                        randomScalingFactor(),
-                        randomScalingFactor(),
-                        randomScalingFactor(),
-                        randomScalingFactor(),
-                        randomScalingFactor()
-                    ],
                 }]
             },
             options: {
                 responsive: true,
                 title: {
                     display: true,
-                    text: 'Chart.js Line Chart'
+                    text: 'Simulação'
                 },
                 tooltips: {
-                    mode: 'index',
-                    intersect: false,
+                    enabled: false
                 },
                 hover: {
                     mode: 'nearest',
@@ -120,9 +97,81 @@
             window.myLine = new Chart(ctx, config);
         };
 
+        function setMaskVisible(visible) {
+            var mask = document.getElementById("mask");
+            mask.style["display"] = visible ? "block" : "none";
+        }
+
+        function loadFile(url, callback){
+            var timeout = 24*60*60*1000; // 24 horas em milisegundos, garantindo que nunca haja timeout
+            var xhr = new XMLHttpRequest();
+            xhr.ontimeout = function () {
+                console.error("The request for " + url + " timed out.");
+            };
+            xhr.onload = function() {
+                setMaskVisible(false);
+
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        callback(xhr.responseText);
+                    } else {
+                        console.error(xhr.statusText);
+                    }
+                }
+            };
+            xhr.open("GET", url, true);
+            xhr.timeout = timeout;
+            xhr.send(null);
+
+            setMaskVisible(true);
+        }
+
         document.getElementById('runSimulator').addEventListener('click', function () {
             console.log("UPDATE");
-            config.data.datasets[0].data = [
+
+            loadFile('/simulator?variavel=6&rodadas=1&pacotesporrodada=10000',function(simulatorText){
+                if (simulatorText == undefined) {
+                    console.log("YOU NOT DEFINED?!");
+                    return;
+                }
+
+                var simulatorComponents = simulatorText.split('\n');
+                simulatorComponents = simulatorComponents.map(function(comp) {
+                    var entry = comp.split(',');
+                    if (entry.length == 2) {
+                        return {value:parseFloat(entry[0]), group:parseInt(entry[1])};
+                    }
+                    return {value:null, group:null};
+                });
+
+                simulatorValues = simulatorComponents.map(function(entry) {
+                    return entry.value;
+                });
+                for(var i = simulatorValues.length - 1; i >= 0; i--) {
+                    if(simulatorValues[i] === null) {
+                        simulatorValues.splice(i, 1);
+                    }
+                }
+
+                simulatorColors = simulatorComponents.map(function(entry) {
+                    return entry.group;
+                });
+                for(var i = simulatorColors.length - 1; i >= 0; i--) {
+                    if (simulatorColors[i] === null) {
+                        simulatorColors.splice(i, 1);
+                    }
+                }
+
+                simulatorLabels = simulatorComponents.map(function(entry) {
+                    return "";
+                });
+
+                config.data.labels = simulatorLabels;
+                config.data.datasets[0].data = simulatorValues;
+                window.myLine.update();
+            });
+
+            /*config.data.datasets[0].data = [
                 randomScalingFactor(),
                 randomScalingFactor(),
                 randomScalingFactor(),
@@ -130,9 +179,7 @@
                 randomScalingFactor(),
                 randomScalingFactor(),
                 randomScalingFactor()
-            ];
-
-            window.myLine.update();
+            ];*/
         });
     </script>
 </body>
