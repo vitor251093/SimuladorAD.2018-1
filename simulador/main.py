@@ -167,22 +167,6 @@ class Simulacao(object):
                         self.__duracaoEventosDaVariancia2 = []
 
 
-    def randomNumber(self):
-        # Retorna um numero aleatorio entre 0.0 e 1.0
-        return random.random()
-
-    def randomNumberDistantFrom(self, numbersList, distance):
-        # Retorna um numero aleatorio entre 0.0 e 1.0 que seja distante de todos
-        # os numeros de `numbersList` por pelo menos o valor de `distance`.
-        newNumber = 0
-        while newNumber == 0:
-            newNumber = self.randomNumber()
-            for number in numbersList:
-                if abs(newNumber - number) < distance:
-                    newNumber = 0
-        return newNumber
-
-
     """Evento: Pacote entra na fila de voz
        Com essa funcao realizamos todas as acoes que ocorrem em decorrencia da
        entrada de um Pacote na fila de voz, que sao: se nao houver ninguem na fila de voz,
@@ -206,8 +190,6 @@ class Simulacao(object):
                 if self.__output_type == 0:
                     self.__fase.calcularEstatisticas(self.__tempoAtual - self.__timerChegadaPacoteFilaVoz, self.__view, self.__intervaloDeConfianca, self.__lambd)
 
-                newSeed = self.randomNumberDistantFrom(self.__seedsList, self.__seedsDistance)
-                self.__agendador.configurarSemente(newSeed)
                 self.__fase = Fase(indiceDaFase, self.__tempoAtual)
             corDoPacote = indiceDaFase
 
@@ -273,8 +255,6 @@ class Simulacao(object):
                 if self.__output_type == 0:
                     self.__fase.calcularEstatisticas(self.__tempoAtual - self.__timerChegadaPacoteFilaVoz, self.__view, self.__intervaloDeConfianca, self.__lambd)
 
-                newSeed = self.randomNumberDistantFrom(self.__seedsList, self.__seedsDistance)
-                self.__agendador.configurarSemente(newSeed)
                 self.__fase = Fase(indiceDaFase, self.__tempoAtual)
             corDoPacote = indiceDaFase
 
@@ -587,8 +567,8 @@ class Simulacao(object):
         return self.__view.gravarArquivoDeSaida()
         
 
-"""randomNumber, randomNumberDistantFrom, printHelp, safeInt e safeFloat sao funcoes
-   de apoio para a funcao main. Cada uma sera explicada com mais detalhes abaixo."""
+"""randomNumber e randomNumberDistantFrom sao funcoes de apoio para a funcao main. 
+   Cada uma sera explicada com mais detalhes abaixo."""
 
 def randomNumber():
     # Retorna um numero aleatorio entre 0.0 e 1.0
@@ -615,6 +595,7 @@ def indexPage():
 @app.route('/plot/<index>.csv')
 def getPlotCsv(index):
     return render_template('/plot/' + index + '.csv')
+
 
 """Funcao principal do programa. Interpreta as flags passadas como parametros para configurar
     e executar o simulador."""
