@@ -18,7 +18,20 @@
     </div>
     <br>
     <br>
-    <!--variavelDeSaida = int(request.args.get('variavel', default='1'))-->
+    <label>Gráfico:</label>
+    <form action="">
+        <input type="radio" name="variavel" value="1" checked> E[N]<br>
+        <input type="radio" name="variavel" value="2"> E[N] (Voz)<br>
+        <input type="radio" name="variavel" value="3"> E[N] (Dados)<br>
+        <input type="radio" name="variavel" value="4"> E[Nq] (Voz)<br>
+        <input type="radio" name="variavel" value="5"> E[Nq] (Dados)<br>
+        <input type="radio" name="variavel" value="6"> E[T] (Voz)<br>
+        <input type="radio" name="variavel" value="7"> E[T] (Dados)<br>
+        <input type="radio" name="variavel" value="8"> E[W] (Voz)<br>
+        <input type="radio" name="variavel" value="9"> E[W] (Dados)<br>
+        <input type="radio" name="variavel" value="10"> V(W) (Voz)<br>
+        <input type="radio" name="variavel" value="11"> V(W) (Dados)
+    </form>
     <label>Lambda:</label> <input type="text" id="lambda" value="0.3"/><br>
     <label>Mi:</label> <input type="text" id="mi" value="1.0"/><br>
     <label>Pacotes por rodada:</label> <input type="text" id="pacotesporrodada" value="20000"/><br>
@@ -112,6 +125,15 @@
 
         
         document.getElementById('runSimulator').addEventListener('click', function () {
+            var lambda = document.getElementById("lambda").value;
+            var mi = document.getElementById("mi").value;
+            var pacotesporrodada = document.getElementById("pacotesporrodada").value;
+            var rodadas = document.getElementById("rodadas").value;
+            var simulacoes = document.getElementById("simulacoes").value;
+            var confianca = document.getElementById("confianca").value;
+
+            var teste = document.getElementById("teste").checked;
+            var interrupcoes = document.getElementById("interrupcoes").checked;
             var progressiveLoad = document.getElementById("progressiveLoad").checked;
             
             config.data.labels = [];
@@ -129,9 +151,25 @@
             var loadNextCsvTime = 20;
             var reloadViewTime = 1000;
 
-            var args = {progressivo: progressiveLoad.toString(),
-                        rodadas: '1',
-                        pacotesporrodada: '100'};
+            var variavelAtiva = '1';
+            var variavelRadios = document.getElementsByName('variavel');
+            for (var i = 0, length = variavelRadios.length; i < length; i++) {
+                if (variavelRadios[i].checked) {
+                    variavelAtiva = variavelRadios[i].value;
+                    break;
+                }
+            }
+
+            var args = {lambda: lambda,
+                        mi: mi,
+                        pacotesporrodada: pacotesporrodada,
+                        rodadas: rodadas,
+                        simulacoes: simulacoes,
+                        progressivo: progressiveLoad.toString(),
+                        interrupcoes: interrupcoes,
+                        teste: teste,
+                        variavel: variavelAtiva,
+                        confianca: confianca};
             var argsArray = [];
             var argKeys = Object.keys(args);
             for (var index = 0; index < argKeys.length; index++) {
