@@ -9,8 +9,8 @@ class Agendador(object):
 
     def __init__(self):
         self.__testeDeCorretude = False
-        self.__tamanhoPacoteVoz = 512.0 # bits
-        self.__taxaDeTransmissao = 2.0*1024*1024*8 ## 2 Megabytes per segundo
+        self.__tamanhoPacoteVoz = 512.0 # 512 bits = 64 bytes
+        self.__taxaDeTransmissao = 2.0*1000*1000 ## 2 Megabits per segundo
         
         self.__pacoteFilaVozIndice = []
         self.__pacoteFilaVozTotal = []
@@ -85,9 +85,6 @@ class Agendador(object):
         return random.expovariate(lambd)
 
     def agendarTempoDeServicoFilaVoz(self):
-        # TODO: Tamanho do pacote de voz varia
-        # Nao foi possível determinar quando um tamanho deveria ser escolhido
-        # em relacao a outro.
         return ((self.__tamanhoPacoteVoz*1000)/self.__taxaDeTransmissao) # ms
 
     def agendarTempoDeServicoFilaDados(self):
