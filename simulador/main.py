@@ -208,7 +208,7 @@ class Simulacao(object):
                 pacote.setTempoChegadaServico(self.__tempoAtual)
                 #self.adicionarEvento(pacote, "comecou a ser atendido", self.__filaVoz.getID(), self.__tempoAtual)
                 
-                self.__timerFimDeServicoPacoteFilaVoz = self.__agendador.agendarTempoDeServicoFilaVoz()
+                self.__timerFimDeServicoPacoteFilaVoz = self.__agendador.agendarTempoDeServicoFilaVoz(pacote.getCanal())
                 pacote.setTempoServico(self.__timerFimDeServicoPacoteFilaVoz)
             else:
                 if self.__interrupcoes == True:
@@ -220,7 +220,7 @@ class Simulacao(object):
                     pacote.setTempoChegadaServico(self.__tempoAtual)
                     #self.adicionarEvento(pacote, "comecou a ser atendido", self.__filaVoz.getID(), self.__tempoAtual)
                     
-                    self.__timerFimDeServicoPacoteFilaVoz = self.__agendador.agendarTempoDeServicoFilaVoz()
+                    self.__timerFimDeServicoPacoteFilaVoz = self.__agendador.agendarTempoDeServicoFilaVoz(pacote.getCanal())
                     pacote.setTempoServico(self.__timerFimDeServicoPacoteFilaVoz)
 
         if self.__faseTransienteFinalizada == False:
@@ -300,7 +300,7 @@ class Simulacao(object):
             novoPacote.setTempoChegadaServico(self.__tempoAtual)
             #self.adicionarEvento(novoPacote, "comecou a ser atendido", self.__filaVoz.getID(), self.__tempoAtual)
 
-            self.__timerFimDeServicoPacoteFilaVoz = self.__agendador.agendarTempoDeServicoFilaVoz()
+            self.__timerFimDeServicoPacoteFilaVoz = self.__agendador.agendarTempoDeServicoFilaVoz(novoPacote.getCanal())
             novoPacote.setTempoServico(self.__timerFimDeServicoPacoteFilaVoz)
         else:
             self.__timerFimDeServicoPacoteFilaVoz = -1
@@ -338,7 +338,7 @@ class Simulacao(object):
             novoPacote.setTempoChegadaServico(self.__tempoAtual)
             #self.adicionarEvento(novoPacote, "comecou a ser atendido", self.__filaVoz.getID(), self.__tempoAtual)
 
-            self.__timerFimDeServicoPacoteFilaVoz = self.__agendador.agendarTempoDeServicoFilaVoz()
+            self.__timerFimDeServicoPacoteFilaVoz = self.__agendador.agendarTempoDeServicoFilaVoz(novoPacote.getCanal())
             novoPacote.setTempoServico(self.__timerFimDeServicoPacoteFilaVoz)
         else:
             if self.__filaDados.numeroDePessoasNaFila() > 0:

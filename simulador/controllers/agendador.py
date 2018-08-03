@@ -14,9 +14,11 @@ class Agendador(object):
         
         self.__pacoteFilaVozIndice = []
         self.__pacoteFilaVozTotal = []
+        self.__pacoteFilaVozTempoDeAguardo = []
         for indice in range(30):
             self.__pacoteFilaVozIndice.append(0)
             self.__pacoteFilaVozTotal.append(0)
+            self.__pacoteFilaVozTempoDeAguardo.append(-1)
 
         self.__probabilidade_de_L = []
         for indice in range(1500 - 64 + 1):
@@ -56,26 +58,34 @@ class Agendador(object):
         random.seed(seed)
 
     def agendarChegadaFilaVoz(self, canal): 
-        # TODO: A primeira chegada de um novo periodo de atividade soh 
-        # deve comecar 16ms depois do ultimo servico do periodo anterior.
         indice = self.__pacoteFilaVozIndice[canal]
         total = self.__pacoteFilaVozTotal[canal]
-        if indice == total:
+        
+        espera_previa = 0
+        if indice == total: # Inicio de uma nova remessa de pacotes de voz
+            espera_previa = self.__pacoteFilaVozTempoDeAguardo[canal]
+            if espera_previa == -1:
+                return -1 # Ou nao...
             indice = 0
 
         if indice == 0:
-            self.__pacoteFilaVozIndice[canal] += 1
+            self.__pacoteFilaVozIndice[canal] = 1
             
+            # Definindo a quantidade de pacotes que virao na nova remessa
             if self.__testeDeCorretude == True:
                 self.__pacoteFilaVozTotal[canal] = 22
-                return 650
             else:
                 p = 1.0/22.0
                 n = numpy.random.geometric(p=p)
                 self.__pacoteFilaVozTotal[canal] = math.ceil(n)
-                
-                return random.expovariate(0.65)*1000
 
+            # Calculando o tempo de silencio necessario para a nova remessa comecar
+            if self.__testeDeCorretude == True:
+                return espera_previa + 650
+            else:
+                return espera_previa + random.expovariate(0.65)*1000
+
+        self.__pacoteFilaVozIndice[canal] += 1
         return 16
 
     def agendarChegadaFilaDados(self, lambd):
@@ -84,8 +94,17 @@ class Agendador(object):
 
         return random.expovariate(lambd)
 
-    def agendarTempoDeServicoFilaVoz(self):
-        return ((self.__tamanhoPacoteVoz*1000)/self.__taxaDeTransmissao) # ms
+    def agendarTempoDeServicoFilaVoz(self, canal):
+        tempo = ((self.__tamanhoPacoteVoz*1000)/self.__taxaDeTransmissao) # ms
+
+        indice = self.__pacoteFilaVozIndice[canal]
+        total = self.__pacoteFilaVozTotal[canal]
+        if indice == total:
+            self.__pacoteFilaVozTempoDeAguardo[canal] = tempo + 16
+        else:
+            self.__pacoteFilaVozTempoDeAguardo[canal] = -1
+
+        return tempo
 
     def agendarTempoDeServicoFilaDados(self):
         if self.__testeDeCorretude == True:
