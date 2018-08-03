@@ -1,5 +1,6 @@
 import random
 import numpy
+import math
 
 """ O Agendador sera responsavel por agendar chegadas e servicos
     de acordo com as taxas lambda e mi, respectivamente."""
@@ -9,7 +10,7 @@ class Agendador(object):
     def __init__(self):
         self.__testeDeCorretude = False
         self.__tamanhoPacoteVoz = 512.0 # bits
-        self.__taxaDeTransmissao = 2.0*1024*1024*8 ## bits por segundo
+        self.__taxaDeTransmissao = 2.0*1024*1024*8 ## 2 Megabytes per segundo
         
         self.__pacoteFilaVozIndice = []
         self.__pacoteFilaVozTotal = []
@@ -72,7 +73,7 @@ class Agendador(object):
             else:
                 p = 1.0/22.0
                 n = numpy.random.geometric(p=p)
-                self.__pacoteFilaVozTotal[canal] = n
+                self.__pacoteFilaVozTotal[canal] = math.ceil(n)
                 
                 return random.expovariate(0.65)*1000
 
@@ -85,8 +86,12 @@ class Agendador(object):
         return random.expovariate(lambd)
 
     def agendarTempoDeServicoFilaVoz(self):
+        # Tamanho do pacote de voz varia
         return ((self.__tamanhoPacoteVoz*1000)/self.__taxaDeTransmissao) # ms
 
     def agendarTempoDeServicoFilaDados(self):
+        if self.__testeDeCorretude == True:
+            return (754.8*8.0*1000)/self.__taxaDeTransmissao
+
         Lbytes = self.valorDeLComProbabilidade(random.random())
         return (Lbytes*8.0*1000)/self.__taxaDeTransmissao
