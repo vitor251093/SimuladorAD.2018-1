@@ -1,9 +1,6 @@
 # SimuladorAD.2018-1
 Simulador de AD (2018-1)
 
-## TODO
-Escrever a saída em um arquivo de texto (100 de cada vez) e fazer o ChartJS carregar esses 100 de cada vez (se for feito em arquivos separados e numerados, é possível evitar o carregamento repetido).
-
 ## Como usar
 Diferentes métodos para executar o trabalho de forma apropriada. Primeiramente é preciso levantar o backend.
 
