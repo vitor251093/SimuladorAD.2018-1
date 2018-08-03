@@ -18,7 +18,16 @@
     </div>
     <br>
     <br>
+    <!--variavelDeSaida = int(request.args.get('variavel', default='1'))-->
+    <label>Lambda:</label> <input type="text" id="lambda" value="0.3"/><br>
+    <label>Mi:</label> <input type="text" id="mi" value="1.0"/><br>
+    <label>Pacotes por rodada:</label> <input type="text" id="pacotesporrodada" value="20000"/><br>
+    <label>Número de rodadas:</label> <input type="text" id="rodadas" value="100"/><br>
+    <label>Número de simulações:</label> <input type="text" id="simulacoes" value="1"/><br>
+    <label>Intervalo de confiança:</label> <input type="text" id="confianca" value="0.95"/><br>
+    <input type="checkbox" id="interrupcoes" checked> Interrupções<br>
     <input type="checkbox" id="progressiveLoad"> Carregar progressivamente<br>
+    <input type="checkbox" id="teste"> Teste de corretude<br>
     <button id="runSimulator">Executar simulador</button>
     <script>
         window.chartColors = {
