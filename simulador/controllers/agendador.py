@@ -56,8 +56,7 @@ class Agendador(object):
         random.seed(seed)
 
     def agendarChegadaFilaVoz(self, canal): 
-        # TODO: 
-        # A primeira chegada de um novo periodo de atividade so 
+        # TODO: A primeira chegada de um novo periodo de atividade soh 
         # deve comecar 16ms depois do ultimo servico do periodo anterior.
         indice = self.__pacoteFilaVozIndice[canal]
         total = self.__pacoteFilaVozTotal[canal]
@@ -86,7 +85,9 @@ class Agendador(object):
         return random.expovariate(lambd)
 
     def agendarTempoDeServicoFilaVoz(self):
-        # Tamanho do pacote de voz varia
+        # TODO: Tamanho do pacote de voz varia
+        # Nao foi possível determinar quando um tamanho deveria ser escolhido
+        # em relacao a outro.
         return ((self.__tamanhoPacoteVoz*1000)/self.__taxaDeTransmissao) # ms
 
     def agendarTempoDeServicoFilaDados(self):
