@@ -1,5 +1,6 @@
 import os
 from time import gmtime, strftime
+import shutil
 
 class View(object):
     def __init__(self):
@@ -8,6 +9,9 @@ class View(object):
         self.__output_text = ""
         self.__index = -1
         self.__entries_per_file = 100
+        shutil.rmtree('/simulador/templates/plot')
+        newpath = r'/simulador/templates/plot'
+        os.makedirs(newpath)
         
     def setImprimirEmArquivo(self, imprimirEmArquivo):
         self.__save_at_file = imprimirEmArquivo

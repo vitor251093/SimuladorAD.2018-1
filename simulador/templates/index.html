@@ -126,7 +126,12 @@
         }
 
         
+        var runningMainIndex = -1;
+
         document.getElementById('runSimulator').addEventListener('click', function () {
+            runningMainIndex += 1;
+            var runningIndex = runningMainIndex;
+
             var lambda = document.getElementById("lambda").value;
             var mi = document.getElementById("mi").value;
             var pacotesporrodada = document.getElementById("pacotesporrodada").value;
@@ -208,6 +213,8 @@
 
             if (progressiveLoad == true) {
                 var continueProcedure = function() {
+                    if (runningIndex != runningMainIndex) return;
+
                     if (lastCheckedCsvIndex != csvIndex) 
                     {
                         lastCheckedCsvIndex = csvIndex;
@@ -243,6 +250,7 @@
                 continueProcedure();
 
                 var reloadViewProcedure = function() {
+                    if (runningIndex != runningMainIndex) return;
                     window.myLine.update();
                     setTimeout(reloadViewProcedure, reloadViewTime);
                 };
