@@ -179,7 +179,7 @@ class Fase(object):
         somatorioVW1 = 0.0
         somatorioVW2 = 0.0
         for Pacote in self.__pacotesDados:
-            if Pacote.getTempoServico() != 0:
+            if Pacote.getTempoTerminoServico() != 0:
                 PacotesVW1.append(Pacote.getVarianciaTempoEsperaFila(EW1))
                 somatorioVW1 += Pacote.getVarianciaTempoEsperaFila(EW1)
         for Pacote in self.__pacotesVoz:
