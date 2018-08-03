@@ -614,6 +614,9 @@ app = Flask(__name__)
 def indexPage():
     return render_template('index.html')
 
+@app.route('/plot/<index>.csv')
+def getPlotCsv(index):
+    return render_template('/plot/' + index + '.csv')
 
 """Funcao principal do programa. Interpreta as flags passadas como parametros para configurar
     e executar o simulador."""
