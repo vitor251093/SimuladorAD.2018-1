@@ -21,6 +21,7 @@
     <div style="width:24%; float:left;">
         <label>Gráfico:</label>
         <form action="">
+            <input type="radio" name="variavel" value="0"> Estatísticas<br>
             <input type="radio" name="variavel" value="1" checked> E[N]<br>
             <input type="radio" name="variavel" value="2" > E[N] (Voz)<br>
             <input type="radio" name="variavel" value="3" > E[N] (Dados)<br>
@@ -43,6 +44,7 @@
         <input type="checkbox" id="teste"> Teste de corretude<br>
         <button id="runSimulator">Executar simulador</button>
     </div>
+    <div id="output-console"></div>
     <script>
         window.chartColors = {
             red:    'rgb(255,  99, 132)',
@@ -105,6 +107,17 @@
             mask.style["display"] = visible ? "block" : "none";
         }
 
+        function stringByReplacingAllOccurencesOfString(string, original, replacement) {
+            var checkPoint = 0; 
+            var newString = string;
+            while (newString.indexOf(original, checkPoint) != -1) {
+                var index = newString.indexOf(original, checkPoint);
+                newString = newString.slice(0, index) + replacement + newString.slice(index + original.length);
+                checkPoint = index + replacement.length;
+            }
+            return newString;
+        }
+
         function loadFile(url, callback, errorCallback){
             var timeout = 24*60*60*1000; // 24 horas em milisegundos, garantindo que nunca haja timeout
             var xhr = new XMLHttpRequest();
@@ -145,11 +158,6 @@
             config.data.datasets[0].data = [];
             window.myLine.update();
             
-
-            if (progressiveLoad == false) {
-                setSpinnerVisible(true);
-            }
-
             var csvIndex = 0;
             var lastCheckedCsvIndex = -1;
             
@@ -163,6 +171,10 @@
                     variavelAtiva = variavelRadios[i].value;
                     break;
                 }
+            }
+            if (variavelAtiva == '0') progressiveLoad = false;
+            if (progressiveLoad == false) {
+                setSpinnerVisible(true);
             }
 
             var args = {lambda: lambda,
@@ -187,8 +199,14 @@
                 if (progressiveLoad == false) {
                     setSpinnerVisible(false);
 
+                    if (variavelAtiva == '0') {
+                        var outputConsole = document.getElementById('output-console');
+                        outputConsole.innerHTML = stringByReplacingAllOccurencesOfString(simulatorText, "\n", "<br/>")
+                        return;
+                    }
+
                     var simulatorComponents = simulatorText.split('\n');
-                    for(var i = simulatorComponents.length - 1; i >= 0; i--) {
+                    for (var i = simulatorComponents.length - 1; i >= 0; i--) {
                         if (simulatorComponents[i].indexOf(',') == -1) {
                             simulatorComponents.splice(i, 1);
                         }
