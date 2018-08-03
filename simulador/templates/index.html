@@ -31,27 +31,6 @@
             grey: 'rgb(201, 203, 207)'
         };
 
-        window.randomScalingFactor = function() {
-            return Math.round(Samples.utils.rand(-100, 100));
-        };
-
-        var Samples = {};
-        Samples.utils = {
-            // Adapted from http://indiegamr.com/generate-repeatable-random-numbers-in-js/
-            srand: function(seed) {
-                this._seed = seed;
-            },
-
-            rand: function(min, max) {
-                var seed = this._seed;
-                min = min === undefined ? 0 : min;
-                max = max === undefined ? 1 : max;
-                this._seed = (seed * 9301 + 49297) % 233280;
-                return min + (this._seed / 233280) * (max - min);
-            }
-        };
-        Samples.utils.srand(Date.now());
-
         var config = {
             type: 'line',
             data: {
@@ -97,10 +76,6 @@
             var ctx = document.getElementById('canvas').getContext('2d');
             window.myLine = new Chart(ctx, config);
         };
-
-        function sleep(ms) {
-            return new Promise(resolve => setTimeout(resolve, ms));
-        }
 
         function setSpinnerVisible(visible) {
             var mask = document.getElementById("mask");
