@@ -27,7 +27,7 @@ A execução do backend irá iniciar, e ficará rodando em background.
 
 ### Visualizando o frontend
 ```
-http://localhost:5000/?pacotesporrodada=200&r=1
+http://localhost:5000/
 ```
 
 ## Log 27 Maio:
