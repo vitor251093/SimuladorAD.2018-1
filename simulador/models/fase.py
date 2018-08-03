@@ -137,6 +137,7 @@ class Fase(object):
 
     def calcularEstatisticas(self, tempoAtual, view, intervaloDeConfianca, lambd):
         # Calculo de estatisticas da simulacao
+        PacotesX1 = []
         PacotesT1 = []
         PacotesW1 = []
         PacotesT2 = []
@@ -161,6 +162,7 @@ class Fase(object):
                 somatorioW1 += Pacote.getTempoEsperaFila()
                 divisorW1 += 1
 
+                PacotesX1.append(Pacote.getTempoTotalServico())
                 somatorioX1 += Pacote.getTempoTotalServico()
                 divisorX1 += 1
 
@@ -208,6 +210,7 @@ class Fase(object):
 
         # Impressao dos resultados das estatisticas
         view.imprimir("p (Dados):      %f" % (EX1*lambd))
+        view.imprimir("E[X]  (Dados):  %f" % (EX1))
         view.imprimir("E[T]  (Dados):  %f" % (ET1))
         view.imprimir("E[W]  (Dados):  %f" % (EW1))
         view.imprimir("V(W)  (Dados):  %f" % (EVW1))
@@ -220,6 +223,7 @@ class Fase(object):
         view.imprimir("E[Nq] (Voz):    %f" % (ENq2))
 
         calculadora = CalculadoraIC(intervaloDeConfianca)
+        view.imprimir("IC E[X]  (Dados):  %f - %f" % (calculadora.intervaloDeConfiancaDeAmostras(PacotesX1)))
         view.imprimir("IC E[T]  (Dados):  %f - %f" % (calculadora.intervaloDeConfiancaDeAmostras(PacotesT1)))
         view.imprimir("IC E[W]  (Dados):  %f - %f" % (calculadora.intervaloDeConfiancaDeAmostras(PacotesW1)))
         view.imprimir("IC V(W)  (Dados):  %f - %f" % (calculadora.intervaloDeConfiancaDeAmostras(PacotesVW1)))
