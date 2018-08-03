@@ -34,11 +34,10 @@
             <input type="radio" name="variavel" value="11"> V(W) (Dados)
         </form>
         <label>Lambda:</label>                 <input type="text" id="lambda"           style="width:70px;" value="0.3"/><br>
-        <label>Mi:</label>                     <input type="text" id="mi"               style="width:70px;" value="1.0"/><br>
         <label>Pacotes por rodada:</label>     <input type="text" id="pacotesporrodada" style="width:70px;" value="20000"/><br>
         <label>Número de rodadas:</label>      <input type="text" id="rodadas"          style="width:70px;" value="100"/><br>
         <label>Número de simulações:</label>   <input type="text" id="simulacoes"       style="width:70px;" value="1"/><br>
-        <label>Intervalo de confiança:</label> <input type="text" id="confianca"        style="width:70px;" value="0.95"/><br>
+        <label>Intervalo de confiança:</label> <input type="text" id="confianca"        style="width:70px;" value="0.9"/><br>
         <input type="checkbox" id="interrupcoes" checked> Interrupções<br>
         <input type="checkbox" id="progressiveLoad"> Carregar progressivamente<br>
         <input type="checkbox" id="teste"> Teste de corretude<br>
@@ -133,7 +132,6 @@
             var runningIndex = runningMainIndex;
 
             var lambda = document.getElementById("lambda").value;
-            var mi = document.getElementById("mi").value;
             var pacotesporrodada = document.getElementById("pacotesporrodada").value;
             var rodadas = document.getElementById("rodadas").value;
             var simulacoes = document.getElementById("simulacoes").value;
@@ -168,7 +166,6 @@
             }
 
             var args = {lambda: lambda,
-                        mi: mi,
                         pacotesporrodada: pacotesporrodada,
                         rodadas: rodadas,
                         simulacoes: simulacoes,

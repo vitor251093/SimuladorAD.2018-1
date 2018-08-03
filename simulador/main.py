@@ -17,7 +17,6 @@ from flask import render_template
 class Simulacao(object):
 
     def __init__(self):
-        self.__mi = None
         self.__lambd = None
         self.__interrupcoes = False
         self.__numero_de_pacotes_por_fase = None
@@ -289,7 +288,7 @@ class Simulacao(object):
             pacote.setTempoChegadaServico(self.__tempoAtual)
             #self.adicionarEvento(pacote, "comecou a ser atendido", self.__filaDados.getID(), self.__tempoAtual)
             
-            self.__timerFimDeServicoPacoteFilaDados = self.__agendador.agendarTempoDeServicoFilaDados(self.__mi)
+            self.__timerFimDeServicoPacoteFilaDados = self.__agendador.agendarTempoDeServicoFilaDados()
             pacote.setTempoServico(self.__timerFimDeServicoPacoteFilaDados)
 
         if self.__faseTransienteFinalizada == False:
@@ -336,7 +335,7 @@ class Simulacao(object):
                     proximoPacote.setTempoChegadaServico(self.__tempoAtual)
                     #self.adicionarEvento(proximoPacote, "comecou a ser atendido", self.__filaDados.getID(), self.__tempoAtual)
 
-                    self.__timerFimDeServicoPacoteFilaDados = self.__agendador.agendarTempoDeServicoFilaDados(self.__mi)
+                    self.__timerFimDeServicoPacoteFilaDados = self.__agendador.agendarTempoDeServicoFilaDados()
                     proximoPacote.setTempoServico(self.__timerFimDeServicoPacoteFilaDados)
             else:
                 self.__timerFimDeServicoPacoteFilaDados = -1
@@ -367,7 +366,7 @@ class Simulacao(object):
                 proximoPacote.setTempoChegadaServico(self.__tempoAtual)
                 #self.adicionarEvento(proximoPacote, "comecou a ser atendido", self.__filaDados.getID(), self.__tempoAtual)
                 
-                self.__timerFimDeServicoPacoteFilaDados = self.__agendador.agendarTempoDeServicoFilaDados(self.__mi)
+                self.__timerFimDeServicoPacoteFilaDados = self.__agendador.agendarTempoDeServicoFilaDados()
                 proximoPacote.setTempoServico(self.__timerFimDeServicoPacoteFilaDados)
 
 
@@ -556,9 +555,8 @@ class Simulacao(object):
         
 
     """ Principal metodo da classe Simulacao. Aqui a simulacao eh iniciada. """
-    def executarSimulacao(self, seed, lambdaValue, miValue, interrupcoes, numeroDePacotesPorRodada, rodadas, hasOutputFile, variavelDeSaida, testeDeCorretude, intervaloDeConfianca):
+    def executarSimulacao(self, seed, lambdaValue, interrupcoes, numeroDePacotesPorRodada, rodadas, hasOutputFile, variavelDeSaida, testeDeCorretude, intervaloDeConfianca):
         self.__lambd = lambdaValue
-        self.__mi = miValue
         self.__interrupcoes = interrupcoes
         self.__numero_de_pacotes_por_fase = numeroDePacotesPorRodada
         self.__numero_de_rodadas = rodadas
@@ -624,7 +622,6 @@ def getPlotCsv(index):
 @app.route("/simulator", methods=['GET', 'POST'])
 def mainFlask():
     lambdaValue = float(request.args.get('lambda', default='0.3'))
-    miValue = float(request.args.get('mi', default='1.0'))
     numeroDePacotesPorRodada = int(request.args.get('pacotesporrodada', default='20000'))
     rodadas = int(request.args.get('rodadas', default='100'))
     simulacoes = int(request.args.get('simulacoes', default='1'))
@@ -640,7 +637,7 @@ def mainFlask():
     output = ''
     for i in range(simulacoes):
         newSeed = randomNumberDistantFrom(seedsList, seedsDistance)
-        sOutput = Simulacao().executarSimulacao(newSeed, lambdaValue, miValue, interrupcoes, numeroDePacotesPorRodada, rodadas, outputFile, variavelDeSaida, testeDeCorretude, intervaloDeConfianca)
+        sOutput = Simulacao().executarSimulacao(newSeed, lambdaValue, interrupcoes, numeroDePacotesPorRodada, rodadas, outputFile, variavelDeSaida, testeDeCorretude, intervaloDeConfianca)
         seedsList.append(newSeed)
         output = "%s\n%s" % (output, sOutput)
     return output
