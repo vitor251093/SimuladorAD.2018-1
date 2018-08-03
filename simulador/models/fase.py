@@ -135,16 +135,18 @@ class Fase(object):
         self.__somatorioPessoasFilaEspera2PorTempo += tempo * numeroDePacotes
 
 
-    def calcularEstatisticas(self, tempoAtual, view, intervaloDeConfianca):
+    def calcularEstatisticas(self, tempoAtual, view, intervaloDeConfianca, lambd):
         # Calculo de estatisticas da simulacao
         PacotesT1 = []
         PacotesW1 = []
         PacotesT2 = []
         PacotesW2 = []
+        somatorioX1 = 0.0
         somatorioT1 = 0.0
         somatorioW1 = 0.0
         somatorioT2 = 0.0
         somatorioW2 = 0.0
+        divisorX1 = 0
         divisorT1 = 0
         divisorW1 = 0
         divisorT2 = 0
@@ -159,6 +161,9 @@ class Fase(object):
                 somatorioW1 += Pacote.getTempoEsperaFila()
                 divisorW1 += 1
 
+                somatorioX1 += Pacote.getTempoTotalServico()
+                divisorX1 += 1
+
         for Pacote in self.__pacotesVoz:
             if Pacote.getTempoTerminoServico() != 0:
                 PacotesT2.append(Pacote.getTempoTotalSistema())
@@ -169,6 +174,7 @@ class Fase(object):
                 somatorioW2 += Pacote.getTempoEsperaFila()
                 divisorW2 += 1
 
+        EX1 = 0 if divisorX1 == 0 else somatorioX1/divisorX1
         ET1 = 0 if divisorT1 == 0 else somatorioT1/divisorT1
         EW1 = 0 if divisorW1 == 0 else somatorioW1/divisorW1
         ET2 = 0 if divisorT2 == 0 else somatorioT2/divisorT2
@@ -201,6 +207,7 @@ class Fase(object):
             view.imprimir("\nFase Recorrente %d:" % (self.__id + 1))
 
         # Impressao dos resultados das estatisticas
+        view.imprimir("p (Dados):      %f" % (EX1*lambd))
         view.imprimir("E[T]  (Dados):  %f" % (ET1))
         view.imprimir("E[W]  (Dados):  %f" % (EW1))
         view.imprimir("V(W)  (Dados):  %f" % (EVW1))

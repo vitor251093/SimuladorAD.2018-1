@@ -61,6 +61,9 @@ class Pacote(object):
     def getTempoEsperaFila(self): # W2
         return self.getTempoTerminoServico() - self.getTempoChegadaFila() - self.getTempoServico()
 
+    def getTempoTotalServico(self): # X2
+        return self.getTempoTerminoServico() - self.getTempoChegadaServico()
+    
     def getTempoTotalSistema(self): # T2
         return self.getTempoTerminoServico() - self.getTempoChegadaFila()
 

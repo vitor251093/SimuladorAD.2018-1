@@ -204,7 +204,7 @@ class Simulacao(object):
             indiceDaFase = (self.__indice_pacote_atual - self.__indice_primeiro_pacote_nao_transiente)/self.__numero_de_pacotes_por_fase
             if indiceDaFase > self.__fase.getID():
                 if self.__output_type == 0:
-                    self.__fase.calcularEstatisticas(self.__tempoAtual - self.__timerChegadaPacoteFilaVoz, self.__view, self.__intervaloDeConfianca)
+                    self.__fase.calcularEstatisticas(self.__tempoAtual - self.__timerChegadaPacoteFilaVoz, self.__view, self.__intervaloDeConfianca, self.__lambd)
 
                 newSeed = self.randomNumberDistantFrom(self.__seedsList, self.__seedsDistance)
                 self.__agendador.configurarSemente(newSeed)
@@ -271,7 +271,7 @@ class Simulacao(object):
             indiceDaFase = (self.__indice_pacote_atual - self.__indice_primeiro_pacote_nao_transiente)/self.__numero_de_pacotes_por_fase
             if indiceDaFase > self.__fase.getID():
                 if self.__output_type == 0:
-                    self.__fase.calcularEstatisticas(self.__tempoAtual - self.__timerChegadaPacoteFilaVoz, self.__view, self.__intervaloDeConfianca)
+                    self.__fase.calcularEstatisticas(self.__tempoAtual - self.__timerChegadaPacoteFilaVoz, self.__view, self.__intervaloDeConfianca, self.__lambd)
 
                 newSeed = self.randomNumberDistantFrom(self.__seedsList, self.__seedsDistance)
                 self.__agendador.configurarSemente(newSeed)
@@ -582,7 +582,7 @@ class Simulacao(object):
             self.executarProximoEvento()
 
         if self.__output_type == 0:
-            self.__fase.calcularEstatisticas(self.__tempoAtual, self.__view, self.__intervaloDeConfianca)
+            self.__fase.calcularEstatisticas(self.__tempoAtual, self.__view, self.__intervaloDeConfianca, self.__lambd)
 
         return self.__view.gravarArquivoDeSaida()
         
