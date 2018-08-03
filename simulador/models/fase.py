@@ -210,6 +210,7 @@ class Fase(object):
 
         # Impressao dos resultados das estatisticas
         view.imprimir("p (Dados):      %f" % (EX1*lambd))
+        view.imprimir("Fila e estavel: %s" % ("Sim" if EX1*lambd < 0.8314 else "Nao"))
         view.imprimir("E[X]  (Dados):  %f" % (EX1))
         view.imprimir("E[T]  (Dados):  %f" % (ET1))
         view.imprimir("E[W]  (Dados):  %f" % (EW1))
