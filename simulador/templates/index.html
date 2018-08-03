@@ -13,35 +13,37 @@
         <img style="position:absolute; left:calc(50% - 64px); top:calc(50% - 64px);" src="/static/images/spinner.gif"/>
     </div>
     
-    <div style="width:75%;">
+    <div style="width:75%; float:left;">
         <canvas id="canvas"></canvas>
     </div>
     <br>
     <br>
-    <label>Gráfico:</label>
-    <form action="">
-        <input type="radio" name="variavel" value="1" checked> E[N]<br>
-        <input type="radio" name="variavel" value="2"> E[N] (Voz)<br>
-        <input type="radio" name="variavel" value="3"> E[N] (Dados)<br>
-        <input type="radio" name="variavel" value="4"> E[Nq] (Voz)<br>
-        <input type="radio" name="variavel" value="5"> E[Nq] (Dados)<br>
-        <input type="radio" name="variavel" value="6"> E[T] (Voz)<br>
-        <input type="radio" name="variavel" value="7"> E[T] (Dados)<br>
-        <input type="radio" name="variavel" value="8"> E[W] (Voz)<br>
-        <input type="radio" name="variavel" value="9"> E[W] (Dados)<br>
-        <input type="radio" name="variavel" value="10"> V(W) (Voz)<br>
-        <input type="radio" name="variavel" value="11"> V(W) (Dados)
-    </form>
-    <label>Lambda:</label> <input type="text" id="lambda" value="0.3"/><br>
-    <label>Mi:</label> <input type="text" id="mi" value="1.0"/><br>
-    <label>Pacotes por rodada:</label> <input type="text" id="pacotesporrodada" value="20000"/><br>
-    <label>Número de rodadas:</label> <input type="text" id="rodadas" value="100"/><br>
-    <label>Número de simulações:</label> <input type="text" id="simulacoes" value="1"/><br>
-    <label>Intervalo de confiança:</label> <input type="text" id="confianca" value="0.95"/><br>
-    <input type="checkbox" id="interrupcoes" checked> Interrupções<br>
-    <input type="checkbox" id="progressiveLoad"> Carregar progressivamente<br>
-    <input type="checkbox" id="teste"> Teste de corretude<br>
-    <button id="runSimulator">Executar simulador</button>
+    <div style="width:24%; float:left;">
+        <label>Gráfico:</label>
+        <form action="">
+            <input type="radio" name="variavel" value="1" checked> E[N]<br>
+            <input type="radio" name="variavel" value="2"> E[N] (Voz)<br>
+            <input type="radio" name="variavel" value="3"> E[N] (Dados)<br>
+            <input type="radio" name="variavel" value="4"> E[Nq] (Voz)<br>
+            <input type="radio" name="variavel" value="5"> E[Nq] (Dados)<br>
+            <input type="radio" name="variavel" value="6"> E[T] (Voz)<br>
+            <input type="radio" name="variavel" value="7"> E[T] (Dados)<br>
+            <input type="radio" name="variavel" value="8"> E[W] (Voz)<br>
+            <input type="radio" name="variavel" value="9"> E[W] (Dados)<br>
+            <input type="radio" name="variavel" value="10"> V(W) (Voz)<br>
+            <input type="radio" name="variavel" value="11"> V(W) (Dados)
+        </form>
+        <label>Lambda:</label>                 <input type="text" id="lambda"           style="width:70px;" value="0.3"/><br>
+        <label>Mi:</label>                     <input type="text" id="mi"               style="width:70px;" value="1.0"/><br>
+        <label>Pacotes por rodada:</label>     <input type="text" id="pacotesporrodada" style="width:70px;" value="20000"/><br>
+        <label>Número de rodadas:</label>      <input type="text" id="rodadas"          style="width:70px;" value="100"/><br>
+        <label>Número de simulações:</label>   <input type="text" id="simulacoes"       style="width:70px;" value="1"/><br>
+        <label>Intervalo de confiança:</label> <input type="text" id="confianca"        style="width:70px;" value="0.95"/><br>
+        <input type="checkbox" id="interrupcoes" checked> Interrupções<br>
+        <input type="checkbox" id="progressiveLoad"> Carregar progressivamente<br>
+        <input type="checkbox" id="teste"> Teste de corretude<br>
+        <button id="runSimulator">Executar simulador</button>
+    </div>
     <script>
         window.chartColors = {
             red: 'rgb(255, 99, 132)',
@@ -153,7 +155,7 @@
 
             var variavelAtiva = '1';
             var variavelRadios = document.getElementsByName('variavel');
-            for (var i = 0, length = variavelRadios.length; i < length; i++) {
+            for (var i = 0; i < variavelRadios.length; i++) {
                 if (variavelRadios[i].checked) {
                     variavelAtiva = variavelRadios[i].value;
                     break;
@@ -170,6 +172,7 @@
                         teste: teste,
                         variavel: variavelAtiva,
                         confianca: confianca};
+
             var argsArray = [];
             var argKeys = Object.keys(args);
             for (var index = 0; index < argKeys.length; index++) {
