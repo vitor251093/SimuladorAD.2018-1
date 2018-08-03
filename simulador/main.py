@@ -628,7 +628,7 @@ def mainFlask():
     numeroDePacotesPorRodada = int(request.args.get('pacotesporrodada', default='20000'))
     rodadas = int(request.args.get('rodadas', default='100'))
     simulacoes = int(request.args.get('simulacoes', default='1'))
-    outputFile = True
+    outputFile = (request.args.get('progressivo', default='false') == 'true')
     interrupcoes = (request.args.get('interrupcoes', default='false') == 'true')
     testeDeCorretude = (request.args.get('teste', default='false') == 'true')
     variavelDeSaida = int(request.args.get('variavel', default='1'))

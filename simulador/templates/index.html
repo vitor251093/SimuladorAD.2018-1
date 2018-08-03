@@ -100,63 +100,114 @@
             window.myLine = new Chart(ctx, config);
         };
 
-        function setMaskVisible(visible) {
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        function setSpinnerVisible(visible) {
             var mask = document.getElementById("mask");
             mask.style["display"] = visible ? "block" : "none";
         }
 
-        function loadFile(url, callback){
+        function loadFile(url, callback, errorCallback){
             var timeout = 24*60*60*1000; // 24 horas em milisegundos, garantindo que nunca haja timeout
             var xhr = new XMLHttpRequest();
             xhr.ontimeout = function () {
                 console.error("The request for " + url + " timed out.");
             };
             xhr.onload = function() {
-                setMaskVisible(false);
-
-                if (xhr.readyState === 4) {
-                    if (xhr.status === 200) {
-                        callback(xhr.responseText);
-                    } else {
-                        console.error(xhr.statusText);
-                    }
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    callback(xhr.responseText);
+                }
+                else {
+                    if (errorCallback != undefined) errorCallback();
                 }
             };
             xhr.open("GET", url, true);
             xhr.timeout = timeout;
             xhr.send(null);
-
-            setMaskVisible(true);
         }
 
+        var progressiveLoad = false;
+
         document.getElementById('runSimulator').addEventListener('click', function () {
-            console.log("UPDATE");
+            if (progressiveLoad == false) {
+                setSpinnerVisible(true);
+            }
 
-            loadFile('/simulator?rodadas=1&pacotesporrodada=100',function(simulatorText){
-                if (simulatorText == undefined) {
-                    console.log("YOU NOT DEFINED?!");
-                    return;
-                }
+            var csvIndex = 0;
+            var lastCheckedCsvIndex = -1;
+            
+            var loadNextCsvTime = 20;
+            var reloadViewTime = 1000;
 
-                var simulatorComponents = simulatorText.split('\n');
-                for(var i = simulatorComponents.length - 1; i >= 0; i--) {
-                    if (simulatorComponents[i].indexOf(',') == -1) {
-                        simulatorComponents.splice(i, 1);
+            loadFile('/simulator?progressivo=' + progressiveLoad.toString() + '&rodadas=1&pacotesporrodada=100',function(simulatorText){
+                if (progressiveLoad == false) {
+                    setSpinnerVisible(false);
+
+                    var simulatorComponents = simulatorText.split('\n');
+                    for(var i = simulatorComponents.length - 1; i >= 0; i--) {
+                        if (simulatorComponents[i].indexOf(',') == -1) {
+                            simulatorComponents.splice(i, 1);
+                        }
                     }
+                    simulatorComponents = simulatorComponents.map(function(comp) {
+                        var entry = comp.split(',');
+                        return {value:parseFloat(entry[0]), group:parseInt(entry[1])};
+                    });
+
+                    simulatorValues = simulatorComponents.map(function(entry) {return entry.value;});
+                    //simulatorColors = simulatorComponents.map(function(entry) {return entry.group;});
+                    simulatorLabels = simulatorComponents.map(function(entry) {return "";});
+
+                    config.data.labels = simulatorLabels;
+                    config.data.datasets[0].data = simulatorValues;
+                    window.myLine.update();
                 }
-                simulatorComponents = simulatorComponents.map(function(comp) {
-                    var entry = comp.split(',');
-                    return {value:parseFloat(entry[0]), group:parseInt(entry[1])};
-                });
-
-                simulatorValues = simulatorComponents.map(function(entry) {return entry.value;});
-                //simulatorColors = simulatorComponents.map(function(entry) {return entry.group;});
-                simulatorLabels = simulatorComponents.map(function(entry) {return "";});
-
-                config.data.labels = simulatorLabels;
-                config.data.datasets[0].data = simulatorValues;
-                window.myLine.update();
             });
+
+            if (progressiveLoad == true) {
+                var continueProcedure = function() {
+                    if (lastCheckedCsvIndex != csvIndex) 
+                    {
+                        lastCheckedCsvIndex = csvIndex;
+
+                        loadFile('/plot/' + csvIndex + '.csv',function(simulatorText){
+                            csvIndex += 1;
+
+                            var simulatorComponents = simulatorText.split('\n');
+                            for(var i = simulatorComponents.length - 1; i >= 0; i--) {
+                                if (simulatorComponents[i].indexOf(',') == -1) {
+                                    simulatorComponents.splice(i, 1);
+                                }
+                            }
+                            simulatorComponents = simulatorComponents.map(function(comp) {
+                                var entry = comp.split(',');
+                                return {value:parseFloat(entry[0]), group:parseInt(entry[1])};
+                            });
+
+                            simulatorValues = simulatorComponents.map(function(entry) {return entry.value;});
+                            //simulatorColors = simulatorComponents.map(function(entry) {return entry.group;});
+                            simulatorLabels = simulatorComponents.map(function(entry) {return "";});
+
+                            Array.prototype.push.apply(config.data.labels, simulatorLabels);
+                            Array.prototype.push.apply(config.data.datasets[0].data, simulatorValues);
+                            
+                        },
+                        function(){
+                            lastCheckedCsvIndex = -1;
+                        });
+                    }
+                    setTimeout(continueProcedure, loadNextCsvTime);
+                }
+                continueProcedure();
+
+                var reloadViewProcedure = function() {
+                    window.myLine.update();
+                    setTimeout(reloadViewProcedure, reloadViewTime);
+                };
+                reloadViewProcedure();
+            }
         });
     </script>
 </body>
