@@ -104,6 +104,7 @@
         
         document.getElementById('runSimulator').addEventListener('click', function () {
             var progressiveLoad = document.getElementById("progressiveLoad").checked;
+            
             config.data.labels = [];
             config.data.datasets[0].data = [];
             window.myLine.update();
@@ -119,7 +120,18 @@
             var loadNextCsvTime = 20;
             var reloadViewTime = 1000;
 
-            loadFile('/simulator?progressivo=' + progressiveLoad.toString() + '&rodadas=1&pacotesporrodada=100',function(simulatorText){
+            var args = {progressivo: progressiveLoad.toString(),
+                        rodadas: '1',
+                        pacotesporrodada: '100'};
+            var argsArray = [];
+            var argKeys = Object.keys(args);
+            for (var index = 0; index < argKeys.length; index++) {
+                var key = argKeys[index];
+                argsArray.push(key + "=" + args[key]);
+            }
+            var argsString = argsArray.join('&');
+
+            loadFile('/simulator?' + argsString,function(simulatorText){
                 if (progressiveLoad == false) {
                     setSpinnerVisible(false);
 
