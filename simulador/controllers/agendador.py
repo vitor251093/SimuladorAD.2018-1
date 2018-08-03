@@ -17,7 +17,7 @@ class Agendador(object):
         self.__pacoteFilaVozTempoDeAguardo = []
         for indice in range(30):
             self.__pacoteFilaVozIndice.append(0)
-            self.__pacoteFilaVozTotal.append(0)
+            self.__pacoteFilaVozTotal.append(-1)
             self.__pacoteFilaVozTempoDeAguardo.append(-1)
 
         self.__probabilidade_de_L = []
