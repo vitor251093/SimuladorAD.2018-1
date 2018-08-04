@@ -2,6 +2,7 @@ from controllers.agendador import *
 from models.pacote import *
 from models.fila import *
 from models.fase import *
+from models.evento import *
 from views.view import *
 import random
 import math
@@ -13,6 +14,11 @@ from flask import request
 from flask import render_template
 """ Principal classe do simulador. Simulacao possui o metodo executarSimulacao que eh 
     chamado pelo main, o qual pode ser encontrado no fim deste arquivo. """
+
+EVENTO_PACOTE_VOZ_CHEGADA = 0
+EVENTO_PACOTE_VOZ_FINALIZADO = 1
+EVENTO_PACOTE_DADOS_CHEGADA = 2
+EVENTO_PACOTE_DADOS_FINALIZADO = 3
 
 class Simulacao(object):
 
@@ -42,24 +48,7 @@ class Simulacao(object):
         self.__indice_primeiro_pacote_nao_transiente = 0
         self.__faseTransienteFinalizada = False
 
-        ### Codigo dos principais eventos da simulacao:
-        # 0: Evento chegada de Pacote na fila de voz
-        # 1: Evento chegada de Pacote na fila de dados
-        # 2: Evento fim de servico de voz
-        # 3: Evento fim de servico de dados
-        self.__timerChegadaPacoteFilaVozIndice = 0
-        self.__timerChegadaPacoteFilaDadosIndice = 1
-        self.__timerFimDeServicoPacoteFilaVozIndice = 2
-        self.__timerFimDeServicoPacoteFilaDadosIndice = 3
-
-        ### Todos iniciam com valores invalidos: -1
-        self.__timerChegadaPacoteFilaVozPorCanal = []
-        for indice in range(30):
-            self.__timerChegadaPacoteFilaVozPorCanal.append(-1)
-        self.__timerChegadaPacoteFilaVoz = -1
-        self.__timerChegadaPacoteFilaDados = -1
-        self.__timerFimDeServicoPacoteFilaVoz = -1
-        self.__timerFimDeServicoPacoteFilaDados = -1
+        self.__lista_de_eventos = []
 
         ### Atributos usados para determinar o fim da fase transiente
         self.__quantidadeDeEventosPorVariancia = 1000
@@ -106,13 +95,13 @@ class Simulacao(object):
         if self.__output_type == 5:
             self.__view.imprimir("%f,%d" % (self.__fase.getEsperancaDeNq2(momento), self.__fase.getID()))
         if self.__output_type == 6:
-            self.__view.imprimir("%f,%d" % (self.__fase.getEsperancaDeT1(), self.__fase.getID()))
+            self.__view.imprimir("%f,%d" % (self.__fase.getEsperancaDeTVoz(), self.__fase.getID()))
         if self.__output_type == 7:
-            self.__view.imprimir("%f,%d" % (self.__fase.getEsperancaDeT2(), self.__fase.getID()))
+            self.__view.imprimir("%f,%d" % (self.__fase.getEsperancaDeTDados(), self.__fase.getID()))
         if self.__output_type == 8:
-            self.__view.imprimir("%f,%d" % (self.__fase.getEsperancaDeW1(), self.__fase.getID()))
+            self.__view.imprimir("%f,%d" % (self.__fase.getEsperancaDeWVoz(), self.__fase.getID()))
         if self.__output_type == 9:
-            self.__view.imprimir("%f,%d" % (self.__fase.getEsperancaDeW2(), self.__fase.getID()))
+            self.__view.imprimir("%f,%d" % (self.__fase.getEsperancaDeWDados(), self.__fase.getID()))
         if self.__output_type == 10:
             self.__view.imprimir("%f,%d" % (self.__fase.getVarianciaDeW1(), self.__fase.getID()))
         if self.__output_type == 11:
@@ -177,7 +166,7 @@ class Simulacao(object):
        tambem ocorre aqui, entao aqui tambem ocorrem os calculos estatisticos que sao 
        chamados ao fim de uma fase/rodada."""
 
-    def PacoteEntraNaFilaVoz (self, canal):
+    def PacoteEntraNaFilaVoz (self, canal, tempoAnterior, tempoAvancado):
         self.__indice_pacote_atual += 1
         if self.__faseTransienteFinalizada == True and self.__indice_primeiro_pacote_nao_transiente == 0:
             self.__indice_primeiro_pacote_nao_transiente = self.__indice_pacote_atual
@@ -188,7 +177,7 @@ class Simulacao(object):
             indiceDaFase = (self.__indice_pacote_atual - self.__indice_primeiro_pacote_nao_transiente)/self.__numero_de_pacotes_por_fase
             if indiceDaFase > self.__fase.getID():
                 if self.__output_type == 0:
-                    self.__fase.calcularEstatisticas(self.__tempoAtual - self.__timerChegadaPacoteFilaVoz, self.__view, self.__intervaloDeConfianca, self.__lambd)
+                    self.__fase.calcularEstatisticas(tempoAnterior, self.__view, self.__intervaloDeConfianca, self.__lambd)
 
                 self.__fase = Fase(indiceDaFase, self.__tempoAtual)
             corDoPacote = indiceDaFase
@@ -208,29 +197,33 @@ class Simulacao(object):
                 pacote.setTempoChegadaServico(self.__tempoAtual)
                 #self.adicionarEvento(pacote, "comecou a ser atendido", self.__filaVoz.getID(), self.__tempoAtual)
                 
-                self.__timerFimDeServicoPacoteFilaVoz = self.__agendador.agendarTempoDeServicoFilaVoz(pacote.getCanal())
-                pacote.setTempoServico(self.__timerFimDeServicoPacoteFilaVoz)
+                novoEvento = Evento(EVENTO_PACOTE_VOZ_FINALIZADO, pacote.getCanal(), self.__agendador.agendarTempoDeServicoFilaVoz(pacote.getCanal()))
+                self.__lista_de_eventos.append(novoEvento)
+                pacote.setTempoServico(novoEvento.tempoRestante())
             else:
                 if self.__interrupcoes == True:
                     if self.__filaDados.numeroDePessoasNaFila() > 0: # Interrompe individuo da fila de dados
                         PacoteInterrompido = self.__filaDados.PacoteEmAtendimento()
-                        PacoteInterrompido.setTempoDecorridoServico(PacoteInterrompido.getTempoDecorridoServico() + self.__timerFimDeServicoPacoteFilaVoz)
-                        self.__timerFimDeServicoPacoteFilaDados = -1
+                        PacoteInterrompido.setTempoDecorridoServico(PacoteInterrompido.getTempoDecorridoServico() + tempoAvancado)
+                        for evento in self.__lista_de_eventos:
+                            if evento.tipo() == EVENTO_PACOTE_DADOS_FINALIZADO:
+                                self.__lista_de_eventos.remove(evento)
                     
                     pacote.setTempoChegadaServico(self.__tempoAtual)
                     #self.adicionarEvento(pacote, "comecou a ser atendido", self.__filaVoz.getID(), self.__tempoAtual)
                     
-                    self.__timerFimDeServicoPacoteFilaVoz = self.__agendador.agendarTempoDeServicoFilaVoz(pacote.getCanal())
-                    pacote.setTempoServico(self.__timerFimDeServicoPacoteFilaVoz)
+                    novoEvento = Evento(EVENTO_PACOTE_VOZ_FINALIZADO, pacote.getCanal(), self.__agendador.agendarTempoDeServicoFilaVoz(pacote.getCanal()))
+                    self.__lista_de_eventos.append(novoEvento)
+                    pacote.setTempoServico(novoEvento.tempoRestante())
 
         if self.__faseTransienteFinalizada == False:
-            self.__timerChegadaPacoteFilaVozPorCanal[pacote.getCanal()] = self.__agendador.agendarChegadaFilaVoz(pacote.getCanal())
+            novoEvento = Evento(EVENTO_PACOTE_VOZ_CHEGADA, pacote.getCanal(), self.__agendador.agendarChegadaFilaVoz(pacote.getCanal()))
+            self.__lista_de_eventos.append(novoEvento)
             return
 
-        if self.__fase.getID() + 1 == self.__numero_de_rodadas and self.__fase.quantidadeDePacotes() == self.__numero_de_pacotes_por_fase:
-            self.__timerChegadaPacoteFilaVozPorCanal[pacote.getCanal()] = -1
-        else:    
-            self.__timerChegadaPacoteFilaVozPorCanal[pacote.getCanal()] = self.__agendador.agendarChegadaFilaVoz(pacote.getCanal())
+        if self.__fase.getID() + 1 != self.__numero_de_rodadas or self.__fase.quantidadeDePacotes() != self.__numero_de_pacotes_por_fase:
+            novoEvento = Evento(EVENTO_PACOTE_VOZ_CHEGADA, pacote.getCanal(), self.__agendador.agendarChegadaFilaVoz(pacote.getCanal()))
+            self.__lista_de_eventos.append(novoEvento)
 
 
     """Evento: Pacote entra na fila de dados
@@ -242,7 +235,7 @@ class Simulacao(object):
        tambem ocorre aqui, entao aqui tambem ocorrem os calculos estatisticos que sao 
        chamados ao fim de uma fase/rodada."""
 
-    def PacoteEntraNaFilaDados (self):
+    def PacoteEntraNaFilaDados (self, tempoAnterior):
         self.__indice_pacote_atual += 1
         if self.__faseTransienteFinalizada == True and self.__indice_primeiro_pacote_nao_transiente == 0:
             self.__indice_primeiro_pacote_nao_transiente = self.__indice_pacote_atual
@@ -253,7 +246,7 @@ class Simulacao(object):
             indiceDaFase = (self.__indice_pacote_atual - self.__indice_primeiro_pacote_nao_transiente)/self.__numero_de_pacotes_por_fase
             if indiceDaFase > self.__fase.getID():
                 if self.__output_type == 0:
-                    self.__fase.calcularEstatisticas(self.__tempoAtual - self.__timerChegadaPacoteFilaVoz, self.__view, self.__intervaloDeConfianca, self.__lambd)
+                    self.__fase.calcularEstatisticas(tempoAnterior, self.__view, self.__intervaloDeConfianca, self.__lambd)
 
                 self.__fase = Fase(indiceDaFase, self.__tempoAtual)
             corDoPacote = indiceDaFase
@@ -268,17 +261,18 @@ class Simulacao(object):
             pacote.setTempoChegadaServico(self.__tempoAtual)
             #self.adicionarEvento(pacote, "comecou a ser atendido", self.__filaDados.getID(), self.__tempoAtual)
             
-            self.__timerFimDeServicoPacoteFilaDados = self.__agendador.agendarTempoDeServicoFilaDados()
-            pacote.setTempoServico(self.__timerFimDeServicoPacoteFilaDados)
+            novoEvento = Evento(EVENTO_PACOTE_DADOS_FINALIZADO, pacote.getCanal(), self.__agendador.agendarTempoDeServicoFilaDados())
+            self.__lista_de_eventos.append(novoEvento)
+            pacote.setTempoServico(novoEvento.tempoRestante())
 
         if self.__faseTransienteFinalizada == False:
-            self.__timerChegadaPacoteFilaDados = self.__agendador.agendarChegadaFilaDados(self.__lambd)
+            novoEvento = Evento(EVENTO_PACOTE_DADOS_CHEGADA, pacote.getCanal(), self.__agendador.agendarChegadaFilaDados(self.__lambd))
+            self.__lista_de_eventos.append(novoEvento)
             return
 
-        if self.__fase.getID() + 1 == self.__numero_de_rodadas and self.__fase.quantidadeDePacotes() == self.__numero_de_pacotes_por_fase:
-            self.__timerChegadaPacoteFilaDados = -1
-        else:    
-            self.__timerChegadaPacoteFilaDados = self.__agendador.agendarChegadaFilaDados(self.__lambd)
+        if self.__fase.getID() + 1 != self.__numero_de_rodadas or self.__fase.quantidadeDePacotes() != self.__numero_de_pacotes_por_fase:
+            novoEvento = Evento(EVENTO_PACOTE_DADOS_CHEGADA, pacote.getCanal(), self.__agendador.agendarChegadaFilaDados(self.__lambd))
+            self.__lista_de_eventos.append(novoEvento)
 
 
     """Evento: Fim de servico na fila de voz
@@ -291,8 +285,7 @@ class Simulacao(object):
     def PacoteTerminaServicoNaFilaVoz(self):
         Pacote = self.__filaVoz.retirarPacoteEmAtendimento()
         Pacote.setTempoTerminoServico(self.__tempoAtual)
-        self.__timerFimDeServicoPacoteFilaVoz = -1
-
+        
         self.adicionarEvento(Pacote, "terminou o atendimento", self.__filaVoz.getID(), self.__tempoAtual)
 
         if self.__filaVoz.numeroDePessoasNaFila() > 0:
@@ -300,25 +293,25 @@ class Simulacao(object):
             novoPacote.setTempoChegadaServico(self.__tempoAtual)
             #self.adicionarEvento(novoPacote, "comecou a ser atendido", self.__filaVoz.getID(), self.__tempoAtual)
 
-            self.__timerFimDeServicoPacoteFilaVoz = self.__agendador.agendarTempoDeServicoFilaVoz(novoPacote.getCanal())
-            novoPacote.setTempoServico(self.__timerFimDeServicoPacoteFilaVoz)
+            novoEvento = Evento(EVENTO_PACOTE_VOZ_FINALIZADO, novoPacote.getCanal(), self.__agendador.agendarTempoDeServicoFilaVoz(novoPacote.getCanal()))
+            self.__lista_de_eventos.append(novoEvento)
+            novoPacote.setTempoServico(novoEvento.tempoRestante())
         else:
-            self.__timerFimDeServicoPacoteFilaVoz = -1
             if self.__filaDados.numeroDePessoasNaFila() > 0:
                 proximoPacote = self.__filaDados.PacoteEmAtendimento()
                 if proximoPacote.getTempoDecorridoServico() > 0: 
                     # Pacote da fila de dados que foi interrompido anteriormente retorna
-                    self.__timerFimDeServicoPacoteFilaDados = proximoPacote.getTempoServico() - proximoPacote.getTempoDecorridoServico()
+                    novoEvento = Evento(EVENTO_PACOTE_DADOS_FINALIZADO, proximoPacote.getCanal(), proximoPacote.getTempoServico() - proximoPacote.getTempoDecorridoServico())
+                    self.__lista_de_eventos.append(novoEvento)
                     
                 else: 
                     # Pacote da fila de dados eh atendido pela primeira vez
                     proximoPacote.setTempoChegadaServico(self.__tempoAtual)
                     #self.adicionarEvento(proximoPacote, "comecou a ser atendido", self.__filaDados.getID(), self.__tempoAtual)
 
-                    self.__timerFimDeServicoPacoteFilaDados = self.__agendador.agendarTempoDeServicoFilaDados()
-                    proximoPacote.setTempoServico(self.__timerFimDeServicoPacoteFilaDados)
-            else:
-                self.__timerFimDeServicoPacoteFilaDados = -1
+                    novoEvento = Evento(EVENTO_PACOTE_DADOS_FINALIZADO, proximoPacote.getCanal(), self.__agendador.agendarTempoDeServicoFilaDados())
+                    self.__lista_de_eventos.append(novoEvento)
+                    proximoPacote.setTempoServico(novoEvento.tempoRestante())
 
 
     """Evento: Fim de servico na fila de dados
@@ -329,8 +322,7 @@ class Simulacao(object):
     def PacoteTerminaServicoNaFilaDados(self):
         Pacote = self.__filaDados.retirarPacoteEmAtendimento()
         Pacote.setTempoTerminoServico(self.__tempoAtual)
-        self.__timerFimDeServicoPacoteFilaDados = -1
-
+        
         self.adicionarEvento(Pacote, "terminou o atendimento", self.__filaDados.getID(), self.__tempoAtual)
         
         if self.__interrupcoes == False and self.__filaVoz.numeroDePessoasNaFila() > 0:
@@ -338,199 +330,54 @@ class Simulacao(object):
             novoPacote.setTempoChegadaServico(self.__tempoAtual)
             #self.adicionarEvento(novoPacote, "comecou a ser atendido", self.__filaVoz.getID(), self.__tempoAtual)
 
-            self.__timerFimDeServicoPacoteFilaVoz = self.__agendador.agendarTempoDeServicoFilaVoz(novoPacote.getCanal())
-            novoPacote.setTempoServico(self.__timerFimDeServicoPacoteFilaVoz)
+            novoEvento = Evento(EVENTO_PACOTE_VOZ_FINALIZADO, novoPacote.getCanal(), self.__agendador.agendarTempoDeServicoFilaVoz(novoPacote.getCanal()))
+            self.__lista_de_eventos.append(novoEvento)
+            novoPacote.setTempoServico(novoEvento.tempoRestante())
         else:
             if self.__filaDados.numeroDePessoasNaFila() > 0:
                 proximoPacote = self.__filaDados.PacoteEmAtendimento()
                 proximoPacote.setTempoChegadaServico(self.__tempoAtual)
                 #self.adicionarEvento(proximoPacote, "comecou a ser atendido", self.__filaDados.getID(), self.__tempoAtual)
                 
-                self.__timerFimDeServicoPacoteFilaDados = self.__agendador.agendarTempoDeServicoFilaDados()
-                proximoPacote.setTempoServico(self.__timerFimDeServicoPacoteFilaDados)
+                novoEvento = Evento(EVENTO_PACOTE_DADOS_FINALIZADO, proximoPacote.getCanal(), self.__agendador.agendarTempoDeServicoFilaDados())
+                self.__lista_de_eventos.append(novoEvento)
+                proximoPacote.setTempoServico(novoEvento.tempoRestante())
 
-
-    """ eventoDeDuracaoMinima() ira cuidar da verificacao de qual evento ocorre antes.
-        Temos 3 eventos principais: tempo de chegada na fila de voz, fim de servico 1 e
-        fim de servico 2. Aqui verificamos qual acontece antes. """
 
     def eventoDeDuracaoMinima(self):
 
-        """ Esse metodo avalia qual o proximo evento em que o simulador deve 
-            "entrar" baseado naquele que levara menos tempo para ocorrer no 
-            instante atual. """
+        def tempoRestanteDeEvento(e):
+            return e.tempoRestante()
+        self.__lista_de_eventos.sort(key=tempoRestanteDeEvento)
 
-
-        # Aqui avaliamos quais dos quatro principais eventos da simulacao estao agendados:
-        # timerValido1, timerValido2, timerValido3 e timerValido4.
-
-        # Quer dizer que o evento chegada de Pacote na fila de voz esta agendado.
-        smallerValidTimer1 = -1
-        for indice in range(30):
-            timer1 = self.__timerChegadaPacoteFilaVozPorCanal[indice]
-            smallerValidTimer1 = timer1 if (timer1 < smallerValidTimer1 or smallerValidTimer1 == -1) and timer1 != -1 else smallerValidTimer1
-        self.__timerChegadaPacoteFilaVoz = smallerValidTimer1
-        timerValido1 = (self.__timerChegadaPacoteFilaVoz        != -1)
-
-        # Quer dizer que o evento chegada de Pacote na fila de dados esta agendado.
-        timerValido2 = (self.__timerChegadaPacoteFilaDados      != -1)
-
-        # Quer dizer que o evento fim do servico 1 esta agendado.
-        timerValido3 = (self.__timerFimDeServicoPacoteFilaVoz   != -1)
-
-        # Quer dizer que o evento fim do servico 2 esta agendado.
-        timerValido4 = (self.__timerFimDeServicoPacoteFilaDados != -1)
-
-
-        # Essa eh apenas uma condicional para a unica condicao inexperada:
-        # a de que nenhuma acao esteja agendada para acontecer;
-        # Esse caso so pode ocorrer se houver uma falha do programa,
-        # ja que ele deve ser interrompido logo antes disso ocorrer
-        if timerValido1 == False and timerValido2 == False and timerValido3 == False and timerValido4 == False:
-            return -1
-
-
-        # As proximas quatro condicoes remetem aos casos em que apenas um dos quatro
-        # eventos esta agendado para ocorrer, entao nao eh necessario
-        # compara-los para ver qual ocorrera primeiro:
-
-        if timerValido1 == False and timerValido2 == False and timerValido3 == False:
-            return self.__timerFimDeServicoPacoteFilaDadosIndice
-
-        if timerValido1 == False and timerValido2 == False and timerValido4 == False:
-            return self.__timerFimDeServicoPacoteFilaVozIndice
-
-        if timerValido1 == False and timerValido3 == False and timerValido4 == False:
-            return self.__timerChegadaPacoteFilaDadosIndice
-
-        if timerValido2 == False and timerValido3 == False and timerValido4 == False:
-            return self.__timerChegadaPacoteFilaVozIndice
-
-
-        # As proximas seis condicoes remetem aos casos em que apenas dois dos quatro
-        # eventos estao agendados para ocorrer, entao so eh necessario comparar
-        # esses dois para ver qual ocorrera primeiro.
-        
-        if timerValido1 == False and timerValido2 == False:
-            return self.__timerFimDeServicoPacoteFilaVozIndice if self.__timerFimDeServicoPacoteFilaVoz <= self.__timerFimDeServicoPacoteFilaDados else self.__timerFimDeServicoPacoteFilaDadosIndice
-
-        if timerValido1 == False and timerValido3 == False:
-            return self.__timerChegadaPacoteFilaDadosIndice if self.__timerChegadaPacoteFilaDados <= self.__timerFimDeServicoPacoteFilaDados else self.__timerFimDeServicoPacoteFilaDadosIndice
-
-        if timerValido1 == False and timerValido4 == False:
-            return self.__timerChegadaPacoteFilaDadosIndice if self.__timerChegadaPacoteFilaDados < self.__timerFimDeServicoPacoteFilaVoz else self.__timerFimDeServicoPacoteFilaVozIndice
-
-        if timerValido2 == False and timerValido3 == False:
-            return self.__timerChegadaPacoteFilaVozIndice if self.__timerChegadaPacoteFilaVoz < self.__timerFimDeServicoPacoteFilaDados else self.__timerFimDeServicoPacoteFilaDadosIndice
-
-        if timerValido2 == False and timerValido4 == False:
-            return self.__timerChegadaPacoteFilaVozIndice if self.__timerChegadaPacoteFilaVoz < self.__timerFimDeServicoPacoteFilaVoz else self.__timerFimDeServicoPacoteFilaVozIndice
-
-        if timerValido3 == False and timerValido4 == False:
-            return self.__timerChegadaPacoteFilaVozIndice if self.__timerChegadaPacoteFilaVoz <= self.__timerChegadaPacoteFilaDados else self.__timerChegadaPacoteFilaDadosIndice
-
-        
-        # As proximas tres condicoes remetem aos casos em que apenas dois dos tres
-        # eventos estao agendados para ocorrer, entao so eh necessario comparar
-        # esses dois para ver qual ocorrera primeiro:
-
-        if timerValido1 == False:
-            lista = [self.__timerChegadaPacoteFilaDados, self.__timerFimDeServicoPacoteFilaVoz, self.__timerFimDeServicoPacoteFilaDados]
-            indice = lista.index(min(lista))
-            return indice + 1
-        
-        if timerValido2 == False:
-            lista = [self.__timerChegadaPacoteFilaVoz, self.__timerFimDeServicoPacoteFilaVoz, self.__timerFimDeServicoPacoteFilaDados]
-            indice = lista.index(min(lista))
-            return indice if indice == 0 else indice + 1
-        
-        if timerValido3 == False:
-            lista = [self.__timerChegadaPacoteFilaVoz, self.__timerChegadaPacoteFilaDados, self.__timerFimDeServicoPacoteFilaDados]
-            indice = lista.index(min(lista))
-            return indice if indice <= 1 else indice + 1
-        
-        if timerValido4 == False:
-            lista = [self.__timerChegadaPacoteFilaVoz, self.__timerChegadaPacoteFilaDados, self.__timerFimDeServicoPacoteFilaVoz]
-            indice = lista.index(min(lista))
-            return indice
-        
-
-        # A proxima condicao remete ao caso em que os tres eventos estao agendados 
-        # para ocorrer, entao eh necessario comparar os tres para ver qual ocorrera primeiro:
-        
-        # Eh criada uma lista com o tempo que falta ate que cada um dos tres eventos 
-        # principais agendados ocorra, ordenados em eventos 0, 1, 2 e 3, posicionados
-        # nos respectivos indices da lista
-        lista = [self.__timerChegadaPacoteFilaVoz, self.__timerChegadaPacoteFilaDados, self.__timerFimDeServicoPacoteFilaVoz, self.__timerFimDeServicoPacoteFilaDados]
-
-        # Com min(lista), retornamos o menor dos tres tempos presentes na lista;
-        # com lista.index(), retornamos o indice desse tempo na lista, conseguindo assim 
-        # saber qual o evento com o menor tempo faltante para ocorrer
-        return lista.index(min(lista))
+        return self.__lista_de_eventos.pop(0) if self.__lista_de_eventos.count > 0 else None
 
 
     """ O metodo executarProximoEvento(), como o proprio nome diz, executa o proximo evento,
         com base no que foi "decidido" no metodo eventoDeDuracaoMinima(). """
     def executarProximoEvento(self):
 
-        proximoTimer = self.eventoDeDuracaoMinima()
+        proximoEvento = self.eventoDeDuracaoMinima()
+        tempoRestante = proximoEvento.tempoRestante()
+        for evento in self.__lista_de_eventos:
+            evento.avancarTempo(tempoRestante)
+
+        tempoAnterior = self.__tempoAtual
+        self.__tempoAtual += tempoRestante
+        
+        self.agregarEmSomatorioPessoasPorTempo(tempoRestante)
 
         # Tres eventos principais, tres ifs principais.
-        if proximoTimer == self.__timerChegadaPacoteFilaVozIndice:
-            self.agregarEmSomatorioPessoasPorTempo(self.__timerChegadaPacoteFilaVoz)
+        if proximoEvento.tipo() == EVENTO_PACOTE_VOZ_CHEGADA:
+            self.PacoteEntraNaFilaVoz(proximoEvento.canal(), tempoAnterior, tempoRestante)
 
-            self.__tempoAtual += self.__timerChegadaPacoteFilaVoz
-            indiceEscolhido = -1
-            for indice in range(30):
-                if self.__timerChegadaPacoteFilaVozPorCanal[indice] != -1:
-                    self.__timerChegadaPacoteFilaVozPorCanal[indice] -= self.__timerChegadaPacoteFilaVoz
-                    if self.__timerChegadaPacoteFilaVozPorCanal[indice] == 0:
-                        indiceEscolhido = indice
-            if self.__timerChegadaPacoteFilaDados != -1:
-                self.__timerChegadaPacoteFilaDados -= self.__timerChegadaPacoteFilaVoz
-            if self.__timerFimDeServicoPacoteFilaVoz != -1:
-                self.__timerFimDeServicoPacoteFilaVoz -= self.__timerChegadaPacoteFilaVoz
-            if self.__timerFimDeServicoPacoteFilaDados != -1:
-                self.__timerFimDeServicoPacoteFilaDados -= self.__timerChegadaPacoteFilaVoz
-            self.PacoteEntraNaFilaVoz(indiceEscolhido)
+        if proximoEvento.tipo() == EVENTO_PACOTE_DADOS_CHEGADA:
+            self.PacoteEntraNaFilaDados(tempoAnterior)
 
-        if proximoTimer == self.__timerChegadaPacoteFilaDadosIndice:
-            self.agregarEmSomatorioPessoasPorTempo(self.__timerChegadaPacoteFilaDados)
-
-            self.__tempoAtual += self.__timerChegadaPacoteFilaDados
-            for indice in range(30):
-                if self.__timerChegadaPacoteFilaVozPorCanal[indice] != -1:
-                    self.__timerChegadaPacoteFilaVozPorCanal[indice] -= self.__timerChegadaPacoteFilaDados
-            if self.__timerFimDeServicoPacoteFilaVoz != -1:
-                self.__timerFimDeServicoPacoteFilaVoz -= self.__timerChegadaPacoteFilaDados
-            if self.__timerFimDeServicoPacoteFilaDados != -1:
-                self.__timerFimDeServicoPacoteFilaDados -= self.__timerChegadaPacoteFilaDados
-            self.PacoteEntraNaFilaDados()
-
-        if proximoTimer == self.__timerFimDeServicoPacoteFilaVozIndice:
-            self.agregarEmSomatorioPessoasPorTempo(self.__timerFimDeServicoPacoteFilaVoz)
-            
-            self.__tempoAtual += self.__timerFimDeServicoPacoteFilaVoz
-            for indice in range(30):
-                if self.__timerChegadaPacoteFilaVozPorCanal[indice] != -1:
-                    self.__timerChegadaPacoteFilaVozPorCanal[indice] -= self.__timerFimDeServicoPacoteFilaVoz
-            if self.__timerChegadaPacoteFilaDados != -1:
-                self.__timerChegadaPacoteFilaDados -= self.__timerFimDeServicoPacoteFilaVoz
-            if self.__timerFimDeServicoPacoteFilaDados != -1:
-                self.__timerFimDeServicoPacoteFilaDados -= self.__timerFimDeServicoPacoteFilaVoz
+        if proximoEvento.tipo() == EVENTO_PACOTE_VOZ_FINALIZADO:
             self.PacoteTerminaServicoNaFilaVoz()
 
-        if proximoTimer == self.__timerFimDeServicoPacoteFilaDadosIndice:
-            self.agregarEmSomatorioPessoasPorTempo(self.__timerFimDeServicoPacoteFilaDados)
-            
-            self.__tempoAtual += self.__timerFimDeServicoPacoteFilaDados
-            for indice in range(30):
-                if self.__timerChegadaPacoteFilaVozPorCanal[indice] != -1:
-                    self.__timerChegadaPacoteFilaVozPorCanal[indice] -= self.__timerFimDeServicoPacoteFilaDados
-            if self.__timerChegadaPacoteFilaDados != -1:
-                self.__timerChegadaPacoteFilaDados -= self.__timerFimDeServicoPacoteFilaDados
-            if self.__timerFimDeServicoPacoteFilaVoz != -1:
-                self.__timerFimDeServicoPacoteFilaVoz -= self.__timerFimDeServicoPacoteFilaDados
+        if proximoEvento.tipo() == EVENTO_PACOTE_DADOS_FINALIZADO:
             self.PacoteTerminaServicoNaFilaDados()
         
 
@@ -552,9 +399,11 @@ class Simulacao(object):
         # Comecamos agendando a chegada do primeiro Pacote no sistema.
         # A partir dela os proximos eventos sao gerados no loop principal da simulacao (mais abaixo).
         for indice in range(30):
-            self.__timerChegadaPacoteFilaVozPorCanal[indice] = self.__agendador.agendarChegadaFilaVoz(indice)
+            novoEvento = Evento(EVENTO_PACOTE_VOZ_CHEGADA, indice, self.__agendador.agendarChegadaFilaVoz(indice))
+            self.__lista_de_eventos.append(novoEvento)
         
-        self.__timerChegadaPacoteFilaDados = self.__agendador.agendarChegadaFilaDados(self.__lambd)
+        novoEvento = Evento(EVENTO_PACOTE_DADOS_CHEGADA, -1, self.__agendador.agendarChegadaFilaDados(self.__lambd))
+        self.__lista_de_eventos.append(novoEvento)
 
 
         # Loop principal da simulacao
@@ -624,5 +473,5 @@ def mainFlask():
     return output
 
 if __name__ == "__main__":
-    # Inicia o Flash se o arquivo do Python for chamado diretamente (o que nunca deve ser o caso)
+    # Inicia o Flask se o arquivo do Python for chamado diretamente (o que nunca deve ser o caso)
     app.run(host='0.0.0.0')

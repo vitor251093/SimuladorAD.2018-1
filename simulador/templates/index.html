@@ -4,7 +4,7 @@
 <html>
 
 <head>
-    <title>Hello World Template</title>
+    <title>Simulador de Roteador</title>
     <script src="/static/js/Chart.bundle.js"></script>
 </head>
 
@@ -44,17 +44,23 @@
         <input type="checkbox" id="teste"> Teste de corretude<br>
         <button id="runSimulator">Executar simulador</button>
     </div>
-    <div id="output-console"></div>
+    <div id="output-console" style="width:100%; float:left;"></div>
     <script>
-        window.chartColors = {
-            red:    'rgb(255,  99, 132)',
-            orange: 'rgb(255, 159,  64)',
-            yellow: 'rgb(255, 205,  86)',
-            green:  'rgb(75,  192, 192)',
-            blue:   'rgb(54,  162, 235)',
-            purple: 'rgb(153, 102, 255)',
-            grey:   'rgb(201, 203, 207)'
-        };
+        window.chartColors = [
+            'rgb(255,  99, 132)', // red
+            'rgb(255, 159,  64)', // orange
+            'rgb(75,  192, 192)', // green
+            'rgb(54,  162, 235)', // blue
+            'rgb(153, 102, 255)', // purple
+            'rgb(201, 203, 207)'  // grey
+        ];
+        function takeChartColor(color) {
+            var index = color;
+            while (window.chartColors.length <= index) {
+                index -= window.chartColors.length;
+            }
+            return window.chartColors[index];
+        }
 
         var config = {
             type: 'line',
@@ -62,8 +68,8 @@
                 labels: [],
                 datasets: [{
                     label: 'Simulação',
-                    backgroundColor: window.chartColors.red,
-                    borderColor: window.chartColors.red,
+                    backgroundColor: takeChartColor(0),
+                    borderColor: takeChartColor(0),
                     data: [],
                     fill: false,
                 }]
@@ -215,12 +221,32 @@
                         var entry = comp.split(',');
                         return {value:parseFloat(entry[0]), group:parseInt(entry[1])};
                     });
+                    var simulatorValues = simulatorComponents.map(function(entry) {return entry.value;});
+                    //var simulatorColors = simulatorComponents.map(function(entry) {return entry.group;});
+                    
+                    /*var roundIndex = 0;
+                    var datasets = [];
+                    while (simulatorColors.indexOf(roundIndex) != -1) {
+                        var index = simulatorColors.indexOf(roundIndex);
+                        var finalIndex = simulatorColors.indexOf(roundIndex + 1);
+                        if (finalIndex == -1) finalIndex = simulatorColors.length;
+                        simulatorColors.splice(index, finalIndex - index);
+                        
+                        datasets.push({
+                            label: 'Rodada ' + (roundIndex + 1),
+                            backgroundColor: takeChartColor(roundIndex),
+                            borderColor: takeChartColor(roundIndex),
+                            data: simulatorValues.splice(index, finalIndex - index),
+                            fill: false,
+                        });
+                        
+                        roundIndex += 1;
+                    }
+                    
+                    config.data.labels = [];
+                    config.data.datasets = datasets;*/
 
-                    simulatorValues = simulatorComponents.map(function(entry) {return entry.value;});
-                    //simulatorColors = simulatorComponents.map(function(entry) {return entry.group;});
-                    simulatorLabels = simulatorComponents.map(function(entry) {return "";});
-
-                    config.data.labels = simulatorLabels;
+                    config.data.labels = [];
                     config.data.datasets[0].data = simulatorValues;
                     window.myLine.update();
                 }

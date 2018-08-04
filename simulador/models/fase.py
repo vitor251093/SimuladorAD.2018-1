@@ -58,7 +58,7 @@ class Fase(object):
             return 0
         return (self.__somatorioPessoasFilaEspera2PorTempo)/(tempoAtual-self.__tempoInicial)
 
-    def getEsperancaDeT1(self):
+    def getEsperancaDeTVoz(self):
         countT1 = 0
         somatorioT1 = 0.0
         for pacote in self.__pacotesVoz:
@@ -67,9 +67,9 @@ class Fase(object):
                 somatorioT1 += pacote.getTempoTotalSistema()
         if countT1 == 0:
             return -1
-        return somatorioT1/len(self.__pacotesVoz)
+        return somatorioT1/countT1
 
-    def getEsperancaDeT2(self):
+    def getEsperancaDeTDados(self):
         countT2 = 0
         somatorioT2 = 0.0
         for pacote in self.__pacotesDados:
@@ -78,9 +78,9 @@ class Fase(object):
                 somatorioT2 += pacote.getTempoTotalSistema()
         if countT2 == 0:
             return -1
-        return somatorioT2/len(self.__pacotesDados)
+        return somatorioT2/countT2
 
-    def getEsperancaDeW1(self):
+    def getEsperancaDeWVoz(self):
         countW1 = 0
         somatorioW1 = 0.0
         for pacote in self.__pacotesVoz:
@@ -91,7 +91,7 @@ class Fase(object):
             return -1
         return somatorioW1/len(self.__pacotesVoz)
 
-    def getEsperancaDeW2(self):
+    def getEsperancaDeWDados(self):
         countW2 = 0
         somatorioW2 = 0.0
         for pacote in self.__pacotesDados:
@@ -103,7 +103,7 @@ class Fase(object):
         return somatorioW2/len(self.__pacotesDados)
 
     def getVarianciaDeW1(self):
-        EW1 = self.getEsperancaDeW1()
+        EW1 = self.getEsperancaDeWVoz()
         somatorioVW1 = 0.0
         for Pacote in self.__pacotesVoz:
             if Pacote.getTempoServico() != 0:
@@ -111,7 +111,7 @@ class Fase(object):
         return somatorioVW1/len(self.__pacotesVoz)
 
     def getVarianciaDeW2(self):
-        EW2 = self.getEsperancaDeW2()
+        EW2 = self.getEsperancaDeWDados()
         somatorioVW2 = 0.0
         for Pacote in self.__pacotesDados:
             if Pacote.getTempoTerminoServico() != 0:
@@ -152,28 +152,28 @@ class Fase(object):
         divisorW1 = 0
         divisorT2 = 0
         divisorW2 = 0
-        for Pacote in self.__pacotesDados:
-            if Pacote.getTempoTerminoServico() != 0:
-                PacotesT1.append(Pacote.getTempoTotalSistema())
-                somatorioT1 += Pacote.getTempoTotalSistema()
+        for pacote in self.__pacotesDados:
+            if pacote.getTempoTerminoServico() != 0:
+                PacotesT1.append(pacote.getTempoTotalSistema())
+                somatorioT1 += pacote.getTempoTotalSistema()
                 divisorT1 += 1
                 
-                PacotesW1.append(Pacote.getTempoEsperaFila())
-                somatorioW1 += Pacote.getTempoEsperaFila()
+                PacotesW1.append(pacote.getTempoEsperaFila())
+                somatorioW1 += pacote.getTempoEsperaFila()
                 divisorW1 += 1
 
-                PacotesX1.append(Pacote.getTempoTotalServico())
-                somatorioX1 += Pacote.getTempoTotalServico()
+                PacotesX1.append(pacote.getTempoTotalServico())
+                somatorioX1 += pacote.getTempoTotalServico()
                 divisorX1 += 1
 
-        for Pacote in self.__pacotesVoz:
-            if Pacote.getTempoTerminoServico() != 0:
-                PacotesT2.append(Pacote.getTempoTotalSistema())
-                somatorioT2 += Pacote.getTempoTotalSistema()
+        for pacote in self.__pacotesVoz:
+            if pacote.getTempoTerminoServico() != 0:
+                PacotesT2.append(pacote.getTempoTotalSistema())
+                somatorioT2 += pacote.getTempoTotalSistema()
                 divisorT2 += 1
                 
-                PacotesW2.append(Pacote.getTempoEsperaFila())
-                somatorioW2 += Pacote.getTempoEsperaFila()
+                PacotesW2.append(pacote.getTempoEsperaFila())
+                somatorioW2 += pacote.getTempoEsperaFila()
                 divisorW2 += 1
 
         EX1 = 0 if divisorX1 == 0 else somatorioX1/divisorX1
@@ -186,14 +186,14 @@ class Fase(object):
         PacotesVW2 = []
         somatorioVW1 = 0.0
         somatorioVW2 = 0.0
-        for Pacote in self.__pacotesDados:
-            if Pacote.getTempoTerminoServico() != 0:
-                PacotesVW1.append(Pacote.getVarianciaTempoEsperaFila(EW1))
-                somatorioVW1 += Pacote.getVarianciaTempoEsperaFila(EW1)
-        for Pacote in self.__pacotesVoz:
-            if Pacote.getTempoTerminoServico() != 0:
-                PacotesVW2.append(Pacote.getVarianciaTempoEsperaFila(EW2))
-                somatorioVW2 += Pacote.getVarianciaTempoEsperaFila(EW2)
+        for pacote in self.__pacotesDados:
+            if pacote.getTempoTerminoServico() != 0:
+                PacotesVW1.append(pacote.getVarianciaTempoEsperaFila(EW1))
+                somatorioVW1 += pacote.getVarianciaTempoEsperaFila(EW1)
+        for pacote in self.__pacotesVoz:
+            if pacote.getTempoTerminoServico() != 0:
+                PacotesVW2.append(pacote.getVarianciaTempoEsperaFila(EW2))
+                somatorioVW2 += pacote.getVarianciaTempoEsperaFila(EW2)
 
         EVW1 = 0 if divisorW1 == 0 else somatorioVW1/divisorW1
         EVW2 = 0 if divisorW2 == 0 else somatorioVW2/divisorW2
