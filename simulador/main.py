@@ -200,6 +200,10 @@ class Simulacao(object):
                 novoEvento = Evento(EVENTO_PACOTE_VOZ_FINALIZADO, pacote.getCanal(), self.__agendador.agendarTempoDeServicoFilaVoz(pacote.getCanal()))
                 self.__lista_de_eventos.append(novoEvento)
                 pacote.setTempoServico(novoEvento.tempoRestante())
+
+                if self.__agendador.deveAgendarChegadaFilaVoz(pacote.getCanal()):
+                    novoEvento = Evento(EVENTO_PACOTE_VOZ_CHEGADA, pacote.getCanal(), self.__agendador.agendarChegadaFilaVoz(pacote.getCanal()))
+                    self.__lista_de_eventos.append(novoEvento)
             else:
                 if self.__interrupcoes == True:
                     if self.__filaDados.numeroDePessoasNaFila() > 0: # Interrompe individuo da fila de dados
@@ -215,6 +219,10 @@ class Simulacao(object):
                     novoEvento = Evento(EVENTO_PACOTE_VOZ_FINALIZADO, pacote.getCanal(), self.__agendador.agendarTempoDeServicoFilaVoz(pacote.getCanal()))
                     self.__lista_de_eventos.append(novoEvento)
                     pacote.setTempoServico(novoEvento.tempoRestante())
+
+                    if self.__agendador.deveAgendarChegadaFilaVoz(pacote.getCanal()):
+                        novoEvento = Evento(EVENTO_PACOTE_VOZ_CHEGADA, pacote.getCanal(), self.__agendador.agendarChegadaFilaVoz(pacote.getCanal()))
+                        self.__lista_de_eventos.append(novoEvento)
 
         if self.__faseTransienteFinalizada == False:
             novoEvento = Evento(EVENTO_PACOTE_VOZ_CHEGADA, pacote.getCanal(), self.__agendador.agendarChegadaFilaVoz(pacote.getCanal()))
@@ -296,6 +304,10 @@ class Simulacao(object):
             novoEvento = Evento(EVENTO_PACOTE_VOZ_FINALIZADO, novoPacote.getCanal(), self.__agendador.agendarTempoDeServicoFilaVoz(novoPacote.getCanal()))
             self.__lista_de_eventos.append(novoEvento)
             novoPacote.setTempoServico(novoEvento.tempoRestante())
+
+            if self.__agendador.deveAgendarChegadaFilaVoz(novoPacote.getCanal()):
+                novoEvento = Evento(EVENTO_PACOTE_VOZ_CHEGADA, novoPacote.getCanal(), self.__agendador.agendarChegadaFilaVoz(novoPacote.getCanal()))
+                self.__lista_de_eventos.append(novoEvento)
         else:
             if self.__filaDados.numeroDePessoasNaFila() > 0:
                 proximoPacote = self.__filaDados.PacoteEmAtendimento()
@@ -333,6 +345,10 @@ class Simulacao(object):
             novoEvento = Evento(EVENTO_PACOTE_VOZ_FINALIZADO, novoPacote.getCanal(), self.__agendador.agendarTempoDeServicoFilaVoz(novoPacote.getCanal()))
             self.__lista_de_eventos.append(novoEvento)
             novoPacote.setTempoServico(novoEvento.tempoRestante())
+
+            if self.__agendador.deveAgendarChegadaFilaVoz(novoPacote.getCanal()):
+                novoEvento = Evento(EVENTO_PACOTE_VOZ_CHEGADA, novoPacote.getCanal(), self.__agendador.agendarChegadaFilaVoz(novoPacote.getCanal()))
+                self.__lista_de_eventos.append(novoEvento)
         else:
             if self.__filaDados.numeroDePessoasNaFila() > 0:
                 proximoPacote = self.__filaDados.PacoteEmAtendimento()
