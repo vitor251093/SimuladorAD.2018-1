@@ -26,7 +26,7 @@ class Simulacao(object):
         self.__lambd = None
         self.__interrupcoes = False
         self.__numero_de_pacotes_por_fase = None
-        self.__numero_de_rodadas = None
+        self.__numero_de_fases = None
         self.__intervaloDeConfianca = None
 
         self.__seedsDistance = 0.01
@@ -171,11 +171,18 @@ class Simulacao(object):
         if self.__faseTransienteFinalizada == True and self.__indice_primeiro_pacote_nao_transiente == 0:
             self.__indice_primeiro_pacote_nao_transiente = self.__indice_pacote_atual
 
-        if self.__indice_primeiro_pacote_nao_transiente == 0:
+        # Enquanto o primeiro pacote nao transiente nao eh encontrado, ainda
+        # estamos na fase transiente, e por isso a cor eh -1
+        if self.__indice_primeiro_pacote_nao_transiente == 0: 
             corDoPacote = -1
         else:
+            # Como o numero de pacotes por fase nao-transiente eh deterministico, ao subtrair o indice
+            # atual pelo indice do primeiro pacote nao-transiente e dividir pelo numero de pacotes
+            # por fase nos traz o indice da fase, iniciando em zero
             indiceDaFase = (self.__indice_pacote_atual - self.__indice_primeiro_pacote_nao_transiente)/self.__numero_de_pacotes_por_fase
+
             if indiceDaFase > self.__fase.getID():
+                # A entrada nesse 'if' indice o fim de uma fase e o inicio de uma nova
                 if self.__output_type == 0:
                     self.__fase.calcularEstatisticas(tempoAnterior, self.__view, self.__intervaloDeConfianca, self.__lambd)
 
@@ -195,43 +202,50 @@ class Simulacao(object):
         if self.__filaVoz.numeroDePessoasNaFila() == 1: # So o atual se encontra na fila
             if self.__interrupcoes == False and self.__filaDados.numeroDePessoasNaFila() == 0:
                 pacote.setTempoChegadaServico(self.__tempoAtual)
-                #self.adicionarEvento(pacote, "comecou a ser atendido", self.__filaVoz.getID(), self.__tempoAtual)
                 
-                novoEvento = Evento(EVENTO_PACOTE_VOZ_FINALIZADO, pacote.getCanal(), self.__agendador.agendarTempoDeServicoFilaVoz(pacote.getCanal()))
+                tempoAAvancar = self.__agendador.agendarTempoDeServicoFilaVoz(pacote.getCanal())
+                novoEvento = Evento(EVENTO_PACOTE_VOZ_FINALIZADO, pacote.getCanal(), tempoAAvancar)
                 self.__lista_de_eventos.append(novoEvento)
-                pacote.setTempoServico(novoEvento.tempoRestante())
+                pacote.setTempoServico(tempoAAvancar)
 
                 if self.__agendador.deveAgendarChegadaFilaVoz(pacote.getCanal()):
-                    novoEvento = Evento(EVENTO_PACOTE_VOZ_CHEGADA, pacote.getCanal(), self.__agendador.agendarChegadaFilaVoz(pacote.getCanal()))
+                    tempoAAvancar = self.__agendador.agendarChegadaFilaVoz(pacote.getCanal())
+                    novoEvento = Evento(EVENTO_PACOTE_VOZ_CHEGADA, pacote.getCanal(), tempoAAvancar)
                     self.__lista_de_eventos.append(novoEvento)
             else:
                 if self.__interrupcoes == True:
                     if self.__filaDados.numeroDePessoasNaFila() > 0: # Interrompe individuo da fila de dados
                         PacoteInterrompido = self.__filaDados.PacoteEmAtendimento()
                         PacoteInterrompido.setTempoDecorridoServico(PacoteInterrompido.getTempoDecorridoServico() + tempoAvancado)
-                        for evento in self.__lista_de_eventos:
-                            if evento.tipo() == EVENTO_PACOTE_DADOS_FINALIZADO:
-                                self.__lista_de_eventos.remove(evento)
+                        for eventoIndex in range(len(self.__lista_de_eventos)):
+                            if len(self.__lista_de_eventos) > eventoIndex and self.__lista_de_eventos[eventoIndex].tipo() == EVENTO_PACOTE_DADOS_FINALIZADO:
+                                self.__lista_de_eventos.pop(eventoIndex)
+                                eventoIndex -= 1
                     
                     pacote.setTempoChegadaServico(self.__tempoAtual)
-                    #self.adicionarEvento(pacote, "comecou a ser atendido", self.__filaVoz.getID(), self.__tempoAtual)
                     
-                    novoEvento = Evento(EVENTO_PACOTE_VOZ_FINALIZADO, pacote.getCanal(), self.__agendador.agendarTempoDeServicoFilaVoz(pacote.getCanal()))
+                    tempoAAvancar = self.__agendador.agendarTempoDeServicoFilaVoz(pacote.getCanal())
+                    novoEvento = Evento(EVENTO_PACOTE_VOZ_FINALIZADO, pacote.getCanal(), tempoAAvancar)
                     self.__lista_de_eventos.append(novoEvento)
                     pacote.setTempoServico(novoEvento.tempoRestante())
 
                     if self.__agendador.deveAgendarChegadaFilaVoz(pacote.getCanal()):
-                        novoEvento = Evento(EVENTO_PACOTE_VOZ_CHEGADA, pacote.getCanal(), self.__agendador.agendarChegadaFilaVoz(pacote.getCanal()))
+                        tempoAAvancar = self.__agendador.agendarChegadaFilaVoz(pacote.getCanal())
+                        novoEvento = Evento(EVENTO_PACOTE_VOZ_CHEGADA, pacote.getCanal(), tempoAAvancar)
                         self.__lista_de_eventos.append(novoEvento)
 
         if self.__faseTransienteFinalizada == False:
-            novoEvento = Evento(EVENTO_PACOTE_VOZ_CHEGADA, pacote.getCanal(), self.__agendador.agendarChegadaFilaVoz(pacote.getCanal()))
-            self.__lista_de_eventos.append(novoEvento)
+            if self.__agendador.deveAgendarChegadaFilaVoz(pacote.getCanal()):
+                tempoAAvancar = self.__agendador.agendarChegadaFilaVoz(pacote.getCanal())
+                novoEvento = Evento(EVENTO_PACOTE_VOZ_CHEGADA, pacote.getCanal(), tempoAAvancar)
+                self.__lista_de_eventos.append(novoEvento)
             return
 
-        if self.__fase.getID() + 1 != self.__numero_de_rodadas or self.__fase.quantidadeDePacotes() != self.__numero_de_pacotes_por_fase:
-            novoEvento = Evento(EVENTO_PACOTE_VOZ_CHEGADA, pacote.getCanal(), self.__agendador.agendarChegadaFilaVoz(pacote.getCanal()))
-            self.__lista_de_eventos.append(novoEvento)
+        if self.__fase.getID() + 1 != self.__numero_de_fases or self.__fase.quantidadeDePacotes() != self.__numero_de_pacotes_por_fase:
+            if self.__agendador.deveAgendarChegadaFilaVoz(pacote.getCanal()):
+                tempoAAvancar = self.__agendador.agendarChegadaFilaVoz(pacote.getCanal())
+                novoEvento = Evento(EVENTO_PACOTE_VOZ_CHEGADA, pacote.getCanal(), tempoAAvancar)
+                self.__lista_de_eventos.append(novoEvento)
 
 
     """Evento: Pacote entra na fila de dados
@@ -267,19 +281,27 @@ class Simulacao(object):
         self.adicionarEvento(pacote, "chegou", self.__filaDados.getID(), self.__tempoAtual)
         if self.__filaVoz.numeroDePessoasNaFila() == 0 and self.__filaDados.numeroDePessoasNaFila() == 1:
             pacote.setTempoChegadaServico(self.__tempoAtual)
-            #self.adicionarEvento(pacote, "comecou a ser atendido", self.__filaDados.getID(), self.__tempoAtual)
             
-            novoEvento = Evento(EVENTO_PACOTE_DADOS_FINALIZADO, pacote.getCanal(), self.__agendador.agendarTempoDeServicoFilaDados())
+            tempoAAvancar = self.__agendador.agendarTempoDeServicoFilaDados()
+            novoEvento = Evento(EVENTO_PACOTE_DADOS_FINALIZADO, pacote.getCanal(), tempoAAvancar)
             self.__lista_de_eventos.append(novoEvento)
             pacote.setTempoServico(novoEvento.tempoRestante())
 
         if self.__faseTransienteFinalizada == False:
-            novoEvento = Evento(EVENTO_PACOTE_DADOS_CHEGADA, pacote.getCanal(), self.__agendador.agendarChegadaFilaDados(self.__lambd))
+            tempoAAvancar = self.__agendador.agendarChegadaFilaDados(self.__lambd)
+            novoEvento = Evento(EVENTO_PACOTE_DADOS_CHEGADA, pacote.getCanal(), tempoAAvancar)
             self.__lista_de_eventos.append(novoEvento)
             return
 
-        if self.__fase.getID() + 1 != self.__numero_de_rodadas or self.__fase.quantidadeDePacotes() != self.__numero_de_pacotes_por_fase:
-            novoEvento = Evento(EVENTO_PACOTE_DADOS_CHEGADA, pacote.getCanal(), self.__agendador.agendarChegadaFilaDados(self.__lambd))
+        if self.__fase.getID() + 1 != self.__numero_de_fases:
+            tempoAAvancar = self.__agendador.agendarChegadaFilaDados(self.__lambd)
+            novoEvento = Evento(EVENTO_PACOTE_DADOS_CHEGADA, pacote.getCanal(), tempoAAvancar)
+            self.__lista_de_eventos.append(novoEvento)
+            return
+
+        if self.__fase.quantidadeDePacotes() != self.__numero_de_pacotes_por_fase:
+            tempoAAvancar = self.__agendador.agendarChegadaFilaDados(self.__lambd)
+            novoEvento = Evento(EVENTO_PACOTE_DADOS_CHEGADA, pacote.getCanal(), tempoAAvancar)
             self.__lista_de_eventos.append(novoEvento)
 
 
@@ -299,29 +321,31 @@ class Simulacao(object):
         if self.__filaVoz.numeroDePessoasNaFila() > 0:
             novoPacote = self.__filaVoz.PacoteEmAtendimento()
             novoPacote.setTempoChegadaServico(self.__tempoAtual)
-            #self.adicionarEvento(novoPacote, "comecou a ser atendido", self.__filaVoz.getID(), self.__tempoAtual)
-
-            novoEvento = Evento(EVENTO_PACOTE_VOZ_FINALIZADO, novoPacote.getCanal(), self.__agendador.agendarTempoDeServicoFilaVoz(novoPacote.getCanal()))
+            
+            tempoAAvancar = self.__agendador.agendarTempoDeServicoFilaVoz(novoPacote.getCanal())
+            novoEvento = Evento(EVENTO_PACOTE_VOZ_FINALIZADO, novoPacote.getCanal(), tempoAAvancar)
             self.__lista_de_eventos.append(novoEvento)
             novoPacote.setTempoServico(novoEvento.tempoRestante())
 
             if self.__agendador.deveAgendarChegadaFilaVoz(novoPacote.getCanal()):
-                novoEvento = Evento(EVENTO_PACOTE_VOZ_CHEGADA, novoPacote.getCanal(), self.__agendador.agendarChegadaFilaVoz(novoPacote.getCanal()))
+                tempoAAvancar = self.__agendador.agendarChegadaFilaVoz(novoPacote.getCanal())
+                novoEvento = Evento(EVENTO_PACOTE_VOZ_CHEGADA, novoPacote.getCanal(), tempoAAvancar)
                 self.__lista_de_eventos.append(novoEvento)
         else:
             if self.__filaDados.numeroDePessoasNaFila() > 0:
                 proximoPacote = self.__filaDados.PacoteEmAtendimento()
                 if proximoPacote.getTempoDecorridoServico() > 0: 
                     # Pacote da fila de dados que foi interrompido anteriormente retorna
-                    novoEvento = Evento(EVENTO_PACOTE_DADOS_FINALIZADO, proximoPacote.getCanal(), proximoPacote.getTempoServico() - proximoPacote.getTempoDecorridoServico())
+                    tempoAAvancar = proximoPacote.getTempoServico() - proximoPacote.getTempoDecorridoServico()
+                    novoEvento = Evento(EVENTO_PACOTE_DADOS_FINALIZADO, proximoPacote.getCanal(), tempoAAvancar)
                     self.__lista_de_eventos.append(novoEvento)
                     
                 else: 
                     # Pacote da fila de dados eh atendido pela primeira vez
                     proximoPacote.setTempoChegadaServico(self.__tempoAtual)
-                    #self.adicionarEvento(proximoPacote, "comecou a ser atendido", self.__filaDados.getID(), self.__tempoAtual)
-
-                    novoEvento = Evento(EVENTO_PACOTE_DADOS_FINALIZADO, proximoPacote.getCanal(), self.__agendador.agendarTempoDeServicoFilaDados())
+                    
+                    tempoAAvancar = self.__agendador.agendarTempoDeServicoFilaDados()
+                    novoEvento = Evento(EVENTO_PACOTE_DADOS_FINALIZADO, proximoPacote.getCanal(), tempoAAvancar)
                     self.__lista_de_eventos.append(novoEvento)
                     proximoPacote.setTempoServico(novoEvento.tempoRestante())
 
@@ -340,22 +364,23 @@ class Simulacao(object):
         if self.__interrupcoes == False and self.__filaVoz.numeroDePessoasNaFila() > 0:
             novoPacote = self.__filaVoz.PacoteEmAtendimento()
             novoPacote.setTempoChegadaServico(self.__tempoAtual)
-            #self.adicionarEvento(novoPacote, "comecou a ser atendido", self.__filaVoz.getID(), self.__tempoAtual)
-
-            novoEvento = Evento(EVENTO_PACOTE_VOZ_FINALIZADO, novoPacote.getCanal(), self.__agendador.agendarTempoDeServicoFilaVoz(novoPacote.getCanal()))
+            
+            tempoAAvancar = self.__agendador.agendarTempoDeServicoFilaVoz(novoPacote.getCanal())
+            novoEvento = Evento(EVENTO_PACOTE_VOZ_FINALIZADO, novoPacote.getCanal(), tempoAAvancar)
             self.__lista_de_eventos.append(novoEvento)
             novoPacote.setTempoServico(novoEvento.tempoRestante())
 
             if self.__agendador.deveAgendarChegadaFilaVoz(novoPacote.getCanal()):
-                novoEvento = Evento(EVENTO_PACOTE_VOZ_CHEGADA, novoPacote.getCanal(), self.__agendador.agendarChegadaFilaVoz(novoPacote.getCanal()))
+                tempoAAvancar = self.__agendador.agendarChegadaFilaVoz(novoPacote.getCanal())
+                novoEvento = Evento(EVENTO_PACOTE_VOZ_CHEGADA, novoPacote.getCanal(), tempoAAvancar)
                 self.__lista_de_eventos.append(novoEvento)
         else:
             if self.__filaDados.numeroDePessoasNaFila() > 0:
                 proximoPacote = self.__filaDados.PacoteEmAtendimento()
                 proximoPacote.setTempoChegadaServico(self.__tempoAtual)
-                #self.adicionarEvento(proximoPacote, "comecou a ser atendido", self.__filaDados.getID(), self.__tempoAtual)
                 
-                novoEvento = Evento(EVENTO_PACOTE_DADOS_FINALIZADO, proximoPacote.getCanal(), self.__agendador.agendarTempoDeServicoFilaDados())
+                tempoAAvancar = self.__agendador.agendarTempoDeServicoFilaDados()
+                novoEvento = Evento(EVENTO_PACOTE_DADOS_FINALIZADO, proximoPacote.getCanal(), tempoAAvancar)
                 self.__lista_de_eventos.append(novoEvento)
                 proximoPacote.setTempoServico(novoEvento.tempoRestante())
 
@@ -402,7 +427,7 @@ class Simulacao(object):
         self.__lambd = lambdaValue
         self.__interrupcoes = interrupcoes
         self.__numero_de_pacotes_por_fase = numeroDePacotesPorRodada
-        self.__numero_de_rodadas = rodadas
+        self.__numero_de_fases = rodadas
         self.__intervaloDeConfianca = intervaloDeConfianca
 
         self.__output_type = variavelDeSaida
@@ -415,15 +440,17 @@ class Simulacao(object):
         # Comecamos agendando a chegada do primeiro Pacote no sistema.
         # A partir dela os proximos eventos sao gerados no loop principal da simulacao (mais abaixo).
         for indice in range(30):
-            novoEvento = Evento(EVENTO_PACOTE_VOZ_CHEGADA, indice, self.__agendador.agendarChegadaFilaVoz(indice))
+            tempoAAvancar = self.__agendador.agendarChegadaFilaVoz(indice)
+            novoEvento = Evento(EVENTO_PACOTE_VOZ_CHEGADA, indice, tempoAAvancar)
             self.__lista_de_eventos.append(novoEvento)
         
-        novoEvento = Evento(EVENTO_PACOTE_DADOS_CHEGADA, -1, self.__agendador.agendarChegadaFilaDados(self.__lambd))
+        tempoAAvancar = self.__agendador.agendarChegadaFilaDados(self.__lambd)
+        novoEvento = Evento(EVENTO_PACOTE_DADOS_CHEGADA, -1, tempoAAvancar)
         self.__lista_de_eventos.append(novoEvento)
 
 
         # Loop principal da simulacao
-        while self.__numero_de_rodadas > self.__fase.getID() + 1 or self.__numero_de_pacotes_por_fase > self.__fase.quantidadeDePacotes():
+        while self.__numero_de_fases > self.__fase.getID() + 1 or self.__numero_de_pacotes_por_fase > self.__fase.quantidadeDePacotes():
             self.executarProximoEvento()
 
         if self.__output_type == 0:
