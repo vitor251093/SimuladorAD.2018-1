@@ -11,7 +11,7 @@ class CalculadoraIC(object):
 
     def intervaloDeConfiancaDeAmostras(self, amostras):
         n = len(amostras)
-        if n == 0:
+        if n <= 1:
             return 0, 0
 
         grausDeLiberdade = (n - 1)
