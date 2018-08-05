@@ -3,7 +3,7 @@
 
 class Pacote(object):
 
-    def __init__(self, id, tempoChegadaNoSistema, indiceDaCor, canal):
+    def __init__(self, id, tempoChegadaNoSistema, indiceDaCor, canal=-1):
         self.__id = id
 
         self.__indiceDaCor = indiceDaCor

@@ -274,7 +274,7 @@ class Simulacao(object):
 
     def PacoteEntraNaFilaDados (self, tempoAnterior):
         corDoPacote = self.corDeNovoPacote(tempoAnterior)
-        pacote = Pacote(self.__indice_pacote_atual, self.__tempoAtual, corDoPacote, -1)
+        pacote = Pacote(self.__indice_pacote_atual, self.__tempoAtual, corDoPacote)
         
         self.__fase.adicionarPacote(pacote)
         self.__filaDados.adicionarPacoteAFila(pacote)
