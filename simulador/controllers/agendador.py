@@ -55,8 +55,8 @@ class Agendador(object):
         if self.__testeDeCorretude == True:
             return
         
-        random.seed(seed)
-        numpy.random.RandomState(seed=int(seed*100000000))
+        random.seed(float(seed)/1000000000)
+        numpy.random.RandomState(seed=seed)
 
     def agendarChegadaFilaVoz(self, canal): 
         espera_previa = 0

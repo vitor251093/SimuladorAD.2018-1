@@ -81,13 +81,6 @@ class Simulacao(object):
                 self.__fase.inserirNumeroDePacotesPorTempoNaFilaEspera2(0, tempo)
 
     def adicionarEvento (self, Pacote, evento, fila, momento):
-        #tipo = "de voz" if Pacote.getCanal() != -1 else "de dados"
-        #print "%f: Pacote %s %d (%d) %s na fila %d" % (momento, tipo, Pacote.getID(), Pacote.getIndiceDaCor(), evento, fila)
-        
-        if self.__output_type == 12:
-            tipo = ("de voz de canal %d" % (Pacote.getCanal() + 1)) if Pacote.getCanal() != -1 else "de dados"
-            self.__view.imprimir("%f: Pacote %s (%d) de grupo %d %s na fila %d" % (momento, tipo, Pacote.getID(), Pacote.getIndiceDaCor(), evento, fila))
-
         ENt = self.__fase.getEsperancaDeN(momento)
 
         if self.__output_type == 1:
@@ -112,7 +105,11 @@ class Simulacao(object):
             self.__view.imprimir("%f,%d" % (self.__fase.getVarianciaDeW1(), self.__fase.getID()))
         if self.__output_type == 11:
             self.__view.imprimir("%f,%d" % (self.__fase.getVarianciaDeW2(), self.__fase.getID()))
+        if self.__output_type == 12:
+            tipo = ("de voz de canal %d" % (Pacote.getCanal() + 1)) if Pacote.getCanal() != -1 else "de dados"
+            self.__view.imprimir("%f: Pacote %s (%d) de grupo %d %s na fila %d" % (momento, tipo, Pacote.getID(), Pacote.getIndiceDaCor(), evento, fila))
 
+        
         if self.__faseTransienteFinalizada == True:
             return
 
@@ -496,15 +493,17 @@ def mainFlask():
     testeDeCorretude = (request.args.get('teste', default='false') == 'true')
     variavelDeSaida = int(request.args.get('variavel', default='1'))
     intervaloDeConfianca = float(request.args.get('confianca', default='0.95'))
-    
+    sementeForcada = int(request.args.get('semente', default='0'))
+
     seedsDistance = 0.01
     seedsList = []
 
     output = ''
     for i in range(simulacoes):
-        newSeed = randomNumberDistantFrom(seedsList, seedsDistance)
+        tempSeed = randomNumberDistantFrom(seedsList, seedsDistance)
+        newSeed = int(tempSeed*1000000000) if sementeForcada == 0 else sementeForcada
         sOutput = Simulacao().executarSimulacao(newSeed, lambdaValue, interrupcoes, numeroDePacotesPorRodada, rodadas, outputFile, variavelDeSaida, testeDeCorretude, intervaloDeConfianca)
-        seedsList.append(newSeed)
+        seedsList.append(tempSeed)
         output = "%s\n%s" % (output, sOutput)
     return output
 

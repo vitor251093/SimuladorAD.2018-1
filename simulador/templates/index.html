@@ -32,16 +32,18 @@
             <input type="radio" name="variavel" value="8" > E[W] (Voz)<br>
             <input type="radio" name="variavel" value="9" > E[W] (Dados)<br>
             <input type="radio" name="variavel" value="10"> V(W) (Voz)<br>
-            <input type="radio" name="variavel" value="11"> V(W) (Dados)
+            <input type="radio" name="variavel" value="11"> V(W) (Dados)<br>
+            <input type="radio" name="variavel" value="12"> Eventos (Terminal)
         </form>
-        <label>Lambda:</label>                 <input type="text" id="lambda"           style="width:70px;" value="0.3"/><br>
-        <label>Pacotes por rodada:</label>     <input type="text" id="pacotesporrodada" style="width:70px;" value="20000"/><br>
-        <label>Número de rodadas:</label>      <input type="text" id="rodadas"          style="width:70px;" value="100"/><br>
-        <label>Número de simulações:</label>   <input type="text" id="simulacoes"       style="width:70px;" value="1"/><br>
-        <label>Intervalo de confiança:</label> <input type="text" id="confianca"        style="width:70px;" value="0.9"/><br>
+        <label>Lambda*:</label>                 <input type="text" id="lambda"           style="width:70px;" value="0.3"/><br>
+        <label>Pacotes por rodada*:</label>     <input type="text" id="pacotesporrodada" style="width:70px;" value="20000"/><br>
+        <label>Número de rodadas*:</label>      <input type="text" id="rodadas"          style="width:70px;" value="100"/><br>
+        <label>Número de simulações*:</label>   <input type="text" id="simulacoes"       style="width:70px;" value="1"/><br>
+        <label>Intervalo de confiança*:</label> <input type="text" id="confianca"        style="width:70px;" value="0.9"/><br>
         <input type="checkbox" id="interrupcoes" checked> Interrupções<br>
         <input type="checkbox" id="progressiveLoad"> Carregar progressivamente<br>
         <input type="checkbox" id="teste"> Teste de corretude<br>
+        <label>Semente:</label> <input type="text" id="semente" style="width:70px;" value=""/><br>
         <button id="runSimulator">Executar simulador</button>
     </div>
     <div id="output-console" style="width:100%; float:left;"></div>
@@ -155,6 +157,7 @@
             var rodadas = document.getElementById("rodadas").value;
             var simulacoes = document.getElementById("simulacoes").value;
             var confianca = document.getElementById("confianca").value;
+            var semente = document.getElementById("semente").value || "0";
 
             var teste = document.getElementById("teste").checked;
             var interrupcoes = document.getElementById("interrupcoes").checked;
@@ -191,7 +194,8 @@
                         interrupcoes: interrupcoes,
                         teste: teste,
                         variavel: variavelAtiva,
-                        confianca: confianca};
+                        confianca: confianca,
+                        semente: semente};
 
             var argsArray = [];
             var argKeys = Object.keys(args);
