@@ -10,15 +10,15 @@ class Agendador(object):
     def __init__(self):
         self.__testeDeCorretude = False
         self.__tamanhoPacoteVoz = 512.0 # 512 bits = 64 bytes
-        self.__taxaDeTransmissao = 2.0*1000*1000 ## 2 Megabits per segundo
+        self.__taxaDeTransmissao = (2.0*1000*1000)/1000 ## 2 Megabits per segundo (em ms)
         
         self.__pacoteFilaVozIndice = []
         self.__pacoteFilaVozTotal = []
         self.__pacoteFilaVozTempoDeAguardo = []
         for indice in range(30):
             self.__pacoteFilaVozIndice.append(0)
-            self.__pacoteFilaVozTotal.append(-1)
-            self.__pacoteFilaVozTempoDeAguardo.append(-1)
+            self.__pacoteFilaVozTotal.append(0)
+            self.__pacoteFilaVozTempoDeAguardo.append(0)
 
         self.__probabilidade_de_L = []
         for indice in range(1500 - 64 + 1):
@@ -56,17 +56,16 @@ class Agendador(object):
             return
         
         random.seed(seed)
+        numpy.random.seed(seed)
 
     def agendarChegadaFilaVoz(self, canal): 
+        espera_previa = 0
+        
         indice = self.__pacoteFilaVozIndice[canal]
         total  = self.__pacoteFilaVozTotal[canal]
-        
-        espera_previa = 0
         if indice == total: # Inicio de uma nova remessa de pacotes de voz
             espera_previa = self.__pacoteFilaVozTempoDeAguardo[canal]
-            if espera_previa == -1:
-                return -1 # Ou nao...
-            self.__pacoteFilaVozTempoDeAguardo[canal] = -1
+            self.__pacoteFilaVozTempoDeAguardo[canal] = 0
             indice = 0
 
         if indice == 0:
@@ -82,35 +81,38 @@ class Agendador(object):
             self.__pacoteFilaVozTotal[canal] = math.ceil(n)
 
             # Calculando o tempo de silencio necessario para a nova remessa comecar
-            return espera_previa + random.expovariate(0.65)*1000
+            return espera_previa + random.expovariate(1.0/650)
 
         self.__pacoteFilaVozIndice[canal] += 1
         return 16
 
     def agendarChegadaFilaDados(self, lambd):
         if self.__testeDeCorretude == True:
-            return 1.0/lambd
+            return 1000.0/lambd
 
-        return random.expovariate(lambd)
+        return random.expovariate(lambd/1000)
 
-    def deveAgendarChegadaFilaVoz(self, canal): 
-        return self.__pacoteFilaVozTempoDeAguardo[canal] != -1
+    def deveAgendarChegadaFilaVoz(self, canal, filaVoz): 
+        indice = self.__pacoteFilaVozIndice[canal]
+        total  = self.__pacoteFilaVozTotal[canal]
+        if indice == total and filaVoz.numeroDePacotesNaFilaDeCanal(canal) > 1:
+            return False
+        
+        return True
 
-    def agendarTempoDeServicoFilaVoz(self, canal):
-        tempo = ((self.__tamanhoPacoteVoz*1000)/self.__taxaDeTransmissao) # ms
+    def agendarTempoDeServicoFilaVoz(self, canal, filaVoz):
+        tempo = self.__tamanhoPacoteVoz/self.__taxaDeTransmissao # ms
 
         indice = self.__pacoteFilaVozIndice[canal]
         total  = self.__pacoteFilaVozTotal[canal]
-        if indice == total:
+        if indice == total and filaVoz.numeroDePacotesNaFilaDeCanal(canal) == 1:
             self.__pacoteFilaVozTempoDeAguardo[canal] = tempo + 16
-        else:
-            self.__pacoteFilaVozTempoDeAguardo[canal] = -1
 
         return tempo
 
     def agendarTempoDeServicoFilaDados(self):
         if self.__testeDeCorretude == True:
-            return (754.8*8.0*1000)/self.__taxaDeTransmissao
+            return (754.8*8.0)/self.__taxaDeTransmissao
 
         Lbytes = self.valorDeLComProbabilidade(random.random())
-        return (Lbytes*8.0*1000)/self.__taxaDeTransmissao
+        return (Lbytes*8.0)/self.__taxaDeTransmissao

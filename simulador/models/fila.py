@@ -20,9 +20,16 @@ class Fila(object):
     def PacoteEmAtendimento(self):
         return self.__pacotes[0]
 
-    # Numero de pessoas na fila
-    def numeroDePessoasNaFila(self):
+    # Numero de pacotes na fila
+    def numeroDePacotesNaFila(self):
         return len(self.__pacotes)
+
+    def numeroDePacotesNaFilaDeCanal(self, canal):
+        count = 0
+        for pacote in self.__pacotes:
+            if pacote.getCanal() == canal:
+                count += 1
+        return count
 
     # Getters
     def getID(self):

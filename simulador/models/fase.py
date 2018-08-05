@@ -10,14 +10,14 @@ class Fase(object):
         self.__tempoInicial = tempoInicial
 
         ### Atributos usados para calculos estatisticos
-        self.__pessoasFilaVozPorTempo = []
-        self.__pessoasFilaEspera1PorTempo = []
-        self.__pessoasFilaDadosPorTempo = []
-        self.__pessoasFilaEspera2PorTempo = []
-        self.__somatorioPessoasFilaVozPorTempo = 0
-        self.__somatorioPessoasFilaEspera1PorTempo = 0
-        self.__somatorioPessoasFilaDadosPorTempo = 0
-        self.__somatorioPessoasFilaEspera2PorTempo = 0
+        self.__pacotesFilaVozPorTempo = []
+        self.__pacotesFilaEspera1PorTempo = []
+        self.__pacotesFilaDadosPorTempo = []
+        self.__pacotesFilaEspera2PorTempo = []
+        self.__somatorioPacotesFilaVozPorTempo = 0
+        self.__somatorioPacotesFilaEspera1PorTempo = 0
+        self.__somatorioPacotesFilaDadosPorTempo = 0
+        self.__somatorioPacotesFilaEspera2PorTempo = 0
         
     def adicionarPacote(self, pacote):
         self.__pacotes.append(pacote)
@@ -36,27 +36,27 @@ class Fase(object):
     def getEsperancaDeN(self, tempoAtual):
         if tempoAtual == self.__tempoInicial:
             return 0
-        return (self.__somatorioPessoasFilaVozPorTempo + self.__somatorioPessoasFilaDadosPorTempo)/(tempoAtual-self.__tempoInicial)
+        return (self.__somatorioPacotesFilaVozPorTempo + self.__somatorioPacotesFilaDadosPorTempo)/(tempoAtual-self.__tempoInicial)
 
     def getEsperancaDeN1(self, tempoAtual):
         if tempoAtual == self.__tempoInicial:
             return 0
-        return (self.__somatorioPessoasFilaVozPorTempo)/(tempoAtual-self.__tempoInicial)
+        return (self.__somatorioPacotesFilaVozPorTempo)/(tempoAtual-self.__tempoInicial)
 
     def getEsperancaDeN2(self, tempoAtual):
         if tempoAtual == self.__tempoInicial:
             return 0
-        return (self.__somatorioPessoasFilaDadosPorTempo)/(tempoAtual-self.__tempoInicial)
+        return (self.__somatorioPacotesFilaDadosPorTempo)/(tempoAtual-self.__tempoInicial)
 
     def getEsperancaDeNq1(self, tempoAtual):
         if tempoAtual == self.__tempoInicial:
             return 0
-        return (self.__somatorioPessoasFilaEspera1PorTempo)/(tempoAtual-self.__tempoInicial)
+        return (self.__somatorioPacotesFilaEspera1PorTempo)/(tempoAtual-self.__tempoInicial)
 
     def getEsperancaDeNq2(self, tempoAtual):
         if tempoAtual == self.__tempoInicial:
             return 0
-        return (self.__somatorioPessoasFilaEspera2PorTempo)/(tempoAtual-self.__tempoInicial)
+        return (self.__somatorioPacotesFilaEspera2PorTempo)/(tempoAtual-self.__tempoInicial)
 
     def getEsperancaDeTVoz(self):
         countT1 = 0
@@ -119,20 +119,20 @@ class Fase(object):
         return somatorioVW2/len(self.__pacotesDados)
 
     def inserirNumeroDePacotesPorTempoNaFilaVoz(self, numeroDePacotes, tempo):
-        self.__pessoasFilaVozPorTempo.append(numeroDePacotes)
-        self.__somatorioPessoasFilaVozPorTempo += tempo * numeroDePacotes
+        self.__pacotesFilaVozPorTempo.append(numeroDePacotes)
+        self.__somatorioPacotesFilaVozPorTempo += tempo * numeroDePacotes
 
     def inserirNumeroDePacotesPorTempoNaFilaDados(self, numeroDePacotes, tempo):
-        self.__pessoasFilaDadosPorTempo.append(numeroDePacotes)
-        self.__somatorioPessoasFilaDadosPorTempo += tempo * numeroDePacotes
+        self.__pacotesFilaDadosPorTempo.append(numeroDePacotes)
+        self.__somatorioPacotesFilaDadosPorTempo += tempo * numeroDePacotes
 
     def inserirNumeroDePacotesPorTempoNaFilaEspera1(self, numeroDePacotes, tempo):
-        self.__pessoasFilaEspera1PorTempo.append(numeroDePacotes)
-        self.__somatorioPessoasFilaEspera1PorTempo += tempo * numeroDePacotes
+        self.__pacotesFilaEspera1PorTempo.append(numeroDePacotes)
+        self.__somatorioPacotesFilaEspera1PorTempo += tempo * numeroDePacotes
 
     def inserirNumeroDePacotesPorTempoNaFilaEspera2(self, numeroDePacotes, tempo):
-        self.__pessoasFilaEspera2PorTempo.append(numeroDePacotes)
-        self.__somatorioPessoasFilaEspera2PorTempo += tempo * numeroDePacotes
+        self.__pacotesFilaEspera2PorTempo.append(numeroDePacotes)
+        self.__somatorioPacotesFilaEspera2PorTempo += tempo * numeroDePacotes
 
 
     def calcularEstatisticas(self, tempoAtual, view, intervaloDeConfianca, lambd):
@@ -198,10 +198,10 @@ class Fase(object):
         EVW1 = 0 if divisorW1 == 0 else somatorioVW1/divisorW1
         EVW2 = 0 if divisorW2 == 0 else somatorioVW2/divisorW2
 
-        EN1  = self.__somatorioPessoasFilaVozPorTempo     / (tempoAtual - self.__tempoInicial)
-        ENq1 = self.__somatorioPessoasFilaEspera1PorTempo / (tempoAtual - self.__tempoInicial)
-        EN2  = self.__somatorioPessoasFilaDadosPorTempo   / (tempoAtual - self.__tempoInicial)
-        ENq2 = self.__somatorioPessoasFilaEspera2PorTempo / (tempoAtual - self.__tempoInicial)
+        EN1  = self.__somatorioPacotesFilaVozPorTempo     / (tempoAtual - self.__tempoInicial)
+        ENq1 = self.__somatorioPacotesFilaEspera1PorTempo / (tempoAtual - self.__tempoInicial)
+        EN2  = self.__somatorioPacotesFilaDadosPorTempo   / (tempoAtual - self.__tempoInicial)
+        ENq2 = self.__somatorioPacotesFilaEspera2PorTempo / (tempoAtual - self.__tempoInicial)
 
         if self.__id == -1:
             view.imprimir("Fase Transiente:")
@@ -211,27 +211,32 @@ class Fase(object):
         # Impressao dos resultados das estatisticas
         view.imprimir("p (Dados):      %f" % (EX1*lambd))
         view.imprimir("Fila e estavel: %s" % ("Sim" if EX1*lambd < 0.8314 else "Nao"))
+        view.imprimir("")
         view.imprimir("E[X]  (Dados):  %f" % (EX1))
         view.imprimir("E[T]  (Dados):  %f" % (ET1))
         view.imprimir("E[W]  (Dados):  %f" % (EW1))
         view.imprimir("V(W)  (Dados):  %f" % (EVW1))
         view.imprimir("E[N]  (Dados):  %f" % (EN1))
         view.imprimir("E[Nq] (Dados):  %f" % (ENq1))
+        view.imprimir("")
         view.imprimir("E[T]  (Voz):    %f" % (ET2))
         view.imprimir("E[W]  (Voz):    %f" % (EW2))
-        view.imprimir("V(W]  (Voz):    %f" % (EVW2))
+        view.imprimir("V(W)  (Voz):    %f" % (EVW2))
         view.imprimir("E[N]  (Voz):    %f" % (EN2))
         view.imprimir("E[Nq] (Voz):    %f" % (ENq2))
+        view.imprimir("")
 
         calculadora = CalculadoraIC(intervaloDeConfianca)
         view.imprimir("IC E[X]  (Dados):  %f - %f" % (calculadora.intervaloDeConfiancaDeAmostras(PacotesX1)))
         view.imprimir("IC E[T]  (Dados):  %f - %f" % (calculadora.intervaloDeConfiancaDeAmostras(PacotesT1)))
         view.imprimir("IC E[W]  (Dados):  %f - %f" % (calculadora.intervaloDeConfiancaDeAmostras(PacotesW1)))
         view.imprimir("IC V(W)  (Dados):  %f - %f" % (calculadora.intervaloDeConfiancaDeAmostras(PacotesVW1)))
-        view.imprimir("IC E[N]  (Dados):  %f - %f" % (calculadora.intervaloDeConfiancaDeAmostrasComMedia(self.__pessoasFilaVozPorTempo, EN1)))
-        view.imprimir("IC E[Nq] (Dados):  %f - %f" % (calculadora.intervaloDeConfiancaDeAmostrasComMedia(self.__pessoasFilaEspera1PorTempo, ENq1)))
+        view.imprimir("IC E[N]  (Dados):  %f - %f" % (calculadora.intervaloDeConfiancaDeAmostrasComMedia(self.__pacotesFilaVozPorTempo, EN1)))
+        view.imprimir("IC E[Nq] (Dados):  %f - %f" % (calculadora.intervaloDeConfiancaDeAmostrasComMedia(self.__pacotesFilaEspera1PorTempo, ENq1)))
+        view.imprimir("")
         view.imprimir("IC E[T]  (Voz):    %f - %f" % (calculadora.intervaloDeConfiancaDeAmostras(PacotesT2)))
         view.imprimir("IC E[W]  (Voz):    %f - %f" % (calculadora.intervaloDeConfiancaDeAmostras(PacotesW2)))
         view.imprimir("IC V(W)  (Voz):    %f - %f" % (calculadora.intervaloDeConfiancaDeAmostras(PacotesVW2)))
-        view.imprimir("IC E[N]  (Voz):    %f - %f" % (calculadora.intervaloDeConfiancaDeAmostrasComMedia(self.__pessoasFilaDadosPorTempo, EN2)))
-        view.imprimir("IC E[Nq] (Voz):    %f - %f" % (calculadora.intervaloDeConfiancaDeAmostrasComMedia(self.__pessoasFilaEspera2PorTempo, ENq2)))
+        view.imprimir("IC E[N]  (Voz):    %f - %f" % (calculadora.intervaloDeConfiancaDeAmostrasComMedia(self.__pacotesFilaDadosPorTempo, EN2)))
+        view.imprimir("IC E[Nq] (Voz):    %f - %f" % (calculadora.intervaloDeConfiancaDeAmostrasComMedia(self.__pacotesFilaEspera2PorTempo, ENq2)))
+        view.imprimir("")

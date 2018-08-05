@@ -12,6 +12,8 @@ import warnings
 from flask import Flask
 from flask import request
 from flask import render_template
+import logging
+
 """ Principal classe do simulador. Simulacao possui o metodo executarSimulacao que eh 
     chamado pelo main, o qual pode ser encontrado no fim deste arquivo. """
 
@@ -60,21 +62,21 @@ class Simulacao(object):
 
 
     """ Esse metodo apenas fica responsavel por relizar os somatorios
-        para o calculo do numero medio de pessoas nas duas filas (E[Ns]). """
-    def agregarEmSomatorioPessoasPorTempo (self, tempo):
-        self.__fase.inserirNumeroDePacotesPorTempoNaFilaVoz(self.__filaVoz.numeroDePessoasNaFila(), tempo)
-        self.__fase.inserirNumeroDePacotesPorTempoNaFilaDados(self.__filaVoz.numeroDePessoasNaFila(), tempo)
+        para o calculo do numero medio de pacotes nas duas filas (E[Ns]). """
+    def agregarEmSomatorioPacotesPorTempo (self, tempo):
+        self.__fase.inserirNumeroDePacotesPorTempoNaFilaVoz(self.__filaVoz.numeroDePacotesNaFila(), tempo)
+        self.__fase.inserirNumeroDePacotesPorTempoNaFilaDados(self.__filaDados.numeroDePacotesNaFila(), tempo)
 
-        if self.__filaVoz.numeroDePessoasNaFila() > 0:
-            self.__fase.inserirNumeroDePacotesPorTempoNaFilaEspera1(self.__filaVoz.numeroDePessoasNaFila() - 1, tempo)
+        if self.__filaVoz.numeroDePacotesNaFila() > 0:
+            self.__fase.inserirNumeroDePacotesPorTempoNaFilaEspera1(self.__filaVoz.numeroDePacotesNaFila() - 1, tempo)
         else:
             self.__fase.inserirNumeroDePacotesPorTempoNaFilaEspera1(0, tempo)
 
-        if self.__filaVoz.numeroDePessoasNaFila() > 0:
-            self.__fase.inserirNumeroDePacotesPorTempoNaFilaEspera2(self.__filaDados.numeroDePessoasNaFila(), tempo)
+        if self.__filaVoz.numeroDePacotesNaFila() > 0:
+            self.__fase.inserirNumeroDePacotesPorTempoNaFilaEspera2(self.__filaDados.numeroDePacotesNaFila(), tempo)
         else:
-            if self.__filaDados.numeroDePessoasNaFila() > 0:
-                self.__fase.inserirNumeroDePacotesPorTempoNaFilaEspera2(self.__filaDados.numeroDePessoasNaFila() - 1, tempo)
+            if self.__filaDados.numeroDePacotesNaFila() > 0:
+                self.__fase.inserirNumeroDePacotesPorTempoNaFilaEspera2(self.__filaDados.numeroDePacotesNaFila() - 1, tempo)
             else: 
                 self.__fase.inserirNumeroDePacotesPorTempoNaFilaEspera2(0, tempo)
 
@@ -82,6 +84,10 @@ class Simulacao(object):
         #tipo = "de voz" if Pacote.getCanal() != -1 else "de dados"
         #print "%f: Pacote %s %d (%d) %s na fila %d" % (momento, tipo, Pacote.getID(), Pacote.getIndiceDaCor(), evento, fila)
         
+        if self.__output_type == 12:
+            tipo = ("de voz de canal %d" % (Pacote.getCanal() + 1)) if Pacote.getCanal() != -1 else "de dados"
+            self.__view.imprimir("%f: Pacote %s (%d) de grupo %d %s na fila %d" % (momento, tipo, Pacote.getID(), Pacote.getIndiceDaCor(), evento, fila))
+
         ENt = self.__fase.getEsperancaDeN(momento)
 
         if self.__output_type == 1:
@@ -148,6 +154,7 @@ class Simulacao(object):
                     variancia2 /= (self.__quantidadeDeEventosPorVariancia - 1)
 
                     if abs(variancia1 - variancia2) < self.__diferencaAceitavelDasVariancias:
+                        print "Fase transiente finalizada"
                         self.__faseTransienteFinalizada = True
                     else:
                         self.__eventosDaVariancia1 = self.__eventosDaVariancia2
@@ -156,17 +163,7 @@ class Simulacao(object):
                         self.__duracaoEventosDaVariancia2 = []
 
 
-    """Evento: Pacote entra na fila de voz
-       Com essa funcao realizamos todas as acoes que ocorrem em decorrencia da
-       entrada de um Pacote na fila de voz, que sao: se nao houver ninguem na fila de voz,
-       levar esse Pacote diretamente ao servico, e interrompe qualquer Pacote
-       da fila de dados que possa estar sendo atendido.
-        
-       Eh aqui tambem que decidimos qual sera a cor de um Pacote. O fim de uma fase/rodada
-       tambem ocorre aqui, entao aqui tambem ocorrem os calculos estatisticos que sao 
-       chamados ao fim de uma fase/rodada."""
-
-    def PacoteEntraNaFilaVoz (self, canal, tempoAnterior, tempoAvancado):
+    def corDeNovoPacote(self, tempoAnterior):
         self.__indice_pacote_atual += 1
         if self.__faseTransienteFinalizada == True and self.__indice_primeiro_pacote_nao_transiente == 0:
             self.__indice_primeiro_pacote_nao_transiente = self.__indice_pacote_atual
@@ -187,62 +184,67 @@ class Simulacao(object):
                     self.__fase.calcularEstatisticas(tempoAnterior, self.__view, self.__intervaloDeConfianca, self.__lambd)
 
                 self.__fase = Fase(indiceDaFase, self.__tempoAtual)
-            corDoPacote = indiceDaFase
 
+            corDoPacote = indiceDaFase
+        
+        return corDoPacote
+
+    """Evento: Pacote entra na fila de voz
+       Com essa funcao realizamos todas as acoes que ocorrem em decorrencia da
+       entrada de um Pacote na fila de voz, que sao: se nao houver ninguem na fila de voz,
+       levar esse Pacote diretamente ao servico, e interrompe qualquer Pacote
+       da fila de dados que possa estar sendo atendido.
+        
+       Eh aqui tambem que decidimos qual sera a cor de um Pacote. O fim de uma fase/rodada
+       tambem ocorre aqui, entao aqui tambem ocorrem os calculos estatisticos que sao 
+       chamados ao fim de uma fase/rodada."""
+
+    def PacoteEntraNaFilaVoz (self, canal, tempoAnterior, tempoAvancado):
         if canal == -1:
             print "ERRO: O tempo deslocado nao se aplica a nenhuma das esperas de canais de voz."
             sys.exit(2)
 
+        corDoPacote = self.corDeNovoPacote(tempoAnterior)
         pacote = Pacote(self.__indice_pacote_atual, self.__tempoAtual, corDoPacote, canal) 
         
         self.__fase.adicionarPacote(pacote)
         self.__filaVoz.adicionarPacoteAFila(pacote)
 
         self.adicionarEvento(pacote, "chegou", self.__filaVoz.getID(), self.__tempoAtual)
-        if self.__filaVoz.numeroDePessoasNaFila() == 1: # So o atual se encontra na fila
-            if self.__interrupcoes == False and self.__filaDados.numeroDePessoasNaFila() == 0:
+        if self.__filaVoz.numeroDePacotesNaFila() == 1: # So o atual se encontra na fila
+            if self.__interrupcoes == True and self.__filaDados.numeroDePacotesNaFila() > 0: 
+                # Interrompe individuo da fila de dados em servico
+                PacoteInterrompido = self.__filaDados.PacoteEmAtendimento()
+                PacoteInterrompido.setTempoDecorridoServico(PacoteInterrompido.getTempoDecorridoServico() + tempoAvancado)
+
+                # Removendo evento de completude do individuo interrompido
+                for eventoIndex in range(len(self.__lista_de_eventos)):
+                    if len(self.__lista_de_eventos) > eventoIndex and self.__lista_de_eventos[eventoIndex].tipo() == EVENTO_PACOTE_DADOS_FINALIZADO:
+                        self.__lista_de_eventos.pop(eventoIndex)
+                        eventoIndex -= 1
+
+            if self.__interrupcoes == True or self.__filaDados.numeroDePacotesNaFila() == 0:
                 pacote.setTempoChegadaServico(self.__tempoAtual)
                 
-                tempoAAvancar = self.__agendador.agendarTempoDeServicoFilaVoz(pacote.getCanal())
+                tempoAAvancar = self.__agendador.agendarTempoDeServicoFilaVoz(pacote.getCanal(),self.__filaVoz)
                 novoEvento = Evento(EVENTO_PACOTE_VOZ_FINALIZADO, pacote.getCanal(), tempoAAvancar)
                 self.__lista_de_eventos.append(novoEvento)
                 pacote.setTempoServico(tempoAAvancar)
 
-                if self.__agendador.deveAgendarChegadaFilaVoz(pacote.getCanal()):
+                if self.__agendador.deveAgendarChegadaFilaVoz(pacote.getCanal(),self.__filaVoz):
                     tempoAAvancar = self.__agendador.agendarChegadaFilaVoz(pacote.getCanal())
                     novoEvento = Evento(EVENTO_PACOTE_VOZ_CHEGADA, pacote.getCanal(), tempoAAvancar)
                     self.__lista_de_eventos.append(novoEvento)
-            else:
-                if self.__interrupcoes == True:
-                    if self.__filaDados.numeroDePessoasNaFila() > 0: # Interrompe individuo da fila de dados
-                        PacoteInterrompido = self.__filaDados.PacoteEmAtendimento()
-                        PacoteInterrompido.setTempoDecorridoServico(PacoteInterrompido.getTempoDecorridoServico() + tempoAvancado)
-                        for eventoIndex in range(len(self.__lista_de_eventos)):
-                            if len(self.__lista_de_eventos) > eventoIndex and self.__lista_de_eventos[eventoIndex].tipo() == EVENTO_PACOTE_DADOS_FINALIZADO:
-                                self.__lista_de_eventos.pop(eventoIndex)
-                                eventoIndex -= 1
-                    
-                    pacote.setTempoChegadaServico(self.__tempoAtual)
-                    
-                    tempoAAvancar = self.__agendador.agendarTempoDeServicoFilaVoz(pacote.getCanal())
-                    novoEvento = Evento(EVENTO_PACOTE_VOZ_FINALIZADO, pacote.getCanal(), tempoAAvancar)
-                    self.__lista_de_eventos.append(novoEvento)
-                    pacote.setTempoServico(novoEvento.tempoRestante())
-
-                    if self.__agendador.deveAgendarChegadaFilaVoz(pacote.getCanal()):
-                        tempoAAvancar = self.__agendador.agendarChegadaFilaVoz(pacote.getCanal())
-                        novoEvento = Evento(EVENTO_PACOTE_VOZ_CHEGADA, pacote.getCanal(), tempoAAvancar)
-                        self.__lista_de_eventos.append(novoEvento)
 
         if self.__faseTransienteFinalizada == False:
-            if self.__agendador.deveAgendarChegadaFilaVoz(pacote.getCanal()):
+            if self.__agendador.deveAgendarChegadaFilaVoz(pacote.getCanal(),self.__filaVoz):
                 tempoAAvancar = self.__agendador.agendarChegadaFilaVoz(pacote.getCanal())
                 novoEvento = Evento(EVENTO_PACOTE_VOZ_CHEGADA, pacote.getCanal(), tempoAAvancar)
                 self.__lista_de_eventos.append(novoEvento)
             return
 
         if self.__fase.getID() + 1 != self.__numero_de_fases or self.__fase.quantidadeDePacotes() != self.__numero_de_pacotes_por_fase:
-            if self.__agendador.deveAgendarChegadaFilaVoz(pacote.getCanal()):
+            if self.__agendador.deveAgendarChegadaFilaVoz(pacote.getCanal(),self.__filaVoz):
                 tempoAAvancar = self.__agendador.agendarChegadaFilaVoz(pacote.getCanal())
                 novoEvento = Evento(EVENTO_PACOTE_VOZ_CHEGADA, pacote.getCanal(), tempoAAvancar)
                 self.__lista_de_eventos.append(novoEvento)
@@ -258,28 +260,14 @@ class Simulacao(object):
        chamados ao fim de uma fase/rodada."""
 
     def PacoteEntraNaFilaDados (self, tempoAnterior):
-        self.__indice_pacote_atual += 1
-        if self.__faseTransienteFinalizada == True and self.__indice_primeiro_pacote_nao_transiente == 0:
-            self.__indice_primeiro_pacote_nao_transiente = self.__indice_pacote_atual
-
-        if self.__indice_primeiro_pacote_nao_transiente == 0:
-            corDoPacote = -1
-        else:
-            indiceDaFase = (self.__indice_pacote_atual - self.__indice_primeiro_pacote_nao_transiente)/self.__numero_de_pacotes_por_fase
-            if indiceDaFase > self.__fase.getID():
-                if self.__output_type == 0:
-                    self.__fase.calcularEstatisticas(tempoAnterior, self.__view, self.__intervaloDeConfianca, self.__lambd)
-
-                self.__fase = Fase(indiceDaFase, self.__tempoAtual)
-            corDoPacote = indiceDaFase
-
+        corDoPacote = self.corDeNovoPacote(tempoAnterior)
         pacote = Pacote(self.__indice_pacote_atual, self.__tempoAtual, corDoPacote, -1)
         
         self.__fase.adicionarPacote(pacote)
         self.__filaDados.adicionarPacoteAFila(pacote)
 
         self.adicionarEvento(pacote, "chegou", self.__filaDados.getID(), self.__tempoAtual)
-        if self.__filaVoz.numeroDePessoasNaFila() == 0 and self.__filaDados.numeroDePessoasNaFila() == 1:
+        if self.__filaVoz.numeroDePacotesNaFila() == 0 and self.__filaDados.numeroDePacotesNaFila() == 1:
             pacote.setTempoChegadaServico(self.__tempoAtual)
             
             tempoAAvancar = self.__agendador.agendarTempoDeServicoFilaDados()
@@ -318,21 +306,21 @@ class Simulacao(object):
         
         self.adicionarEvento(Pacote, "terminou o atendimento", self.__filaVoz.getID(), self.__tempoAtual)
 
-        if self.__filaVoz.numeroDePessoasNaFila() > 0:
+        if self.__filaVoz.numeroDePacotesNaFila() > 0:
             novoPacote = self.__filaVoz.PacoteEmAtendimento()
             novoPacote.setTempoChegadaServico(self.__tempoAtual)
             
-            tempoAAvancar = self.__agendador.agendarTempoDeServicoFilaVoz(novoPacote.getCanal())
+            tempoAAvancar = self.__agendador.agendarTempoDeServicoFilaVoz(novoPacote.getCanal(),self.__filaVoz)
             novoEvento = Evento(EVENTO_PACOTE_VOZ_FINALIZADO, novoPacote.getCanal(), tempoAAvancar)
             self.__lista_de_eventos.append(novoEvento)
             novoPacote.setTempoServico(novoEvento.tempoRestante())
 
-            if self.__agendador.deveAgendarChegadaFilaVoz(novoPacote.getCanal()):
+            if self.__agendador.deveAgendarChegadaFilaVoz(novoPacote.getCanal(),self.__filaVoz):
                 tempoAAvancar = self.__agendador.agendarChegadaFilaVoz(novoPacote.getCanal())
                 novoEvento = Evento(EVENTO_PACOTE_VOZ_CHEGADA, novoPacote.getCanal(), tempoAAvancar)
                 self.__lista_de_eventos.append(novoEvento)
         else:
-            if self.__filaDados.numeroDePessoasNaFila() > 0:
+            if self.__filaDados.numeroDePacotesNaFila() > 0:
                 proximoPacote = self.__filaDados.PacoteEmAtendimento()
                 if proximoPacote.getTempoDecorridoServico() > 0: 
                     # Pacote da fila de dados que foi interrompido anteriormente retorna
@@ -361,21 +349,21 @@ class Simulacao(object):
         
         self.adicionarEvento(Pacote, "terminou o atendimento", self.__filaDados.getID(), self.__tempoAtual)
         
-        if self.__interrupcoes == False and self.__filaVoz.numeroDePessoasNaFila() > 0:
+        if self.__interrupcoes == False and self.__filaVoz.numeroDePacotesNaFila() > 0:
             novoPacote = self.__filaVoz.PacoteEmAtendimento()
             novoPacote.setTempoChegadaServico(self.__tempoAtual)
             
-            tempoAAvancar = self.__agendador.agendarTempoDeServicoFilaVoz(novoPacote.getCanal())
+            tempoAAvancar = self.__agendador.agendarTempoDeServicoFilaVoz(novoPacote.getCanal(),self.__filaVoz)
             novoEvento = Evento(EVENTO_PACOTE_VOZ_FINALIZADO, novoPacote.getCanal(), tempoAAvancar)
             self.__lista_de_eventos.append(novoEvento)
             novoPacote.setTempoServico(novoEvento.tempoRestante())
 
-            if self.__agendador.deveAgendarChegadaFilaVoz(novoPacote.getCanal()):
+            if self.__agendador.deveAgendarChegadaFilaVoz(novoPacote.getCanal(),self.__filaVoz):
                 tempoAAvancar = self.__agendador.agendarChegadaFilaVoz(novoPacote.getCanal())
                 novoEvento = Evento(EVENTO_PACOTE_VOZ_CHEGADA, novoPacote.getCanal(), tempoAAvancar)
                 self.__lista_de_eventos.append(novoEvento)
         else:
-            if self.__filaDados.numeroDePessoasNaFila() > 0:
+            if self.__filaDados.numeroDePacotesNaFila() > 0:
                 proximoPacote = self.__filaDados.PacoteEmAtendimento()
                 proximoPacote.setTempoChegadaServico(self.__tempoAtual)
                 
@@ -406,7 +394,7 @@ class Simulacao(object):
         tempoAnterior = self.__tempoAtual
         self.__tempoAtual += tempoRestante
         
-        self.agregarEmSomatorioPessoasPorTempo(tempoRestante)
+        self.agregarEmSomatorioPacotesPorTempo(tempoRestante)
 
         # Tres eventos principais, tres ifs principais.
         if proximoEvento.tipo() == EVENTO_PACOTE_VOZ_CHEGADA:
@@ -423,11 +411,11 @@ class Simulacao(object):
         
 
     """ Principal metodo da classe Simulacao. Aqui a simulacao eh iniciada. """
-    def executarSimulacao(self, seed, lambdaValue, interrupcoes, numeroDePacotesPorRodada, rodadas, hasOutputFile, variavelDeSaida, testeDeCorretude, intervaloDeConfianca):
+    def executarSimulacao(self, seed, lambdaValue, interrupcoes, numeroDePacotesPorFase, fases, hasOutputFile, variavelDeSaida, testeDeCorretude, intervaloDeConfianca):
         self.__lambd = lambdaValue
         self.__interrupcoes = interrupcoes
-        self.__numero_de_pacotes_por_fase = numeroDePacotesPorRodada
-        self.__numero_de_fases = rodadas
+        self.__numero_de_pacotes_por_fase = numeroDePacotesPorFase
+        self.__numero_de_fases = fases
         self.__intervaloDeConfianca = intervaloDeConfianca
 
         self.__output_type = variavelDeSaida
@@ -479,6 +467,11 @@ def randomNumberDistantFrom(numbersList, distance):
 
 
 app = Flask(__name__)
+
+handler = logging.FileHandler('/simulador/templates/app.log')  # errors logged to this file
+handler.setLevel(logging.ERROR)  # only log errors and above
+app.logger.addHandler(handler)
+
 
 @app.route("/")
 def indexPage():
