@@ -176,11 +176,11 @@ class Fase(object):
                 somatorioW2 += pacote.getTempoEsperaFila()
                 divisorW2 += 1
 
-        EX1 = 0 if divisorX1 == 0 else somatorioX1/divisorX1
-        ET1 = 0 if divisorT1 == 0 else somatorioT1/divisorT1
-        EW1 = 0 if divisorW1 == 0 else somatorioW1/divisorW1
-        ET2 = 0 if divisorT2 == 0 else somatorioT2/divisorT2
-        EW2 = 0 if divisorW2 == 0 else somatorioW2/divisorW2
+        EX1 = None if divisorX1 == 0 else somatorioX1/divisorX1
+        ET1 = None if divisorT1 == 0 else somatorioT1/divisorT1
+        EW1 = None if divisorW1 == 0 else somatorioW1/divisorW1
+        ET2 = None if divisorT2 == 0 else somatorioT2/divisorT2
+        EW2 = None if divisorW2 == 0 else somatorioW2/divisorW2
 
         PacotesVW1 = []
         PacotesVW2 = []
@@ -195,8 +195,8 @@ class Fase(object):
                 PacotesVW2.append(pacote.getVarianciaTempoEsperaFila(EW2))
                 somatorioVW2 += pacote.getVarianciaTempoEsperaFila(EW2)
 
-        EVW1 = 0 if divisorW1 == 0 else somatorioVW1/divisorW1
-        EVW2 = 0 if divisorW2 == 0 else somatorioVW2/divisorW2
+        EVW1 = None if divisorW1 == 0 else somatorioVW1/divisorW1
+        EVW2 = None if divisorW2 == 0 else somatorioVW2/divisorW2
 
         EN1  = self.__somatorioPacotesFilaVozPorTempo     / (tempoAtual - self.__tempoInicial)
         ENq1 = self.__somatorioPacotesFilaEspera1PorTempo / (tempoAtual - self.__tempoInicial)
@@ -209,15 +209,15 @@ class Fase(object):
             view.imprimir("\nFase Recorrente %d:" % (self.__id + 1))
 
         # Impressao dos resultados das estatisticas
-        view.imprimir("p (Dados):      %f" % (EX1*lambd))
-        view.imprimir("Fila e estavel: %s" % ("Sim" if EX1*lambd < 0.8314 else "Nao"))
+        view.imprimir("p (Dados):      %f" % ((EX1*lambd)/1000 if EX1 != None else 0))
+        view.imprimir("Fila e estavel: %s" % ("Sim" if EX1 == None or (EX1*lambd)/1000 <= 0.8314 else "Nao"))
         view.imprimir("")
-        view.imprimir("E[X]  (Dados):  %f" % (EX1))
-        view.imprimir("E[T]  (Dados):  %f" % (ET1))
-        view.imprimir("E[W]  (Dados):  %f" % (EW1))
-        view.imprimir("V(W)  (Dados):  %f" % (EVW1))
-        view.imprimir("E[N]  (Dados):  %f" % (EN1))
-        view.imprimir("E[Nq] (Dados):  %f" % (ENq1))
+        view.imprimir("E[X]  (Dados):  %s" % (str(EX1)  if EX1  != None else "Nenhum"))
+        view.imprimir("E[T]  (Dados):  %s" % (str(ET1)  if ET1  != None else "Nenhum"))
+        view.imprimir("E[W]  (Dados):  %s" % (str(EW1)  if EW1  != None else "Nenhum"))
+        view.imprimir("V(W)  (Dados):  %s" % (str(EVW1) if EVW1 != None else "Nenhum"))
+        view.imprimir("E[N]  (Dados):  %s" % (str(EN1)  if EN1  != None else "Nenhum"))
+        view.imprimir("E[Nq] (Dados):  %s" % (str(ENq1) if ENq1 != None else "Nenhum"))
         view.imprimir("")
         view.imprimir("E[T]  (Voz):    %f" % (ET2))
         view.imprimir("E[W]  (Voz):    %f" % (EW2))
