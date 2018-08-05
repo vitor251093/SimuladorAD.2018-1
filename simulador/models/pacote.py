@@ -3,11 +3,12 @@
 
 class Pacote(object):
 
-    def __init__(self, id, tempoChegadaNoSistema, indiceDaCor, canal=-1):
+    def __init__(self, id, tempoChegadaNoSistema, indiceDaCor, canal=-1, indiceEmCanal=0):
         self.__id = id
 
         self.__indiceDaCor = indiceDaCor
         self.__canal = canal # Usado apenas por pacotes de voz (0 a 29)
+        self.__indice_em_canal = indiceEmCanal
 
         self.__tempoChegadaFila = tempoChegadaNoSistema
         self.__tempoChegadaServico = 0.0
@@ -41,6 +42,12 @@ class Pacote(object):
     
     def getCanal(self):
         return self.__canal
+
+    def getIndiceEmCanal(self):
+        return self.__indice_em_canal
+
+    def ehPacoteDeVoz(self):
+        return self.__canal != -1
     
     def getTempoChegadaFila(self):
         return self.__tempoChegadaFila

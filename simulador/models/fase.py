@@ -1,3 +1,4 @@
+from ..controllers.calculadora_voz import *
 from ..controllers.calculadora_ic import *
 from ..views.view import *
 
@@ -18,6 +19,8 @@ class Fase(object):
         self.__somatorioPacotesFilaEspera1PorTempo = 0
         self.__somatorioPacotesFilaDadosPorTempo = 0
         self.__somatorioPacotesFilaEspera2PorTempo = 0
+
+        self.__varianciaPorPeriodosDeChegadasDePacotesDeVoz = [] # Delta J
         
     def adicionarPacote(self, pacote):
         self.__pacotes.append(pacote)
@@ -135,6 +138,9 @@ class Fase(object):
         self.__somatorioPacotesFilaEspera2PorTempo += tempo * numeroDePacotes
 
 
+    def varianciaPorPeriodosDeChegadasDePacotesDeVoz(self):
+        return self.__varianciaPorPeriodosDeChegadasDePacotesDeVoz
+
     def calcularEstatisticas(self, tempoAtual, view, intervaloDeConfianca, lambd):
         # Calculo de estatisticas da simulacao
         PacotesX1 = []
@@ -240,3 +246,5 @@ class Fase(object):
         view.imprimir("IC E[N]  (Voz):    %f - %f" % (calculadora.intervaloDeConfiancaDeAmostrasComMedia(self.__pacotesFilaDadosPorTempo, EN2)))
         view.imprimir("IC E[Nq] (Voz):    %f - %f" % (calculadora.intervaloDeConfiancaDeAmostrasComMedia(self.__pacotesFilaEspera2PorTempo, ENq2)))
         view.imprimir("")
+
+        self.__varianciaPorPeriodosDeChegadasDePacotesDeVoz = CalculadoraVoz.varianciaPorPeriodosDeChegadasDePacotesDeVoz(self.__pacotes)

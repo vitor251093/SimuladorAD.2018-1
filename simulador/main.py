@@ -1,4 +1,6 @@
 from controllers.agendador import *
+from controllers.calculadora_ic import *
+from controllers.calculadora_voz import *
 from models.pacote import *
 from models.fila import *
 from models.fase import *
@@ -42,8 +44,8 @@ class Simulacao(object):
         self.__filaVoz = Fila(1)
         self.__filaDados = Fila(2)
         
-        self.__fases = []
         self.__fase = Fase(-1, 0)
+        self.__fases = [self.__fase]
         
         self.__tempoAtual = 0.0
         self.__indice_pacote_atual = 0
@@ -197,6 +199,7 @@ class Simulacao(object):
                     self.__fase.calcularEstatisticas(tempoAnterior, self.__view, self.__intervaloDeConfianca, self.__lambd)
 
                 self.__fase = Fase(indiceDaFase, self.__tempoAtual)
+                self.__fases.append(self.__fase)
 
             corDoPacote = indiceDaFase
         
@@ -212,13 +215,13 @@ class Simulacao(object):
        tambem ocorre aqui, entao aqui tambem ocorrem os calculos estatisticos que sao 
        chamados ao fim de uma fase/rodada."""
 
-    def PacoteEntraNaFilaVoz (self, canal, tempoAnterior, tempoAvancado):
+    def PacoteEntraNaFilaVoz(self, canal, tempoAnterior, tempoAvancado, indiceEmCanal):
         if canal == -1:
             print "ERRO: O tempo deslocado nao se aplica a nenhuma das esperas de canais de voz."
             sys.exit(2)
 
         corDoPacote = self.corDeNovoPacote(tempoAnterior)
-        pacote = Pacote(self.__indice_pacote_atual, self.__tempoAtual, corDoPacote, canal) 
+        pacote = Pacote(self.__indice_pacote_atual, self.__tempoAtual, corDoPacote, canal, indiceEmCanal) 
         
         self.__fase.adicionarPacote(pacote)
         self.__filaVoz.adicionarPacoteAFila(pacote)
@@ -245,21 +248,21 @@ class Simulacao(object):
                 pacote.setTempoServico(tempoAAvancar)
 
                 if self.__agendador.deveAgendarChegadaFilaVoz(pacote.getCanal(),self.__filaVoz):
-                    tempoAAvancar = self.__agendador.agendarChegadaFilaVoz(pacote.getCanal())
-                    novoEvento = Evento(EVENTO_PACOTE_VOZ_CHEGADA, pacote.getCanal(), tempoAAvancar)
+                    indice, tempoAAvancar = self.__agendador.agendarChegadaFilaVoz(pacote.getCanal())
+                    novoEvento = Evento(EVENTO_PACOTE_VOZ_CHEGADA, pacote.getCanal(), tempoAAvancar, indice)
                     self.__lista_de_eventos.append(novoEvento)
 
         if self.__faseTransienteFinalizada == False:
             if self.__agendador.deveAgendarChegadaFilaVoz(pacote.getCanal(),self.__filaVoz):
-                tempoAAvancar = self.__agendador.agendarChegadaFilaVoz(pacote.getCanal())
-                novoEvento = Evento(EVENTO_PACOTE_VOZ_CHEGADA, pacote.getCanal(), tempoAAvancar)
+                indice, tempoAAvancar = self.__agendador.agendarChegadaFilaVoz(pacote.getCanal())
+                novoEvento = Evento(EVENTO_PACOTE_VOZ_CHEGADA, pacote.getCanal(), tempoAAvancar, indice)
                 self.__lista_de_eventos.append(novoEvento)
             return
 
         if self.__fase.getID() + 1 != self.__numero_de_fases or self.__fase.quantidadeDePacotes() != self.__numero_de_pacotes_por_fase:
             if self.__agendador.deveAgendarChegadaFilaVoz(pacote.getCanal(),self.__filaVoz):
-                tempoAAvancar = self.__agendador.agendarChegadaFilaVoz(pacote.getCanal())
-                novoEvento = Evento(EVENTO_PACOTE_VOZ_CHEGADA, pacote.getCanal(), tempoAAvancar)
+                indice, tempoAAvancar = self.__agendador.agendarChegadaFilaVoz(pacote.getCanal())
+                novoEvento = Evento(EVENTO_PACOTE_VOZ_CHEGADA, pacote.getCanal(), tempoAAvancar, indice)
                 self.__lista_de_eventos.append(novoEvento)
 
 
@@ -329,8 +332,8 @@ class Simulacao(object):
             novoPacote.setTempoServico(novoEvento.tempoRestante())
 
             if self.__agendador.deveAgendarChegadaFilaVoz(novoPacote.getCanal(),self.__filaVoz):
-                tempoAAvancar = self.__agendador.agendarChegadaFilaVoz(novoPacote.getCanal())
-                novoEvento = Evento(EVENTO_PACOTE_VOZ_CHEGADA, novoPacote.getCanal(), tempoAAvancar)
+                indice, tempoAAvancar = self.__agendador.agendarChegadaFilaVoz(novoPacote.getCanal())
+                novoEvento = Evento(EVENTO_PACOTE_VOZ_CHEGADA, novoPacote.getCanal(), tempoAAvancar, indice)
                 self.__lista_de_eventos.append(novoEvento)
         else:
             if self.__filaDados.numeroDePacotesNaFila() > 0:
@@ -372,8 +375,8 @@ class Simulacao(object):
             novoPacote.setTempoServico(novoEvento.tempoRestante())
 
             if self.__agendador.deveAgendarChegadaFilaVoz(novoPacote.getCanal(),self.__filaVoz):
-                tempoAAvancar = self.__agendador.agendarChegadaFilaVoz(novoPacote.getCanal())
-                novoEvento = Evento(EVENTO_PACOTE_VOZ_CHEGADA, novoPacote.getCanal(), tempoAAvancar)
+                indice, tempoAAvancar = self.__agendador.agendarChegadaFilaVoz(novoPacote.getCanal())
+                novoEvento = Evento(EVENTO_PACOTE_VOZ_CHEGADA, novoPacote.getCanal(), tempoAAvancar, indice)
                 self.__lista_de_eventos.append(novoEvento)
         else:
             if self.__filaDados.numeroDePacotesNaFila() > 0:
@@ -392,7 +395,7 @@ class Simulacao(object):
             return e.tempoRestante()
         self.__lista_de_eventos.sort(key=tempoRestanteDeEvento)
 
-        return self.__lista_de_eventos.pop(0) if self.__lista_de_eventos.count > 0 else None
+        return self.__lista_de_eventos.pop(0) if len(self.__lista_de_eventos) > 0 else None
 
 
     """ O metodo executarProximoEvento(), como o proprio nome diz, executa o proximo evento,
@@ -411,7 +414,7 @@ class Simulacao(object):
 
         # Tres eventos principais, tres ifs principais.
         if proximoEvento.tipo() == EVENTO_PACOTE_VOZ_CHEGADA:
-            self.PacoteEntraNaFilaVoz(proximoEvento.canal(), tempoAnterior, tempoRestante)
+            self.PacoteEntraNaFilaVoz(proximoEvento.canal(), tempoAnterior, tempoRestante, proximoEvento.indiceEmCanal())
 
         if proximoEvento.tipo() == EVENTO_PACOTE_DADOS_CHEGADA:
             self.PacoteEntraNaFilaDados(tempoAnterior)
@@ -441,8 +444,8 @@ class Simulacao(object):
         # Comecamos agendando a chegada do primeiro Pacote no sistema.
         # A partir dela os proximos eventos sao gerados no loop principal da simulacao (mais abaixo).
         for indice in range(30):
-            tempoAAvancar = self.__agendador.agendarChegadaFilaVoz(indice)
-            novoEvento = Evento(EVENTO_PACOTE_VOZ_CHEGADA, indice, tempoAAvancar)
+            indice, tempoAAvancar = self.__agendador.agendarChegadaFilaVoz(indice)
+            novoEvento = Evento(EVENTO_PACOTE_VOZ_CHEGADA, indice, tempoAAvancar, indice)
             self.__lista_de_eventos.append(novoEvento)
         
         tempoAAvancar = self.__agendador.agendarChegadaFilaDados(self.__lambd)
@@ -456,6 +459,16 @@ class Simulacao(object):
 
         if self.__output_type == 0:
             self.__fase.calcularEstatisticas(self.__tempoAtual, self.__view, self.__intervaloDeConfianca, self.__lambd)
+            EDeltaK, EDelta, VDeltaK, VDelta = CalculadoraVoz.esperancaEVarianciaDaVarianciaDeChegadasDePacotesDeVoz(self.__fases)
+
+            calculadora = CalculadoraIC(self.__intervaloDeConfianca)
+            self.__view.imprimir("")
+            self.__view.imprimir("")
+            self.__view.imprimir("Inicio da transmissao de pacotes de voz:")
+            self.__view.imprimir("E[Delta]:     %f" % (EDelta))
+            self.__view.imprimir("IC E[Delta]:  %f - %f" % (calculadora.intervaloDeConfiancaDeAmostras(EDeltaK)))
+            self.__view.imprimir("V(Delta):     %f" % (VDelta))
+            self.__view.imprimir("IC V(Delta):  %f - %f" % (calculadora.intervaloDeConfiancaDeAmostras(VDeltaK)))
 
         return self.__view.gravarArquivoDeSaida()
         

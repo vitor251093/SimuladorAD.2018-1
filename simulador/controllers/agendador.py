@@ -73,7 +73,7 @@ class Agendador(object):
             
             if self.__testeDeCorretude == True:
                 self.__pacoteFilaVozTotal[canal] = 22
-                return espera_previa + 650
+                return self.__pacoteFilaVozIndice[canal], espera_previa + 650
             
             # Definindo a quantidade de pacotes que virao na nova remessa
             p = 1.0/22.0
@@ -81,10 +81,10 @@ class Agendador(object):
             self.__pacoteFilaVozTotal[canal] = math.ceil(n)
 
             # Calculando o tempo de silencio necessario para a nova remessa comecar
-            return espera_previa + random.expovariate(1.0/650)
+            return self.__pacoteFilaVozIndice[canal], espera_previa + random.expovariate(1.0/650)
 
         self.__pacoteFilaVozIndice[canal] += 1
-        return 16
+        return self.__pacoteFilaVozIndice[canal], 16
 
     def agendarChegadaFilaDados(self, lambd):
         if self.__testeDeCorretude == True:
