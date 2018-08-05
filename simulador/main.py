@@ -54,7 +54,8 @@ class Simulacao(object):
 
         ### Atributos usados para determinar o fim da fase transiente
         self.__quantidadeDeEventosPorVariancia = 1000
-        self.__diferencaAceitavelDasVariancias = 0.0000002
+        #self.__diferencaAceitavelDasVariancias = 0.0000002
+        self.__diferencaAceitavelDasVariancias = 0.002
         self.__eventosDaVariancia1 = []
         self.__duracaoEventosDaVariancia1 = []
         self.__eventosDaVariancia2 = []
@@ -166,8 +167,6 @@ class Simulacao(object):
                 print "Fase transiente finalizada"
                 self.__faseTransienteFinalizada = True
                 return
-            else:
-                print abs(self.__variancia1 - self.__variancia2)
             
             self.__eventosDaVariancia1 = self.__eventosDaVariancia2
             self.__duracaoEventosDaVariancia1 = self.__duracaoEventosDaVariancia2
