@@ -70,7 +70,7 @@ class CalculadoraVoz(object):
             vdeltaJ = 0
             varianciaPorPeriodos = fase.varianciaPorPeriodosDeChegadasDePacotesDeVoz() # Delta J
             for varianciaPorPeriodo in varianciaPorPeriodos:
-                vdeltaJ += (varianciaPorPeriodo - esperancaDaVarianciaPorFase[fase.getID() + 1]) ** 2
+                vdeltaJ += (varianciaPorPeriodo - esperancaDaVarianciaPorFase[fase.getID()]) ** 2
             vdeltaJ /= (len(varianciaPorPeriodos) - 1)
             varianciaDaVarianciaPorFase.append(vdeltaJ)
 
