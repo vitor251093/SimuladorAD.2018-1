@@ -56,7 +56,7 @@ class Agendador(object):
             return
         
         random.seed(seed)
-        numpy.random.seed(seed)
+        numpy.random.RandomState(seed=int(seed*100000000))
 
     def agendarChegadaFilaVoz(self, canal): 
         espera_previa = 0
