@@ -59,6 +59,8 @@ class Simulacao(object):
         self.__duracaoEventosDaVariancia1 = []
         self.__eventosDaVariancia2 = []
         self.__duracaoEventosDaVariancia2 = []
+        self.__variancia1 = -1
+        self.__variancia2 = -1
 
 
     """ Esse metodo apenas fica responsavel por relizar os somatorios
@@ -81,9 +83,10 @@ class Simulacao(object):
                 self.__fase.inserirNumeroDePacotesPorTempoNaFilaEspera2(0, tempo)
 
     def adicionarEvento (self, Pacote, evento, fila, momento):
-        ENt = self.__fase.getEsperancaDeN(momento)
+        ENt = 0
 
         if self.__output_type == 1:
+            ENt = self.__fase.getEsperancaDeN(momento)
             self.__view.imprimir("%f,%d" % (ENt, self.__fase.getID()))
         if self.__output_type == 2:
             self.__view.imprimir("%f,%d" % (self.__fase.getEsperancaDeN1(momento), self.__fase.getID()))
@@ -113,6 +116,9 @@ class Simulacao(object):
         if self.__faseTransienteFinalizada == True:
             return
 
+        if ENt == 0:
+            ENt = self.__fase.getEsperancaDeN(momento)
+
 
         # Daqui para baixo, essa funcao realiza o calculo que define quando
         # a fase transiente acaba. Comparando a variancia das ultimas 1000
@@ -124,40 +130,51 @@ class Simulacao(object):
             self.__eventosDaVariancia1.append(ENt)
             self.__duracaoEventosDaVariancia1.append(momento)
 
-        else: 
-            if len(self.__eventosDaVariancia2) < self.__quantidadeDeEventosPorVariancia:
-                self.__eventosDaVariancia2.append(ENt)
-                self.__duracaoEventosDaVariancia2.append(momento)
+            if len(self.__eventosDaVariancia1) == self.__quantidadeDeEventosPorVariancia:
+                media1 = 0
+                duracao1 = 0
+                for indiceEvento in range(self.__quantidadeDeEventosPorVariancia):
+                    media1 += self.__eventosDaVariancia1[indiceEvento]*self.__duracaoEventosDaVariancia1[indiceEvento]
+                    duracao1 += self.__duracaoEventosDaVariancia1[indiceEvento]
+                media1 /= duracao1
+                
+                self.__variancia1 = 0
+                for indiceEvento in range(self.__quantidadeDeEventosPorVariancia):
+                    self.__variancia1 += (self.__eventosDaVariancia1[indiceEvento] - media1)**2
+                self.__variancia1 /= (self.__quantidadeDeEventosPorVariancia - 1)
 
-                if len(self.__eventosDaVariancia2) == self.__quantidadeDeEventosPorVariancia:
-                    media1 = 0
-                    media2 = 0
-                    duracao1 = 0
-                    duracao2 = 0
-                    for indiceEvento in range(self.__quantidadeDeEventosPorVariancia):
-                        media1 += self.__eventosDaVariancia1[indiceEvento]*self.__duracaoEventosDaVariancia1[indiceEvento]
-                        media2 += self.__eventosDaVariancia2[indiceEvento]*self.__duracaoEventosDaVariancia2[indiceEvento]
-                        duracao1 += self.__duracaoEventosDaVariancia1[indiceEvento]
-                        duracao2 += self.__duracaoEventosDaVariancia2[indiceEvento]
-                    media1 /= duracao1
-                    media2 /= duracao2
-                    
-                    variancia1 = 0
-                    variancia2 = 0
-                    for indiceEvento in range(self.__quantidadeDeEventosPorVariancia):
-                        variancia1 += (self.__eventosDaVariancia1[indiceEvento] - media1)**2
-                        variancia2 += (self.__eventosDaVariancia2[indiceEvento] - media2)**2
-                    variancia1 /= (self.__quantidadeDeEventosPorVariancia - 1)
-                    variancia2 /= (self.__quantidadeDeEventosPorVariancia - 1)
+            return
 
-                    if abs(variancia1 - variancia2) < self.__diferencaAceitavelDasVariancias:
-                        print "Fase transiente finalizada"
-                        self.__faseTransienteFinalizada = True
-                    else:
-                        self.__eventosDaVariancia1 = self.__eventosDaVariancia2
-                        self.__duracaoEventosDaVariancia1 = self.__duracaoEventosDaVariancia2
-                        self.__eventosDaVariancia2 = []
-                        self.__duracaoEventosDaVariancia2 = []
+        if len(self.__eventosDaVariancia2) < self.__quantidadeDeEventosPorVariancia:
+            self.__eventosDaVariancia2.append(ENt)
+            self.__duracaoEventosDaVariancia2.append(momento)
+
+        if len(self.__eventosDaVariancia2) == self.__quantidadeDeEventosPorVariancia:
+            media2 = 0
+            duracao2 = 0
+            for indiceEvento in range(self.__quantidadeDeEventosPorVariancia):
+                media2 += self.__eventosDaVariancia2[indiceEvento]*self.__duracaoEventosDaVariancia2[indiceEvento]
+                duracao2 += self.__duracaoEventosDaVariancia2[indiceEvento]
+            media2 /= duracao2
+            
+            self.__variancia2 = 0
+            for indiceEvento in range(self.__quantidadeDeEventosPorVariancia):
+                self.__variancia2 += (self.__eventosDaVariancia2[indiceEvento] - media2)**2
+            self.__variancia2 /= (self.__quantidadeDeEventosPorVariancia - 1)
+
+            if abs(self.__variancia1 - self.__variancia2) < self.__diferencaAceitavelDasVariancias:
+                print "Fase transiente finalizada"
+                self.__faseTransienteFinalizada = True
+                return
+            else:
+                print abs(self.__variancia1 - self.__variancia2)
+            
+            self.__eventosDaVariancia1 = self.__eventosDaVariancia2
+            self.__duracaoEventosDaVariancia1 = self.__duracaoEventosDaVariancia2
+            self.__variancia1 = self.__variancia2
+            self.__eventosDaVariancia2 = []
+            self.__duracaoEventosDaVariancia2 = []
+            self.__variancia2 = -1
 
 
     def corDeNovoPacote(self, tempoAnterior):
