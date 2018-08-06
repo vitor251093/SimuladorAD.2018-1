@@ -208,8 +208,8 @@ class Fase(object):
                 somatorioW1 += pacote.getTempoEsperaFila()
                 divisorW1 += 1
 
-                PacotesX1.append(pacote.getTempoTotalServico())
-                somatorioX1 += pacote.getTempoTotalServico()
+                PacotesX1.append(pacote.getTempoServico())
+                somatorioX1 += pacote.getTempoServico()
                 divisorX1 += 1
 
         for pacote in self.__pacotesVoz:
