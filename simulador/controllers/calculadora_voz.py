@@ -18,20 +18,20 @@ class CalculadoraVoz(object):
                 canalAtual = pacote.getCanal() # 0 a 29
                 indice = pacote.getIndiceEmCanal() # 1+
                 
-                if ultimoIndiceVistoEmCanal[canalAtual] == indice:
+                if ultimoIndiceVistoEmCanal[canalAtual] > indice:
                     numeroDeVezesQueCanalFoiPercorrido[canalAtual] += 1
                 ultimoIndiceVistoEmCanal[canalAtual] = indice
                     
                 if indice == 1:
                     chegada = pacote.getTempoChegadaFila()
-                    if numeroDeVezesQueCanalFoiPercorrido[canalAtual] <= len(somatorioJ):
-                        valoresJ.append([chegada])
-                        somatorioJ.append(chegada)
-                        divisorJ.append(1)
-                    else:
-                        valoresJ[numeroDeVezesQueCanalFoiPercorrido[canalAtual]].append(chegada)
-                        somatorioJ[numeroDeVezesQueCanalFoiPercorrido[canalAtual]] += chegada
-                        divisorJ[numeroDeVezesQueCanalFoiPercorrido[canalAtual]] += 1
+                    while numeroDeVezesQueCanalFoiPercorrido[canalAtual] >= len(somatorioJ):
+                        valoresJ.append([])
+                        somatorioJ.append(0)
+                        divisorJ.append(0)
+
+                    valoresJ[numeroDeVezesQueCanalFoiPercorrido[canalAtual]].append(chegada)
+                    somatorioJ[numeroDeVezesQueCanalFoiPercorrido[canalAtual]] += chegada
+                    divisorJ[numeroDeVezesQueCanalFoiPercorrido[canalAtual]] += 1
 
         mediaIntervaloDeChegadaPorPeriodo = []
         for indice in range(len(somatorioJ)):
@@ -70,7 +70,7 @@ class CalculadoraVoz(object):
             vdeltaJ = 0
             varianciaPorPeriodos = fase.varianciaPorPeriodosDeChegadasDePacotesDeVoz() # Delta J
             for varianciaPorPeriodo in varianciaPorPeriodos:
-                vdeltaJ += (varianciaPorPeriodo - esperancaDaVarianciaPorFase[fase.getID()]) ** 2
+                vdeltaJ += ((varianciaPorPeriodo - esperancaDaVarianciaPorFase[fase.getID()]) ** 2)
             vdeltaJ /= (len(varianciaPorPeriodos) - 1)
             varianciaDaVarianciaPorFase.append(vdeltaJ)
 

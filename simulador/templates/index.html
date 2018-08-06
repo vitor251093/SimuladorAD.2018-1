@@ -35,6 +35,10 @@
             <input type="radio" name="variavel" value="11"> V(W) (Dados)<br>
             <input type="radio" name="variavel" value="12"> Eventos (Terminal)
         </form>
+        <br/><b>Fase transiente:</b><br/>
+        <label>Tamanho de amostra*:</label>  <input type="text" id="transamostra" style="width:70px;" value="1000"/><br>
+        <label>Margem de variância*:</label> <input type="text" id="transmargem"  style="width:70px;" value="0.002"/><br>
+        <br/><b>Geral:</b><br/>
         <label>Lambda*:</label>                 <input type="text" id="lambda"           style="width:70px;" value="0.3"/><br>
         <label>Pacotes por rodada*:</label>     <input type="text" id="pacotesporrodada" style="width:70px;" value="20000"/><br>
         <label>Número de rodadas*:</label>      <input type="text" id="rodadas"          style="width:70px;" value="100"/><br>
@@ -158,6 +162,8 @@
             var simulacoes = document.getElementById("simulacoes").value;
             var confianca = document.getElementById("confianca").value;
             var semente = document.getElementById("semente").value || "0";
+            var transamostra = document.getElementById("transamostra").value;
+            var transmargem = document.getElementById("transmargem").value;
 
             var teste = document.getElementById("teste").checked;
             var interrupcoes = document.getElementById("interrupcoes").checked;
@@ -195,7 +201,9 @@
                         teste: teste,
                         variavel: variavelAtiva,
                         confianca: confianca,
-                        semente: semente};
+                        semente: semente,
+                        transamostra: transamostra,
+                        transmargem: transmargem};
 
             var argsArray = [];
             var argKeys = Object.keys(args);

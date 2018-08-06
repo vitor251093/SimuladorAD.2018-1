@@ -9,10 +9,12 @@ class CalculadoraIC(object):
     def tabelaTStudent(self, grausDeLiberdade):
         return scipy.stats.t.ppf(1 - self.__intervaloDeConfianca, grausDeLiberdade)
 
-    def intervaloDeConfiancaDeAmostras(self, amostras, tamanho):
+    def intervaloDeConfiancaDeAmostras(self, amostrasOriginal, tamanho):
         n = tamanho
         if n <= 1:
             return 0, 0
+
+        amostras = list(amostrasOriginal)
 
         grausDeLiberdade = (n - 1)
         tc = self.tabelaTStudent(grausDeLiberdade)
