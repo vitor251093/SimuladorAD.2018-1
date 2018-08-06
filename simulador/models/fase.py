@@ -180,6 +180,9 @@ class Fase(object):
 
     def calcularEstatisticas(self, tempoAtual, view, intervaloDeConfianca, lambd):
         # Calculo de estatisticas da simulacao
+        # 1: Dados
+        # 2: Voz
+
         PacotesX1 = []
         PacotesT1 = []
         PacotesW1 = []
@@ -222,6 +225,7 @@ class Fase(object):
         self.__EX1 = None if divisorX1 == 0 else somatorioX1/divisorX1
         self.__ET1 = None if divisorT1 == 0 else somatorioT1/divisorT1
         self.__EW1 = None if divisorW1 == 0 else somatorioW1/divisorW1
+
         self.__ET2 = None if divisorT2 == 0 else somatorioT2/divisorT2
         self.__EW2 = None if divisorW2 == 0 else somatorioW2/divisorW2
 
