@@ -101,7 +101,7 @@ class Agendador(object):
         return True
 
     def agendarTempoDeServicoFilaVoz(self, canal, filaVoz):
-        tempo = self.__tamanhoPacoteVoz/self.__taxaDeTransmissao # ms
+        tempo = self.__tamanhoPacoteVoz/self.__taxaDeTransmissao # 0.256 ms
 
         indice = self.__pacoteFilaVozIndice[canal]
         total  = self.__pacoteFilaVozTotal[canal]
@@ -112,7 +112,7 @@ class Agendador(object):
 
     def agendarTempoDeServicoFilaDados(self):
         if self.__testeDeCorretude == True:
-            return (754.8*8.0)/self.__taxaDeTransmissao
+            return (754.8*8.0)/self.__taxaDeTransmissao # 3.0192 ms
 
         Lbytes = self.valorDeLComProbabilidade(random.random())
         return (Lbytes*8.0)/self.__taxaDeTransmissao
