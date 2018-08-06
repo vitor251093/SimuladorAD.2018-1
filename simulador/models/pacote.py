@@ -66,7 +66,7 @@ class Pacote(object):
 
     ### Getters para calculos estatisticos
     def getTempoEsperaFila(self): # W2
-        return self.getTempoTerminoServico() - self.getTempoChegadaFila() - self.getTempoServico()
+        return self.getTempoTotalSistema() - self.getTempoServico()
 
     def getTempoTotalServico(self): # X2
         return self.getTempoTerminoServico() - self.getTempoChegadaServico()
