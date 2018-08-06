@@ -16,17 +16,25 @@ class CalculadoraIC(object):
 
         amostras = list(amostrasOriginal)
 
-        grausDeLiberdade = (n - 1)
-        tc = self.tabelaTStudent(grausDeLiberdade)
-
+        countAmostral = 0
         mediaAmostral = 0.0
         for amostra in amostras:
-            mediaAmostral += amostra
-        mediaAmostral /= n
+            if amostra != None:
+                mediaAmostral += amostra
+                countAmostral += 1
+        
+        if countAmostral == 0:
+            return -1, -1
+
+        mediaAmostral /= countAmostral
+
+        grausDeLiberdade = (countAmostral - 1)
+        tc = self.tabelaTStudent(grausDeLiberdade)
 
         desvioPadrao = 0.0
         for amostra in amostras:
-            desvioPadrao += (amostra - mediaAmostral) ** 2
+            if amostra != None:
+                desvioPadrao += (amostra - mediaAmostral) ** 2
         desvioPadrao /= grausDeLiberdade
         desvioPadrao = math.sqrt(desvioPadrao)
 

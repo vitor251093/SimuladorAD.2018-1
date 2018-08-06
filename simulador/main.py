@@ -72,9 +72,9 @@ class Simulacao(object):
         self.__fase.inserirNumeroDePacotesPorTempoNaFilaDados(self.__filaDados.numeroDePacotesNaFila(), tempo)
 
         if self.__filaVoz.numeroDePacotesNaFila() > 0:
-            self.__fase.inserirNumeroDePacotesPorTempoNaFilaEspera1(self.__filaVoz.numeroDePacotesNaFila() - 1, tempo)
+            self.__fase.inserirNumeroDePacotesPorTempoNaFilaEsperaVoz(self.__filaVoz.numeroDePacotesNaFila() - 1, tempo)
         else:
-            self.__fase.inserirNumeroDePacotesPorTempoNaFilaEspera1(0, tempo)
+            self.__fase.inserirNumeroDePacotesPorTempoNaFilaEsperaVoz(0, tempo)
 
         if self.__filaVoz.numeroDePacotesNaFila() > 0:
             self.__fase.inserirNumeroDePacotesPorTempoNaFilaEspera2(self.__filaDados.numeroDePacotesNaFila(), tempo)
@@ -424,14 +424,17 @@ class Simulacao(object):
         if proximoEvento.tipo() == EVENTO_PACOTE_DADOS_FINALIZADO:
             self.PacoteTerminaServicoNaFilaDados()
         
-    def media(self, listaOriginal, tamanho):
+    def media(self, listaOriginal):
         value = 0
+        count = 0
         lista = list(listaOriginal) # Transformando generator em lista
         for item in lista:
-            if item == None:
-                return 0
-            value += item
-        return value / tamanho
+            if item != None:
+                value += item
+                count += 1
+        if count == 0:
+            return -1
+        return value / count
     
     """ Principal metodo da classe Simulacao. Aqui a simulacao eh iniciada. """
     def executarSimulacao(self, seed, lambdaValue, transienteAmostras, transienteMargem, interrupcoes, numeroDePacotesPorFase, fases, hasOutputFile, variavelDeSaida, testeDeCorretude, intervaloDeConfianca):
@@ -471,27 +474,27 @@ class Simulacao(object):
             self.__fase.calcularEstatisticas(self.__tempoAtual, self.__view, self.__intervaloDeConfianca, self.__lambd)
             
             tamanho = len(self.__fases)
-            p = (self.media((f.EX1() for f in self.__fases), tamanho)*lambdaValue)/1000
+            p = (self.media((f.EX1() for f in self.__fases))*lambdaValue)/1000
             calculadora = CalculadoraIC(self.__intervaloDeConfianca)
             EDeltaK, EDelta, VDeltaK, VDelta = CalculadoraVoz.esperancaEVarianciaDaVarianciaDeChegadasDePacotesDeVoz(self.__fases)
             
             self.__view.imprimir("p (Dados):      %f" % (p))
             self.__view.imprimir("Fila e estavel: %s" % ("Sim" if p <= 0.8314 else "Nao"))
             self.__view.imprimir("")
-            self.__view.imprimir("E[T]     (Dados):  %f" % (self.media((f.ET1()  for f in self.__fases),tamanho)))
+            self.__view.imprimir("E[T]     (Dados):  %f" % (self.media((f.ET1()  for f in self.__fases))))
             self.__view.imprimir("IC E[T]  (Dados):  %f - %f" % (calculadora.intervaloDeConfiancaDeAmostras((f.ET1()  for f in self.__fases),tamanho)))
-            self.__view.imprimir("E[W]     (Dados):  %f" % (self.media((f.EW1()  for f in self.__fases),tamanho)))
+            self.__view.imprimir("E[W]     (Dados):  %f" % (self.media((f.EW1()  for f in self.__fases))))
             self.__view.imprimir("IC E[W]  (Dados):  %f - %f" % (calculadora.intervaloDeConfiancaDeAmostras((f.EW1()  for f in self.__fases),tamanho)))
-            self.__view.imprimir("E[X]     (Dados):  %f" % (self.media((f.EX1()  for f in self.__fases),tamanho)))
+            self.__view.imprimir("E[X]     (Dados):  %f" % (self.media((f.EX1()  for f in self.__fases))))
             self.__view.imprimir("IC E[X]  (Dados):  %f - %f" % (calculadora.intervaloDeConfiancaDeAmostras((f.EX1()  for f in self.__fases),tamanho)))
-            self.__view.imprimir("E[Nq]    (Dados):  %f" % (self.media((f.ENq1() for f in self.__fases),tamanho)))
+            self.__view.imprimir("E[Nq]    (Dados):  %f" % (self.media((f.ENq1() for f in self.__fases))))
             self.__view.imprimir("IC E[Nq] (Dados):  %f - %f" % (calculadora.intervaloDeConfiancaDeAmostras((f.ENq1() for f in self.__fases),tamanho)))
             self.__view.imprimir("")
-            self.__view.imprimir("E[T]     (Voz): %f" % (self.media((f.ET2()  for f in self.__fases),tamanho)))
+            self.__view.imprimir("E[T]     (Voz): %f" % (self.media((f.ET2()  for f in self.__fases))))
             self.__view.imprimir("IC E[T]  (Voz): %f - %f" % (calculadora.intervaloDeConfiancaDeAmostras((f.ET2()  for f in self.__fases),tamanho)))
-            self.__view.imprimir("E[W]     (Voz): %f" % (self.media((f.EW2()  for f in self.__fases),tamanho)))
+            self.__view.imprimir("E[W]     (Voz): %f" % (self.media((f.EW2()  for f in self.__fases))))
             self.__view.imprimir("IC E[W]  (Voz): %f - %f" % (calculadora.intervaloDeConfiancaDeAmostras((f.EW2()  for f in self.__fases),tamanho)))
-            self.__view.imprimir("E[Nq]    (Voz): %f" % (self.media((f.ENq2() for f in self.__fases),tamanho)))
+            self.__view.imprimir("E[Nq]    (Voz): %f" % (self.media((f.ENq2() for f in self.__fases))))
             self.__view.imprimir("IC E[Nq] (Voz): %f - %f" % (calculadora.intervaloDeConfiancaDeAmostras((f.ENq2() for f in self.__fases),tamanho)))
             self.__view.imprimir("")
             self.__view.imprimir("Inicio da transmissao de pacotes de voz:")
@@ -500,13 +503,13 @@ class Simulacao(object):
             self.__view.imprimir("V(Delta):     %f" % (VDelta))
             self.__view.imprimir("IC V(Delta):  %f - %f" % (calculadora.intervaloDeConfiancaDeAmostras(VDeltaK, len(VDeltaK))))
             self.__view.imprimir("")
-            self.__view.imprimir("E[N]    (Dados): %f" % (self.media((f.EN1()  for f in self.__fases),tamanho)))
+            self.__view.imprimir("E[N]    (Dados): %f" % (self.media((f.EN1()  for f in self.__fases))))
             self.__view.imprimir("IC E[N] (Dados): %f - %f" % (calculadora.intervaloDeConfiancaDeAmostras((f.EN1()  for f in self.__fases),tamanho)))
-            self.__view.imprimir("V(W)    (Dados): %f" % (self.media((f.EVW1() for f in self.__fases),tamanho)))
+            self.__view.imprimir("V(W)    (Dados): %f" % (self.media((f.EVW1() for f in self.__fases))))
             self.__view.imprimir("IC V(W) (Dados): %f - %f" % (calculadora.intervaloDeConfiancaDeAmostras((f.EVW1() for f in self.__fases),tamanho)))
-            self.__view.imprimir("E[N]    (Voz):   %f" % (self.media((f.EN2()  for f in self.__fases),tamanho)))
+            self.__view.imprimir("E[N]    (Voz):   %f" % (self.media((f.EN2()  for f in self.__fases))))
             self.__view.imprimir("IC E[N] (Voz):   %f - %f" % (calculadora.intervaloDeConfiancaDeAmostras((f.EN2()  for f in self.__fases),tamanho)))
-            self.__view.imprimir("V(W)    (Voz):   %f" % (self.media((f.EVW2() for f in self.__fases),tamanho)))
+            self.__view.imprimir("V(W)    (Voz):   %f" % (self.media((f.EVW2() for f in self.__fases))))
             self.__view.imprimir("IC V(W) (Voz):   %f - %f" % (calculadora.intervaloDeConfiancaDeAmostras((f.EVW2() for f in self.__fases),tamanho)))
 
         return self.__view.gravarArquivoDeSaida()

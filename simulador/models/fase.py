@@ -16,9 +16,9 @@ class Fase(object):
         self.__pacotesFilaDadosPorTempo = []
         self.__pacotesFilaEsperaDadosPorTempo = []
         self.__somatorioPacotesFilaVozPorTempo = 0
-        self.__somatorioPacotesFilaEspera1PorTempo = 0
+        self.__somatorioPacotesFilaEsperaVozPorTempo = 0
         self.__somatorioPacotesFilaDadosPorTempo = 0
-        self.__somatorioPacotesFilaEspera2PorTempo = 0
+        self.__somatorioPacotesFilaEsperaDadosPorTempo = 0
 
         self.__varianciaPorPeriodosDeChegadasDePacotesDeVoz = [] # Delta J
 
@@ -91,12 +91,12 @@ class Fase(object):
     def getEsperancaDeNq1(self, tempoAtual):
         if tempoAtual == self.__tempoInicial:
             return 0
-        return (self.__somatorioPacotesFilaEspera1PorTempo)/(tempoAtual-self.__tempoInicial)
+        return (self.__somatorioPacotesFilaEsperaVozPorTempo)/(tempoAtual-self.__tempoInicial)
 
     def getEsperancaDeNq2(self, tempoAtual):
         if tempoAtual == self.__tempoInicial:
             return 0
-        return (self.__somatorioPacotesFilaEspera2PorTempo)/(tempoAtual-self.__tempoInicial)
+        return (self.__somatorioPacotesFilaEsperaDadosPorTempo)/(tempoAtual-self.__tempoInicial)
 
     def getEsperancaDeTVoz(self):
         countT1 = 0
@@ -166,13 +166,13 @@ class Fase(object):
         self.__pacotesFilaDadosPorTempo.append(numeroDePacotes)
         self.__somatorioPacotesFilaDadosPorTempo += tempo * numeroDePacotes
 
-    def inserirNumeroDePacotesPorTempoNaFilaEspera1(self, numeroDePacotes, tempo):
+    def inserirNumeroDePacotesPorTempoNaFilaEsperaVoz(self, numeroDePacotes, tempo):
         self.__pacotesFilaEsperaVozPorTempo.append(numeroDePacotes)
-        self.__somatorioPacotesFilaEspera1PorTempo += tempo * numeroDePacotes
+        self.__somatorioPacotesFilaEsperaVozPorTempo += tempo * numeroDePacotes
 
     def inserirNumeroDePacotesPorTempoNaFilaEspera2(self, numeroDePacotes, tempo):
         self.__pacotesFilaEsperaDadosPorTempo.append(numeroDePacotes)
-        self.__somatorioPacotesFilaEspera2PorTempo += tempo * numeroDePacotes
+        self.__somatorioPacotesFilaEsperaDadosPorTempo += tempo * numeroDePacotes
 
 
     def varianciaPorPeriodosDeChegadasDePacotesDeVoz(self):
@@ -241,9 +241,9 @@ class Fase(object):
         self.__EVW1 = None if divisorW1 == 0 else somatorioVW1/divisorW1
         self.__EVW2 = None if divisorW2 == 0 else somatorioVW2/divisorW2
 
-        self.__EN1  = self.__somatorioPacotesFilaVozPorTempo     / (tempoAtual - self.__tempoInicial)
-        self.__ENq1 = self.__somatorioPacotesFilaEspera1PorTempo / (tempoAtual - self.__tempoInicial)
-        self.__EN2  = self.__somatorioPacotesFilaDadosPorTempo   / (tempoAtual - self.__tempoInicial)
-        self.__ENq2 = self.__somatorioPacotesFilaEspera2PorTempo / (tempoAtual - self.__tempoInicial)
-
-        self.__varianciaPorPeriodosDeChegadasDePacotesDeVoz = CalculadoraVoz.varianciaPorPeriodosDeChegadasDePacotesDeVoz(self.__pacotes)
+        self.__EN1  = self.__somatorioPacotesFilaDadosPorTempo       / (tempoAtual - self.__tempoInicial)
+        self.__ENq1 = self.__somatorioPacotesFilaEsperaDadosPorTempo / (tempoAtual - self.__tempoInicial)
+        self.__EN2  = self.__somatorioPacotesFilaVozPorTempo         / (tempoAtual - self.__tempoInicial)
+        self.__ENq2 = self.__somatorioPacotesFilaEsperaVozPorTempo   / (tempoAtual - self.__tempoInicial)
+        
+        self.__varianciaPorPeriodosDeChegadasDePacotesDeVoz = CalculadoraVoz.varianciaPorPeriodosDeChegadasDePacotesDeVoz(self.__pacotes, self.__tempoInicial)

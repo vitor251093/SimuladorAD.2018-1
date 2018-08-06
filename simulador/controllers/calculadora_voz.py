@@ -2,7 +2,7 @@
 class CalculadoraVoz(object):
 
     @staticmethod
-    def varianciaPorPeriodosDeChegadasDePacotesDeVoz(todosOsPacotes):
+    def varianciaPorPeriodosDeChegadasDePacotesDeVoz(todosOsPacotes, tempoInicial):
         valoresJ = []
         somatorioJ = []
         divisorJ = []
@@ -23,7 +23,7 @@ class CalculadoraVoz(object):
                 ultimoIndiceVistoEmCanal[canalAtual] = indice
                     
                 if indice == 1:
-                    chegada = pacote.getTempoChegadaFila()
+                    chegada = pacote.getTempoChegadaFila() - tempoInicial
                     while numeroDeVezesQueCanalFoiPercorrido[canalAtual] >= len(somatorioJ):
                         valoresJ.append([])
                         somatorioJ.append(0)
