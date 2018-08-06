@@ -517,6 +517,8 @@ class Simulacao(object):
             self.__view.imprimir("V(Delta):     %f" % (VDelta))
             self.__view.imprimir("IC V(Delta):  %f - %f" % (calculadora.intervaloDeConfiancaDeAmostras(VDeltaK, len(VDeltaK))))
             self.__view.imprimir("")
+            self.__view.imprimir("E[X]    (Voz):   %f" % (self.media((f.EX2()  for f in self.__fases))))
+            self.__view.imprimir("IC E[X] (Voz):   %f - %f" % (calculadora.intervaloDeConfiancaDeAmostras((f.EX2()  for f in self.__fases),tamanho)))
             self.__view.imprimir("E[N]    (Dados): %f" % (self.media((f.EN1()  for f in self.__fases))))
             self.__view.imprimir("IC E[N] (Dados): %f - %f" % (calculadora.intervaloDeConfiancaDeAmostras((f.EN1()  for f in self.__fases),tamanho)))
             self.__view.imprimir("V(W)    (Dados): %f" % (self.media((f.EVW1() for f in self.__fases))))
