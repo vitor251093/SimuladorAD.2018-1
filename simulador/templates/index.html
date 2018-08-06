@@ -47,6 +47,8 @@
         <input type="checkbox" id="interrupcoes" checked> Interrupções<br>
         <input type="checkbox" id="progressiveLoad"> Carregar progressivamente<br>
         <input type="checkbox" id="teste"> Teste de corretude<br>
+        <input type="checkbox" id="desabilitarvoz"> Desabilitar voz<br>
+        <input type="checkbox" id="desabilitardados"> Desabilitar dados<br>
         <label>Semente:</label> <input type="text" id="semente" style="width:70px;" value=""/><br>
         <button id="runSimulator">Executar simulador</button>
     </div>
@@ -156,18 +158,20 @@
             runningMainIndex += 1;
             var runningIndex = runningMainIndex;
 
-            var lambda = document.getElementById("lambda").value;
             var pacotesporrodada = document.getElementById("pacotesporrodada").value;
-            var rodadas = document.getElementById("rodadas").value;
-            var simulacoes = document.getElementById("simulacoes").value;
-            var confianca = document.getElementById("confianca").value;
-            var semente = document.getElementById("semente").value || "0";
+            var lambda       = document.getElementById("lambda").value;
+            var rodadas      = document.getElementById("rodadas").value;
+            var simulacoes   = document.getElementById("simulacoes").value;
+            var confianca    = document.getElementById("confianca").value;
+            var semente      = document.getElementById("semente").value || "0";
             var transamostra = document.getElementById("transamostra").value;
-            var transmargem = document.getElementById("transmargem").value;
+            var transmargem  = document.getElementById("transmargem").value;
 
-            var teste = document.getElementById("teste").checked;
-            var interrupcoes = document.getElementById("interrupcoes").checked;
-            var progressiveLoad = document.getElementById("progressiveLoad").checked;
+            var teste            = document.getElementById("teste").checked;
+            var interrupcoes     = document.getElementById("interrupcoes").checked;
+            var progressiveLoad  = document.getElementById("progressiveLoad").checked;
+            var desabilitarvoz   = document.getElementById("desabilitarvoz").checked;
+            var desabilitardados = document.getElementById("desabilitardados").checked;
             
             config.data.labels = [];
             config.data.datasets[0].data = [];
@@ -203,7 +207,9 @@
                         confianca: confianca,
                         semente: semente,
                         transamostra: transamostra,
-                        transmargem: transmargem};
+                        transmargem: transmargem,
+                        desabilitarvoz: desabilitarvoz, 
+                        desabilitardados: desabilitardados};
 
             var argsArray = [];
             var argKeys = Object.keys(args);
@@ -234,29 +240,29 @@
                         return {value:parseFloat(entry[0]), group:parseInt(entry[1])};
                     });
                     var simulatorValues = simulatorComponents.map(function(entry) {return entry.value;});
-                    //var simulatorColors = simulatorComponents.map(function(entry) {return entry.group;});
+                    // var simulatorColors = simulatorComponents.map(function(entry) {return entry.group;});
                     
-                    /*var roundIndex = 0;
-                    var datasets = [];
-                    while (simulatorColors.indexOf(roundIndex) != -1) {
-                        var index = simulatorColors.indexOf(roundIndex);
-                        var finalIndex = simulatorColors.indexOf(roundIndex + 1);
-                        if (finalIndex == -1) finalIndex = simulatorColors.length;
-                        simulatorColors.splice(index, finalIndex - index);
+                    // var roundIndex = 0;
+                    // var datasets = [];
+                    // while (simulatorColors.indexOf(roundIndex) != -1) {
+                    //     var index = simulatorColors.indexOf(roundIndex);
+                    //     var finalIndex = simulatorColors.indexOf(roundIndex + 1);
+                    //     if (finalIndex == -1) finalIndex = simulatorColors.length;
+                    //     simulatorColors.splice(index, finalIndex - index);
                         
-                        datasets.push({
-                            label: 'Rodada ' + (roundIndex + 1),
-                            backgroundColor: takeChartColor(roundIndex),
-                            borderColor: takeChartColor(roundIndex),
-                            data: simulatorValues.splice(index, finalIndex - index),
-                            fill: false,
-                        });
+                    //     datasets.push({
+                    //         label: 'Rodada ' + (roundIndex + 1),
+                    //         backgroundColor: takeChartColor(roundIndex),
+                    //         borderColor: takeChartColor(roundIndex),
+                    //         data: simulatorValues.splice(index, finalIndex - index),
+                    //         fill: false,
+                    //     });
                         
-                        roundIndex += 1;
-                    }
+                    //     roundIndex += 1;
+                    // }
                     
-                    config.data.labels = [];
-                    config.data.datasets = datasets;*/
+                    // config.data.labels = [];
+                    // config.data.datasets = datasets;
 
                     config.data.labels = [];
                     config.data.datasets[0].data = simulatorValues;

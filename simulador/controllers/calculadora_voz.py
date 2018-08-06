@@ -57,7 +57,8 @@ class CalculadoraVoz(object):
             varianciaPorPeriodos = fase.varianciaPorPeriodosDeChegadasDePacotesDeVoz() # Delta J
             for varianciaPorPeriodo in varianciaPorPeriodos:
                 deltaJ += varianciaPorPeriodo
-            deltaJ /= len(varianciaPorPeriodos)
+            if len(varianciaPorPeriodos) > 0:
+                deltaJ /= len(varianciaPorPeriodos)
             esperancaDaVarianciaPorFase.append(deltaJ)
         
         esperancaDaVarianciaTotal = 0 # E[Delta]

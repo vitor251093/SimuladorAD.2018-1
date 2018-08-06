@@ -9,6 +9,9 @@ class Agendador(object):
 
     def __init__(self):
         self.__testeDeCorretude = False
+        self.__desabilitarVoz = False
+        self.__desabilitarDados = False
+
         self.__tamanhoPacoteVoz = 512.0 # 512 bits = 64 bytes
         self.__taxaDeTransmissao = (2.0*1000*1000)/1000 ## 2 Megabits per segundo (em ms)
         
@@ -51,6 +54,12 @@ class Agendador(object):
     def setTesteDeCorretude(self, testeDeCorretude):
         self.__testeDeCorretude = testeDeCorretude
 
+    def setDesabilitarVoz(self, desabilitarVoz):
+        self.__desabilitarVoz = desabilitarVoz
+
+    def setDesabilitarDados(self, desabilitarDados):
+        self.__desabilitarDados = desabilitarDados
+
     def configurarSemente(self, seed):
         if self.__testeDeCorretude == True:
             return
@@ -59,6 +68,9 @@ class Agendador(object):
         numpy.random.RandomState(seed=seed)
 
     def agendarChegadaFilaVoz(self, canal): 
+        if self.__desabilitarVoz == True:
+            return None, None
+
         espera_previa = 0
         
         indice = self.__pacoteFilaVozIndice[canal]
@@ -87,6 +99,9 @@ class Agendador(object):
         return self.__pacoteFilaVozIndice[canal], 16
 
     def agendarChegadaFilaDados(self, lambd):
+        if self.__desabilitarDados == True:
+            return None
+
         if self.__testeDeCorretude == True:
             return 1000.0/lambd
 

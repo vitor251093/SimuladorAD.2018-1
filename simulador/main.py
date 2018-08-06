@@ -197,6 +197,7 @@ class Simulacao(object):
                 if self.__output_type == 0:
                     self.__fase.calcularEstatisticas(tempoAnterior, self.__view, self.__intervaloDeConfianca, self.__lambd)
 
+                print "Iniciada rodada %d" % (indiceDaFase + 1)
                 self.__fase = Fase(indiceDaFase, self.__tempoAtual)
                 self.__fases.append(self.__fase)
 
@@ -248,21 +249,24 @@ class Simulacao(object):
 
                 if self.__agendador.deveAgendarChegadaFilaVoz(pacote.getCanal(),self.__filaVoz):
                     indice, tempoAAvancar = self.__agendador.agendarChegadaFilaVoz(pacote.getCanal())
-                    novoEvento = Evento(EVENTO_PACOTE_VOZ_CHEGADA, pacote.getCanal(), tempoAAvancar, indice)
-                    self.__lista_de_eventos.append(novoEvento)
+                    if tempoAAvancar != None:
+                        novoEvento = Evento(EVENTO_PACOTE_VOZ_CHEGADA, pacote.getCanal(), tempoAAvancar, indice)
+                        self.__lista_de_eventos.append(novoEvento)
 
         if self.__faseTransienteFinalizada == False:
             if self.__agendador.deveAgendarChegadaFilaVoz(pacote.getCanal(),self.__filaVoz):
                 indice, tempoAAvancar = self.__agendador.agendarChegadaFilaVoz(pacote.getCanal())
-                novoEvento = Evento(EVENTO_PACOTE_VOZ_CHEGADA, pacote.getCanal(), tempoAAvancar, indice)
-                self.__lista_de_eventos.append(novoEvento)
+                if tempoAAvancar != None:
+                    novoEvento = Evento(EVENTO_PACOTE_VOZ_CHEGADA, pacote.getCanal(), tempoAAvancar, indice)
+                    self.__lista_de_eventos.append(novoEvento)
             return
 
         if self.__fase.getID() + 1 != self.__numero_de_fases or self.__fase.quantidadeDePacotes() != self.__numero_de_pacotes_por_fase:
             if self.__agendador.deveAgendarChegadaFilaVoz(pacote.getCanal(),self.__filaVoz):
                 indice, tempoAAvancar = self.__agendador.agendarChegadaFilaVoz(pacote.getCanal())
-                novoEvento = Evento(EVENTO_PACOTE_VOZ_CHEGADA, pacote.getCanal(), tempoAAvancar, indice)
-                self.__lista_de_eventos.append(novoEvento)
+                if tempoAAvancar != None:
+                    novoEvento = Evento(EVENTO_PACOTE_VOZ_CHEGADA, pacote.getCanal(), tempoAAvancar, indice)
+                    self.__lista_de_eventos.append(novoEvento)
 
 
     """Evento: Pacote entra na fila de dados
@@ -292,20 +296,23 @@ class Simulacao(object):
 
         if self.__faseTransienteFinalizada == False:
             tempoAAvancar = self.__agendador.agendarChegadaFilaDados(self.__lambd)
-            novoEvento = Evento(EVENTO_PACOTE_DADOS_CHEGADA, pacote.getCanal(), tempoAAvancar)
-            self.__lista_de_eventos.append(novoEvento)
+            if tempoAAvancar != None:
+                novoEvento = Evento(EVENTO_PACOTE_DADOS_CHEGADA, pacote.getCanal(), tempoAAvancar)
+                self.__lista_de_eventos.append(novoEvento)
             return
 
         if self.__fase.getID() + 1 != self.__numero_de_fases:
             tempoAAvancar = self.__agendador.agendarChegadaFilaDados(self.__lambd)
-            novoEvento = Evento(EVENTO_PACOTE_DADOS_CHEGADA, pacote.getCanal(), tempoAAvancar)
-            self.__lista_de_eventos.append(novoEvento)
+            if tempoAAvancar != None:
+                novoEvento = Evento(EVENTO_PACOTE_DADOS_CHEGADA, pacote.getCanal(), tempoAAvancar)
+                self.__lista_de_eventos.append(novoEvento)
             return
 
         if self.__fase.quantidadeDePacotes() != self.__numero_de_pacotes_por_fase:
             tempoAAvancar = self.__agendador.agendarChegadaFilaDados(self.__lambd)
-            novoEvento = Evento(EVENTO_PACOTE_DADOS_CHEGADA, pacote.getCanal(), tempoAAvancar)
-            self.__lista_de_eventos.append(novoEvento)
+            if tempoAAvancar != None:
+                novoEvento = Evento(EVENTO_PACOTE_DADOS_CHEGADA, pacote.getCanal(), tempoAAvancar)
+                self.__lista_de_eventos.append(novoEvento)
 
 
     """Evento: Fim de servico na fila de voz
@@ -332,8 +339,9 @@ class Simulacao(object):
 
             if self.__agendador.deveAgendarChegadaFilaVoz(novoPacote.getCanal(),self.__filaVoz):
                 indice, tempoAAvancar = self.__agendador.agendarChegadaFilaVoz(novoPacote.getCanal())
-                novoEvento = Evento(EVENTO_PACOTE_VOZ_CHEGADA, novoPacote.getCanal(), tempoAAvancar, indice)
-                self.__lista_de_eventos.append(novoEvento)
+                if tempoAAvancar != None:
+                    novoEvento = Evento(EVENTO_PACOTE_VOZ_CHEGADA, novoPacote.getCanal(), tempoAAvancar, indice)
+                    self.__lista_de_eventos.append(novoEvento)
         else:
             if self.__filaDados.numeroDePacotesNaFila() > 0:
                 proximoPacote = self.__filaDados.PacoteEmAtendimento()
@@ -375,8 +383,9 @@ class Simulacao(object):
 
             if self.__agendador.deveAgendarChegadaFilaVoz(novoPacote.getCanal(),self.__filaVoz):
                 indice, tempoAAvancar = self.__agendador.agendarChegadaFilaVoz(novoPacote.getCanal())
-                novoEvento = Evento(EVENTO_PACOTE_VOZ_CHEGADA, novoPacote.getCanal(), tempoAAvancar, indice)
-                self.__lista_de_eventos.append(novoEvento)
+                if tempoAAvancar != None:
+                    novoEvento = Evento(EVENTO_PACOTE_VOZ_CHEGADA, novoPacote.getCanal(), tempoAAvancar, indice)
+                    self.__lista_de_eventos.append(novoEvento)
         else:
             if self.__filaDados.numeroDePacotesNaFila() > 0:
                 proximoPacote = self.__filaDados.PacoteEmAtendimento()
@@ -437,7 +446,7 @@ class Simulacao(object):
         return value / count
     
     """ Principal metodo da classe Simulacao. Aqui a simulacao eh iniciada. """
-    def executarSimulacao(self, seed, lambdaValue, transienteAmostras, transienteMargem, interrupcoes, numeroDePacotesPorFase, fases, hasOutputFile, variavelDeSaida, testeDeCorretude, intervaloDeConfianca):
+    def executarSimulacao(self, seed, lambdaValue, transienteAmostras, transienteMargem, interrupcoes, numeroDePacotesPorFase, fases, hasOutputFile, variavelDeSaida, testeDeCorretude, intervaloDeConfianca, desabilitarvoz, desabilitardados):
         self.__lambd = lambdaValue
         self.__interrupcoes = interrupcoes
         self.__numero_de_pacotes_por_fase = numeroDePacotesPorFase
@@ -452,18 +461,23 @@ class Simulacao(object):
         self.__view.setImprimirEmArquivo(hasOutputFile)
 
         self.__agendador.setTesteDeCorretude(testeDeCorretude)
+        self.__agendador.setDesabilitarVoz(desabilitarvoz)
+        self.__agendador.setDesabilitarDados(desabilitardados)
+
         self.__agendador.configurarSemente(seed)
 
         # Comecamos agendando a chegada do primeiro Pacote no sistema.
         # A partir dela os proximos eventos sao gerados no loop principal da simulacao (mais abaixo).
         for indice in range(30):
             indice, tempoAAvancar = self.__agendador.agendarChegadaFilaVoz(indice)
-            novoEvento = Evento(EVENTO_PACOTE_VOZ_CHEGADA, indice, tempoAAvancar, indice)
-            self.__lista_de_eventos.append(novoEvento)
+            if tempoAAvancar != None:
+                novoEvento = Evento(EVENTO_PACOTE_VOZ_CHEGADA, indice, tempoAAvancar, indice)
+                self.__lista_de_eventos.append(novoEvento)
         
         tempoAAvancar = self.__agendador.agendarChegadaFilaDados(self.__lambd)
-        novoEvento = Evento(EVENTO_PACOTE_DADOS_CHEGADA, -1, tempoAAvancar)
-        self.__lista_de_eventos.append(novoEvento)
+        if tempoAAvancar != None:
+            novoEvento = Evento(EVENTO_PACOTE_DADOS_CHEGADA, -1, tempoAAvancar)
+            self.__lista_de_eventos.append(novoEvento)
 
 
         # Loop principal da simulacao
@@ -555,18 +569,21 @@ def getPlotCsv(index):
 
 @app.route("/simulator", methods=['GET', 'POST'])
 def mainFlask():
-    lambdaValue = float(request.args.get('lambda', default='0.3'))
     numeroDePacotesPorRodada = int(request.args.get('pacotesporrodada', default='20000'))
-    rodadas = int(request.args.get('rodadas', default='100'))
-    simulacoes = int(request.args.get('simulacoes', default='1'))
-    outputFile = (request.args.get('progressivo', default='false') == 'true')
-    interrupcoes = (request.args.get('interrupcoes', default='false') == 'true')
-    testeDeCorretude = (request.args.get('teste', default='false') == 'true')
-    variavelDeSaida = int(request.args.get('variavel', default='1'))
-    intervaloDeConfianca = float(request.args.get('confianca', default='0.95'))
-    sementeForcada = int(request.args.get('semente', default='0'))
-    transienteAmostras = int(request.args.get('transamostra', default='1000'))
-    transienteMargem = float(request.args.get('transmargem', default='0.002'))
+    lambdaValue          = float(request.args.get('lambda',       default='0.3'))
+    rodadas              = int(  request.args.get('rodadas',      default='100'))
+    simulacoes           = int(  request.args.get('simulacoes',   default='1'))
+    outputFile           = (     request.args.get('progressivo',  default='false') == 'true')
+    interrupcoes         = (     request.args.get('interrupcoes', default='false') == 'true')
+    testeDeCorretude     = (     request.args.get('teste',        default='false') == 'true')
+    variavelDeSaida      = int(  request.args.get('variavel',     default='1'))
+    intervaloDeConfianca = float(request.args.get('confianca',    default='0.95'))
+    sementeForcada       = int(  request.args.get('semente',      default='0'))
+    transienteAmostras   = int(  request.args.get('transamostra', default='1000'))
+    transienteMargem     = float(request.args.get('transmargem',  default='0.002'))
+
+    desabilitarvoz   = (request.args.get('desabilitarvoz',   default='false') == 'true')
+    desabilitardados = (request.args.get('desabilitardados', default='false') == 'true')
 
     seedsDistance = 0.01
     seedsList = []
@@ -575,7 +592,7 @@ def mainFlask():
     for i in range(simulacoes):
         tempSeed = randomNumberDistantFrom(seedsList, seedsDistance)
         newSeed = int(tempSeed*1000000000) if sementeForcada == 0 else sementeForcada
-        sOutput = Simulacao().executarSimulacao(newSeed, lambdaValue, transienteAmostras, transienteMargem, interrupcoes, numeroDePacotesPorRodada, rodadas, outputFile, variavelDeSaida, testeDeCorretude, intervaloDeConfianca)
+        sOutput = Simulacao().executarSimulacao(newSeed, lambdaValue, transienteAmostras, transienteMargem, interrupcoes, numeroDePacotesPorRodada, rodadas, outputFile, variavelDeSaida, testeDeCorretude, intervaloDeConfianca, desabilitarvoz, desabilitardados)
         seedsList.append(tempSeed)
         output = "%s\n%s" % (output, sOutput)
     return output
