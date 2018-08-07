@@ -246,3 +246,13 @@ class Fase(object):
         self.__ENq2 = self.__somatorioPacotesFilaEsperaVozPorTempo   / (tempoAtual - self.__tempoInicial)
         
         self.__varianciaPorPeriodosDeChegadasDePacotesDeVoz = CalculadoraVoz.varianciaPorPeriodosDeChegadasDePacotesDeVoz(self.__pacotes, self.__tempoInicial)
+
+
+        self.__pacotes = []
+        self.__pacotesDados = []
+        self.__pacotesVoz = []
+        
+        self.__pacotesFilaVozPorTempo = []
+        self.__pacotesFilaEsperaVozPorTempo = []
+        self.__pacotesFilaDadosPorTempo = []
+        self.__pacotesFilaEsperaDadosPorTempo = []
