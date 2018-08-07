@@ -64,6 +64,7 @@ class Agendador(object):
         if self.__testeDeCorretude == True:
             return
         
+        print "Semente: %d" % (seed)
         random.seed(seed)
         numpy.random.RandomState(seed=seed)
 
