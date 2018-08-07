@@ -113,6 +113,10 @@ class Simulacao(object):
 
         
         if self.__faseTransienteFinalizada == True:
+            self.__eventosDaVariancia1 = []
+            self.__duracaoEventosDaVariancia1 = []
+            self.__eventosDaVariancia2 = []
+            self.__duracaoEventosDaVariancia2 = []
             return
 
         if ENt == 0:
@@ -465,16 +469,19 @@ class Simulacao(object):
 
         # Comecamos agendando a chegada do primeiro Pacote no sistema.
         # A partir dela os proximos eventos sao gerados no loop principal da simulacao (mais abaixo).
-        for indice in range(30):
-            indice, tempoAAvancar = self.__agendador.agendarChegadaFilaVoz(indice)
-            if tempoAAvancar != None:
-                novoEvento = Evento(EVENTO_PACOTE_VOZ_CHEGADA, indice, tempoAAvancar, indice)
-                self.__lista_de_eventos.append(novoEvento)
+
+        if desabilitarvoz == False:
+            for indice in range(30):
+                indice, tempoAAvancar = self.__agendador.agendarChegadaFilaVoz(indice)
+                if tempoAAvancar != None:
+                    novoEvento = Evento(EVENTO_PACOTE_VOZ_CHEGADA, indice, tempoAAvancar, indice)
+                    self.__lista_de_eventos.append(novoEvento)
         
-        tempoAAvancar = self.__agendador.agendarChegadaFilaDados(self.__lambd)
-        if tempoAAvancar != None:
-            novoEvento = Evento(EVENTO_PACOTE_DADOS_CHEGADA, -1, tempoAAvancar)
-            self.__lista_de_eventos.append(novoEvento)
+        if desabilitardados == False:
+            tempoAAvancar = self.__agendador.agendarChegadaFilaDados(self.__lambd)
+            if tempoAAvancar != None:
+                novoEvento = Evento(EVENTO_PACOTE_DADOS_CHEGADA, -1, tempoAAvancar)
+                self.__lista_de_eventos.append(novoEvento)
 
 
         # Loop principal da simulacao
