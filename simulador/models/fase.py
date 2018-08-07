@@ -173,7 +173,7 @@ class Fase(object):
         self.__pacotesFilaEsperaVozPorTempo.append(numeroDePacotes)
         self.__somatorioPacotesFilaEsperaVozPorTempo += tempo * numeroDePacotes
 
-    def inserirNumeroDePacotesPorTempoNaFilaEspera2(self, numeroDePacotes, tempo):
+    def inserirNumeroDePacotesPorTempoNaFilaEsperaDados(self, numeroDePacotes, tempo):
         self.__pacotesFilaEsperaDadosPorTempo.append(numeroDePacotes)
         self.__somatorioPacotesFilaEsperaDadosPorTempo += tempo * numeroDePacotes
 

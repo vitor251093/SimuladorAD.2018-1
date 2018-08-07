@@ -76,13 +76,10 @@ class Simulacao(object):
         else:
             self.__fase.inserirNumeroDePacotesPorTempoNaFilaEsperaVoz(0, tempo)
 
-        if self.__filaVoz.numeroDePacotesNaFila() > 0:
-            self.__fase.inserirNumeroDePacotesPorTempoNaFilaEspera2(self.__filaDados.numeroDePacotesNaFila(), tempo)
-        else:
-            if self.__filaDados.numeroDePacotesNaFila() > 0:
-                self.__fase.inserirNumeroDePacotesPorTempoNaFilaEspera2(self.__filaDados.numeroDePacotesNaFila() - 1, tempo)
-            else: 
-                self.__fase.inserirNumeroDePacotesPorTempoNaFilaEspera2(0, tempo)
+        if self.__filaDados.numeroDePacotesNaFila() > 0:
+            self.__fase.inserirNumeroDePacotesPorTempoNaFilaEsperaDados(self.__filaDados.numeroDePacotesNaFila() - 1, tempo)
+        else: 
+            self.__fase.inserirNumeroDePacotesPorTempoNaFilaEsperaDados(0, tempo)
 
     def adicionarEvento (self, Pacote, evento, fila, momento):
         ENt = 0
