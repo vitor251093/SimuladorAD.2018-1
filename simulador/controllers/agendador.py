@@ -86,6 +86,7 @@ class Agendador(object):
             
             if self.__testeDeCorretude == True:
                 self.__pacoteFilaVozTotal[canal] = 22
+                # print(canal, self.__pacoteFilaVozIndice[canal])
                 return self.__pacoteFilaVozIndice[canal], espera_previa + 650
             
             # Definindo a quantidade de pacotes que virao na nova remessa
@@ -94,9 +95,11 @@ class Agendador(object):
             self.__pacoteFilaVozTotal[canal] = math.ceil(n)
 
             # Calculando o tempo de silencio necessario para a nova remessa comecar
+            # print(canal, self.__pacoteFilaVozIndice[canal])
             return self.__pacoteFilaVozIndice[canal], espera_previa + random.expovariate(1.0/650)
 
         self.__pacoteFilaVozIndice[canal] += 1
+        # print(canal, self.__pacoteFilaVozIndice[canal])
         return self.__pacoteFilaVozIndice[canal], 16
 
     def agendarChegadaFilaDados(self, lambd):
@@ -109,8 +112,11 @@ class Agendador(object):
         return random.expovariate(lambd/1000)
 
     def deveAgendarChegadaFilaVoz(self, canal, filaVoz): 
-        indice = self.__pacoteFilaVozIndice[canal]
         total  = self.__pacoteFilaVozTotal[canal]
+        indice = self.__pacoteFilaVozIndice[canal]
+        if total == 0:
+            return True
+
         if indice == total and filaVoz.numeroDePacotesNaFilaDeCanal(canal) > 1:
             return False
         
