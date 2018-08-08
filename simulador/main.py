@@ -472,9 +472,9 @@ class Simulacao(object):
 
         if desabilitarvoz == False:
             for indice in range(30):
-                indice, tempoAAvancar = self.__agendador.agendarChegadaFilaVoz(indice)
+                indice2, tempoAAvancar = self.__agendador.agendarChegadaFilaVoz(indice)
                 if tempoAAvancar != None:
-                    novoEvento = Evento(EVENTO_PACOTE_VOZ_CHEGADA, indice, tempoAAvancar, indice)
+                    novoEvento = Evento(EVENTO_PACOTE_VOZ_CHEGADA, indice, tempoAAvancar, indice2)
                     self.__lista_de_eventos.append(novoEvento)
         
         if desabilitardados == False:
