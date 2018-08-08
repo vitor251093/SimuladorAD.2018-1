@@ -18,10 +18,12 @@ class Agendador(object):
         self.__pacoteFilaVozIndice = []
         self.__pacoteFilaVozTotal = []
         self.__pacoteFilaVozTempoDeAguardo = []
+        self.__pacoteAgendadoParaCanal = []
         for indice in range(30):
             self.__pacoteFilaVozIndice.append(0)
             self.__pacoteFilaVozTotal.append(0)
             self.__pacoteFilaVozTempoDeAguardo.append(0)
+            self.__pacoteAgendadoParaCanal.append(False)
 
         self.__probabilidade_de_L = []
         for indice in range(1500 - 64 + 1):
@@ -72,6 +74,10 @@ class Agendador(object):
         if self.__desabilitarVoz == True:
             return None, None
 
+        if self.__pacoteAgendadoParaCanal[canal] == True:
+            return None, None
+        self.__pacoteAgendadoParaCanal[canal] = True
+
         espera_previa = 0
         
         indice = self.__pacoteFilaVozIndice[canal]
@@ -86,7 +92,6 @@ class Agendador(object):
             
             if self.__testeDeCorretude == True:
                 self.__pacoteFilaVozTotal[canal] = 22
-                # print(canal, self.__pacoteFilaVozIndice[canal])
                 return self.__pacoteFilaVozIndice[canal], espera_previa + 650
             
             # Definindo a quantidade de pacotes que virao na nova remessa
@@ -95,11 +100,9 @@ class Agendador(object):
             self.__pacoteFilaVozTotal[canal] = math.ceil(n)
 
             # Calculando o tempo de silencio necessario para a nova remessa comecar
-            # print(canal, self.__pacoteFilaVozIndice[canal])
             return self.__pacoteFilaVozIndice[canal], espera_previa + random.expovariate(1.0/650)
 
         self.__pacoteFilaVozIndice[canal] += 1
-        # print(canal, self.__pacoteFilaVozIndice[canal])
         return self.__pacoteFilaVozIndice[canal], 16
 
     def agendarChegadaFilaDados(self, lambd):
@@ -129,6 +132,8 @@ class Agendador(object):
         total  = self.__pacoteFilaVozTotal[canal]
         if indice == total and filaVoz.numeroDePacotesNaFilaDeCanal(canal) == 1:
             self.__pacoteFilaVozTempoDeAguardo[canal] = tempo + 16
+
+        self.__pacoteAgendadoParaCanal[canal] = False
 
         return tempo
 
