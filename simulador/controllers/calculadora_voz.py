@@ -2,50 +2,37 @@
 class CalculadoraVoz(object):
 
     @staticmethod
-    def varianciaPorPeriodosDeChegadasDePacotesDeVoz(todosOsPacotes, tempoInicial):
+    def varianciaPorPeriodosDeChegadasDePacotesDeVoz(todosOsPacotesVoz):
         valoresJ = []
         somatorioJ = []
-        divisorJ = []
-
-        ultimoIndiceVistoEmCanal = []
-        numeroDeVezesQueCanalFoiPercorrido = []
-        for indice in range(30):
-            ultimoIndiceVistoEmCanal.append(0)
-            numeroDeVezesQueCanalFoiPercorrido.append(0)
-
-        for pacote in todosOsPacotes:
-            if pacote.ehPacoteDeVoz():
-                canalAtual = pacote.getCanal() # 0 a 29
-                indice = pacote.getIndiceEmCanal() # 1+
-                
-                if ultimoIndiceVistoEmCanal[canalAtual] > indice:
-                    numeroDeVezesQueCanalFoiPercorrido[canalAtual] += 1
-                ultimoIndiceVistoEmCanal[canalAtual] = indice
+        
+        for pacote in todosOsPacotesVoz:
+            servico = pacote.getServico() # 0+
+            indice = pacote.getIndiceEmCanal() # 1+
+            
+            if indice == 1:
+                while servico >= len(somatorioJ):
+                    valoresJ.append([])
+                    somatorioJ.append(0)
                     
-                if indice == 1:
-                    chegada = pacote.getTempoChegadaFila() - tempoInicial
-                    while numeroDeVezesQueCanalFoiPercorrido[canalAtual] >= len(somatorioJ):
-                        valoresJ.append([])
-                        somatorioJ.append(0)
-                        divisorJ.append(0)
-
-                    valoresJ[numeroDeVezesQueCanalFoiPercorrido[canalAtual]].append(chegada)
-                    somatorioJ[numeroDeVezesQueCanalFoiPercorrido[canalAtual]] += chegada
-                    divisorJ[numeroDeVezesQueCanalFoiPercorrido[canalAtual]] += 1
+                chegada = pacote.getTempoChegadaFila()/1000.0 # segundos
+                valoresJ[servico].append(chegada)
+                somatorioJ[servico] += chegada
 
         mediaIntervaloDeChegadaPorPeriodo = []
         for indice in range(len(somatorioJ)):
-            mediaIntervaloDeChegadaPorPeriodo.append(somatorioJ[indice]/divisorJ[indice] if divisorJ[indice] != 0 else 0)
+            mediaIntervaloDeChegadaPorPeriodo.append(somatorioJ[indice]/len(valoresJ[indice]) if len(valoresJ[indice]) != 0 else 0)
 
         varianciaPorPeriodos = [] # Delta J
-        for indice in range(len(somatorioJ)):
+        for servico in range(len(valoresJ)):
             varianciaPorPeriodo = 0
-            for canal in range(len(valoresJ[indice])):
-                varianciaPorCanal = (valoresJ[indice][canal] - mediaIntervaloDeChegadaPorPeriodo[indice]) ** 2
-                varianciaPorPeriodo += varianciaPorCanal
-            if len(valoresJ[indice]) > 0:
-                varianciaPorPeriodo /= len(valoresJ[indice])
-            varianciaPorPeriodos.append(varianciaPorPeriodo)
+            if len(valoresJ[servico]) > 0:
+                for canal in range(len(valoresJ[servico])):
+                    varianciaPorCanal = (valoresJ[servico][canal] - mediaIntervaloDeChegadaPorPeriodo[servico]) ** 2
+                    varianciaPorPeriodo += varianciaPorCanal
+                
+                varianciaPorPeriodo /= len(valoresJ[servico])
+                varianciaPorPeriodos.append(varianciaPorPeriodo)
 
         return varianciaPorPeriodos
 
