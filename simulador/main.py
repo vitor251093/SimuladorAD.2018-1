@@ -195,7 +195,7 @@ class Simulacao(object):
 
             if indiceDaFase > self.__fase.getID():
                 # A entrada nesse 'if' indice o fim de uma fase e o inicio de uma nova
-                if self.__output_type == 0:
+                if self.__output_type == 0 and self.__fase.getID() != -1:
                     self.__fase.calcularEstatisticas(tempoAnterior, self.__view, self.__intervaloDeConfianca, self.__lambd)
 
                 print "Iniciada rodada %d" % (indiceDaFase + 1)
@@ -471,10 +471,10 @@ class Simulacao(object):
         # A partir dela os proximos eventos sao gerados no loop principal da simulacao (mais abaixo).
 
         if desabilitarvoz == False:
-            for indice in range(30):
-                indice2, tempoAAvancar = self.__agendador.agendarChegadaFilaVoz(indice)
+            for canal in range(30):
+                indice, tempoAAvancar = self.__agendador.agendarChegadaFilaVoz(canal)
                 if tempoAAvancar != None:
-                    novoEvento = Evento(EVENTO_PACOTE_VOZ_CHEGADA, indice, tempoAAvancar, indice2)
+                    novoEvento = Evento(EVENTO_PACOTE_VOZ_CHEGADA, canal, tempoAAvancar, indice)
                     self.__lista_de_eventos.append(novoEvento)
         
         if desabilitardados == False:
