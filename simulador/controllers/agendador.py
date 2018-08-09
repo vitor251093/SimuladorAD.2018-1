@@ -18,13 +18,11 @@ class Agendador(object):
         self.__pacoteFilaVozIndice = []
         self.__pacoteFilaVozTotal = []
         self.__pacoteFilaVozTempoDeAguardo = []
-        self.__pacoteAgendadoParaCanal = []
         self.__pacoteIndiceServicoDeCanal = []
         for indice in range(30):
             self.__pacoteFilaVozIndice.append(0)
             self.__pacoteFilaVozTotal.append(-1)
             self.__pacoteFilaVozTempoDeAguardo.append(0)
-            self.__pacoteAgendadoParaCanal.append(False)
             self.__pacoteIndiceServicoDeCanal.append(-1)
 
         self.__probabilidade_de_L = []
@@ -75,10 +73,6 @@ class Agendador(object):
     def agendarChegadaFilaVoz(self, canal): 
         if self.__desabilitarVoz == True:
             return None, None, None
-
-        if self.__pacoteAgendadoParaCanal[canal] == True:
-            return None, None, None
-        self.__pacoteAgendadoParaCanal[canal] = True
 
         espera_previa = 0
         
@@ -135,6 +129,19 @@ class Agendador(object):
         
         return True
 
+    def deveAgendarChegadaServicoVoz(self, servico, filaVoz): 
+        countCanaisTerminados = 0
+        for subcanal in range(30):
+            subindice = self.__pacoteFilaVozIndice[subcanal]
+            subtotal  = self.__pacoteFilaVozTotal[subcanal]
+            if subindice == subtotal and subtotal != 0:
+                countCanaisTerminados += 1
+
+        if countCanaisTerminados == 30 and filaVoz.numeroDePacotesNaFilaDeServico(servico) == 0:
+            return True
+        
+        return False
+
     def agendarTempoDeServicoFilaVoz(self, canal, servico, filaVoz):
         tempo = self.__tamanhoPacoteVoz/self.__taxaDeTransmissao # 0.256 ms
 
@@ -148,8 +155,6 @@ class Agendador(object):
         if countCanaisTerminados == 30 and filaVoz.numeroDePacotesNaFilaDeServico(servico) == 1:
             for subcanal in range(30):
                 self.__pacoteFilaVozTempoDeAguardo[subcanal] = tempo + 16
-
-        self.__pacoteAgendadoParaCanal[canal] = False
 
         return tempo
 
