@@ -21,7 +21,7 @@ class Agendador(object):
         self.__pacoteIndiceServicoDeCanal = []
         for indice in range(30):
             self.__pacoteFilaVozIndice.append(0)
-            self.__pacoteFilaVozTotal.append(-1)
+            self.__pacoteFilaVozTotal.append(0)
             self.__pacoteFilaVozTempoDeAguardo.append(0)
             self.__pacoteIndiceServicoDeCanal.append(-1)
 
@@ -126,7 +126,7 @@ class Agendador(object):
         subindice = self.__pacoteFilaVozIndice[canal]
         subtotal  = self.__pacoteFilaVozTotal[canal]
         
-        if subindice == subtotal and subtotal != 0 and filaVoz.numeroDePacotesNaFilaDeCanal(canal) == 0:
+        if subindice == subtotal and filaVoz.numeroDePacotesNaFilaDeCanal(canal) == 1:
             return True
         
         return False
