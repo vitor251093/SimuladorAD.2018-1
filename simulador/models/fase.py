@@ -9,6 +9,8 @@ class Fase(object):
         self.__pacotesDados = []
         self.__pacotesVoz = []
         self.__tempoInicial = tempoInicial
+        self.__quantidadeDeEventosVoz = 0
+        self.__quantidadeDeEventosDados = 0
 
         ### Atributos usados para calculos estatisticos
         self.__pacotesFilaVozPorTempo = []
@@ -75,6 +77,18 @@ class Fase(object):
 
     def quantidadeDePacotes(self):
         return len(self.__pacotes)
+
+    def adicionarEventoVozAContagem(self):
+        self.__quantidadeDeEventosVoz += 1
+
+    def quantidadeDeEventosVoz(self):
+        return self.__quantidadeDeEventosVoz
+
+    def adicionarEventoDadosAContagem(self):
+        self.__quantidadeDeEventosDados += 1
+
+    def quantidadeDeEventosDados(self):
+        return self.__quantidadeDeEventosDados
 
     def getEsperancaDeN(self, tempoAtual):
         if tempoAtual == self.__tempoInicial:

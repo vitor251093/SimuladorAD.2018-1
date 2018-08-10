@@ -29,7 +29,8 @@ class Simulacao(object):
     def __init__(self):
         self.__lambd = None
         self.__interrupcoes = False
-        self.__numero_de_pacotes_por_fase = None
+        self.__numero_de_eventos_voz_por_fase = None
+        self.__numero_de_eventos_dados_por_fase = None
         self.__numero_de_fases = None
         self.__intervaloDeConfianca = None
 
@@ -256,7 +257,7 @@ class Simulacao(object):
                     self.__lista_de_eventos.append(novoEvento)
             return
 
-        if self.__fase.getID() + 1 != self.__numero_de_fases or self.__fase.quantidadeDePacotes() != self.__numero_de_pacotes_por_fase:
+        if self.__fase.getID() + 1 != self.__numero_de_fases or self.__fase.quantidadeDeEventosVoz() < self.__numero_de_eventos_voz_por_fase or self.__fase.quantidadeDeEventosDados() < self.__numero_de_eventos_dados_por_fase:
             if self.__agendador.deveAgendarChegadaFilaVoz(pacote.getCanal(),pacote.getServico(),self.__filaVoz):
                 servico, indice, tempoAAvancar = self.__agendador.agendarChegadaFilaVoz(pacote.getCanal())
                 if tempoAAvancar != None:
@@ -303,7 +304,7 @@ class Simulacao(object):
                 self.__lista_de_eventos.append(novoEvento)
             return
 
-        if self.__fase.quantidadeDePacotes() != self.__numero_de_pacotes_por_fase:
+        if self.__fase.quantidadeDeEventosVoz() < self.__numero_de_eventos_voz_por_fase or self.__fase.quantidadeDeEventosDados() < self.__numero_de_eventos_dados_por_fase:
             tempoAAvancar = self.__agendador.agendarChegadaFilaDados(self.__lambd)
             if tempoAAvancar != None:
                 novoEvento = Evento(EVENTO_PACOTE_DADOS_CHEGADA, pacote.getCanal(), tempoAAvancar)
@@ -331,6 +332,13 @@ class Simulacao(object):
             novoEvento = Evento(EVENTO_PACOTE_VOZ_FINALIZADO, novoPacote.getCanal(), tempoAAvancar)
             self.__lista_de_eventos.append(novoEvento)
             novoPacote.setTempoServico(novoEvento.tempoRestante())
+
+            if self.__agendador.deveAgendarChegadaServicoVoz(novoPacote.getCanal(),self.__filaVoz):
+                subcanal = novoPacote.getCanal()
+                servico, indice, tempoAAvancar = self.__agendador.agendarChegadaFilaVoz(subcanal)
+                if tempoAAvancar != None:
+                    novoEvento = Evento(EVENTO_PACOTE_VOZ_CHEGADA, subcanal, tempoAAvancar, indice, servico)
+                    self.__lista_de_eventos.append(novoEvento)
         else:
             if self.__filaDados.numeroDePacotesNaFila() > 0:
                 proximoPacote = self.__filaDados.PacoteEmAtendimento()
@@ -348,13 +356,6 @@ class Simulacao(object):
                     novoEvento = Evento(EVENTO_PACOTE_DADOS_FINALIZADO, proximoPacote.getCanal(), tempoAAvancar)
                     self.__lista_de_eventos.append(novoEvento)
                     proximoPacote.setTempoServico(novoEvento.tempoRestante())
-
-        if self.__agendador.deveAgendarChegadaServicoVoz(Pacote.getServico(),self.__filaVoz):
-            for subcanal in range(30):
-                servico, indice, tempoAAvancar = self.__agendador.agendarChegadaFilaVoz(subcanal)
-                if tempoAAvancar != None:
-                    novoEvento = Evento(EVENTO_PACOTE_VOZ_CHEGADA, subcanal, tempoAAvancar, indice, servico)
-                    self.__lista_de_eventos.append(novoEvento)
 
 
     """Evento: Fim de servico na fila de dados
@@ -418,9 +419,11 @@ class Simulacao(object):
             self.PacoteEntraNaFilaDados(tempoAnterior)
 
         if proximoEvento.tipo() == EVENTO_PACOTE_VOZ_FINALIZADO:
+            self.__fase.adicionarEventoVozAContagem()
             self.PacoteTerminaServicoNaFilaVoz()
 
         if proximoEvento.tipo() == EVENTO_PACOTE_DADOS_FINALIZADO:
+            self.__fase.adicionarEventoDadosAContagem()
             self.PacoteTerminaServicoNaFilaDados()
         
     def media(self, listaOriginal):
@@ -436,10 +439,11 @@ class Simulacao(object):
         return value / count
     
     """ Principal metodo da classe Simulacao. Aqui a simulacao eh iniciada. """
-    def executarSimulacao(self, seed, lambdaValue, transienteAmostras, transienteMargem, interrupcoes, numeroDePacotesPorFase, fases, hasOutputFile, variavelDeSaida, testeDeCorretude, intervaloDeConfianca, desabilitarvoz, desabilitardados):
+    def executarSimulacao(self, seed, lambdaValue, transienteAmostras, transienteMargem, interrupcoes, numeroDeEventosVozPorRodada, numeroDeEventosDadosPorRodada, fases, hasOutputFile, variavelDeSaida, testeDeCorretude, intervaloDeConfianca, desabilitarvoz, desabilitardados):
         self.__lambd = lambdaValue
         self.__interrupcoes = interrupcoes
-        self.__numero_de_pacotes_por_fase = numeroDePacotesPorFase
+        self.__numero_de_eventos_voz_por_fase = numeroDeEventosVozPorRodada
+        self.__numero_de_eventos_dados_por_fase = numeroDeEventosDadosPorRodada
         self.__numero_de_fases = fases
         self.__intervaloDeConfianca = intervaloDeConfianca
 
@@ -474,7 +478,7 @@ class Simulacao(object):
 
 
         # Loop principal da simulacao
-        while self.__numero_de_fases > self.__fase.getID() + 1 or self.__numero_de_pacotes_por_fase > self.__fase.quantidadeDePacotes():
+        while self.__numero_de_fases > self.__fase.getID() + 1 or self.__fase.quantidadeDeEventosVoz() < self.__numero_de_eventos_voz_por_fase or self.__fase.quantidadeDeEventosDados() < self.__numero_de_eventos_dados_por_fase:
             self.executarProximoEvento()
 
         if self.__output_type == 0:
@@ -564,7 +568,8 @@ def getPlotCsv(index):
 
 @app.route("/simulator", methods=['GET', 'POST'])
 def mainFlask():
-    numeroDePacotesPorRodada = int(request.args.get('pacotesporrodada', default='20000'))
+    numeroDeEventosVozPorRodada   = int(request.args.get('eventosporrodadavoz',   default='100000'))
+    numeroDeEventosDadosPorRodada = int(request.args.get('eventosporrodadadados', default='100000'))
     lambdaValue          = float(request.args.get('lambda',       default='0.3'))
     rodadas              = int(  request.args.get('rodadas',      default='100'))
     simulacoes           = int(  request.args.get('simulacoes',   default='1'))
@@ -587,7 +592,7 @@ def mainFlask():
     for i in range(simulacoes):
         tempSeed = randomNumberDistantFrom(seedsList, seedsDistance)
         newSeed = int(tempSeed*1000000000) if sementeForcada == 0 else sementeForcada
-        sOutput = Simulacao().executarSimulacao(newSeed, lambdaValue, transienteAmostras, transienteMargem, interrupcoes, numeroDePacotesPorRodada, rodadas, outputFile, variavelDeSaida, testeDeCorretude, intervaloDeConfianca, desabilitarvoz, desabilitardados)
+        sOutput = Simulacao().executarSimulacao(newSeed, lambdaValue, transienteAmostras, transienteMargem, interrupcoes, numeroDeEventosVozPorRodada, numeroDeEventosDadosPorRodada, rodadas, outputFile, variavelDeSaida, testeDeCorretude, intervaloDeConfianca, desabilitarvoz, desabilitardados)
         seedsList.append(tempSeed)
         output = "%s\n%s" % (output, sOutput)
     return output

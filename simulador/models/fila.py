@@ -24,10 +24,10 @@ class Fila(object):
     def numeroDePacotesNaFila(self):
         return len(self.__pacotes)
 
-    def numeroDePacotesNaFilaDeServico(self, servico):
+    def numeroDePacotesNaFilaDeCanal(self, canal):
         count = 0
         for pacote in self.__pacotes:
-            if pacote.ehPacoteDeVoz() and pacote.getServico() == servico:
+            if pacote.ehPacoteDeVoz() and pacote.getCanal() == canal:
                 count += 1
         return count
 
