@@ -94,7 +94,7 @@ class Agendador(object):
             # Definindo a quantidade de pacotes que virao na nova remessa
             p = 1.0/22.0
             n = numpy.random.geometric(p=p)
-            self.__pacoteFilaVozTotal[canal] = math.ceil(n)
+            self.__pacoteFilaVozTotal[canal] = int(round(n))
 
             # Calculando o tempo de silencio necessario para a nova remessa comecar
             return self.__pacoteIndiceServicoDeCanal[canal], self.__pacoteFilaVozIndice[canal], espera_previa + random.expovariate(1.0/650)
@@ -117,27 +117,16 @@ class Agendador(object):
         if total == 0:
             return True
 
-        countCanaisTerminados = 0
-        for subcanal in range(30):
-            subindice = self.__pacoteFilaVozIndice[subcanal]
-            subtotal  = self.__pacoteFilaVozTotal[subcanal]
-            if subindice == subtotal:
-                countCanaisTerminados += 1
-
-        if indice == total and countCanaisTerminados != 30 and filaVoz.numeroDePacotesNaFilaDeServico(servico) > 0:
+        if indice == total and filaVoz.numeroDePacotesNaFilaDeCanal(canal) > 0:
             return False
         
         return True
 
-    def deveAgendarChegadaServicoVoz(self, servico, filaVoz): 
-        countCanaisTerminados = 0
-        for subcanal in range(30):
-            subindice = self.__pacoteFilaVozIndice[subcanal]
-            subtotal  = self.__pacoteFilaVozTotal[subcanal]
-            if subindice == subtotal and subtotal != 0:
-                countCanaisTerminados += 1
-
-        if countCanaisTerminados == 30 and filaVoz.numeroDePacotesNaFilaDeServico(servico) == 0:
+    def deveAgendarChegadaServicoVoz(self, canal, filaVoz): 
+        subindice = self.__pacoteFilaVozIndice[canal]
+        subtotal  = self.__pacoteFilaVozTotal[canal]
+        
+        if subindice == subtotal and subtotal != 0 and filaVoz.numeroDePacotesNaFilaDeCanal(canal) == 0:
             return True
         
         return False
@@ -145,16 +134,11 @@ class Agendador(object):
     def agendarTempoDeServicoFilaVoz(self, canal, servico, filaVoz):
         tempo = self.__tamanhoPacoteVoz/self.__taxaDeTransmissao # 0.256 ms
 
-        countCanaisTerminados = 0
-        for subcanal in range(30):
-            indice = self.__pacoteFilaVozIndice[subcanal]
-            total  = self.__pacoteFilaVozTotal[subcanal]
-            if indice == total:
-                countCanaisTerminados += 1
+        indice = self.__pacoteFilaVozIndice[canal]
+        total  = self.__pacoteFilaVozTotal[canal]
 
-        if countCanaisTerminados == 30 and filaVoz.numeroDePacotesNaFilaDeServico(servico) == 1:
-            for subcanal in range(30):
-                self.__pacoteFilaVozTempoDeAguardo[subcanal] = tempo + 16
+        if indice == total and filaVoz.numeroDePacotesNaFilaDeCanal(canal) == 1:
+            self.__pacoteFilaVozTempoDeAguardo[canal] = tempo + 16
 
         return tempo
 
