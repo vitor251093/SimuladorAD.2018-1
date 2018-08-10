@@ -141,7 +141,7 @@ class Fase(object):
         countW1 = 0
         somatorioW1 = 0.0
         for pacote in self.__pacotesVoz:
-            if pacote.getTempoTerminoServico() != 0:
+            if pacote.getTempoChegadaServico() != 0:
                 countW1 += 1
                 somatorioW1 += pacote.getTempoEsperaFila()
         if countW1 == 0:
@@ -212,11 +212,12 @@ class Fase(object):
                 somatorioT1 += pacote.getTempoTotalSistema()
                 divisorT1 += 1
                 
-                somatorioW1 += pacote.getTempoEsperaFila()
-                divisorW1 += 1
-
                 somatorioX1 += pacote.getTempoServico()
                 divisorX1 += 1
+
+            if pacote.getTempoChegadaServico() != 0:                
+                somatorioW1 += pacote.getTempoEsperaFila()
+                divisorW1 += 1
 
         self.__ET1 = None if divisorT1 == 0 else somatorioT1/divisorT1
         self.__EW1 = None if divisorW1 == 0 else somatorioW1/divisorW1
@@ -234,12 +235,13 @@ class Fase(object):
             if pacote.getTempoTerminoServico() != 0:
                 somatorioT2 += pacote.getTempoTotalSistema()
                 divisorT2 += 1
-                
-                somatorioW2 += pacote.getTempoEsperaFila()
-                divisorW2 += 1
 
                 somatorioX2 += pacote.getTempoServico()
                 divisorX2 += 1
+
+            if pacote.getTempoChegadaServico() != 0:                
+                somatorioW2 += pacote.getTempoEsperaFila()
+                divisorW2 += 1
 
         self.__ET2 = None if divisorT2 == 0 else somatorioT2/divisorT2
         self.__EW2 = None if divisorW2 == 0 else somatorioW2/divisorW2

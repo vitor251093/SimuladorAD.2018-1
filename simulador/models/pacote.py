@@ -69,16 +69,16 @@ class Pacote(object):
         return self.__tempoDecorridoServico
 
     ### Getters para calculos estatisticos
-    def getTempoEsperaFila(self): # W2
-        return self.getTempoTerminoServico() - self.getTempoChegadaFila() - self.getTempoServico()
+    def getTempoEsperaFila(self): # W1/2
+        return self.getTempoChegadaServico() - self.getTempoChegadaFila()
 
-    def getTempoTotalServico(self): # X2
+    def getTempoTotalServico(self): # X1/2
         return self.getTempoTerminoServico() - self.getTempoChegadaServico()
     
-    def getTempoTotalSistema(self): # T2
+    def getTempoTotalSistema(self): # T1/2
         return self.getTempoTerminoServico() - self.getTempoChegadaFila()
 
-    def getVarianciaTempoEsperaFila(self, esperancaTempoEsperaFila): # VW2
+    def getVarianciaTempoEsperaFila(self, esperancaTempoEsperaFila): # VW1/2
         return (self.getTempoEsperaFila() - esperancaTempoEsperaFila) ** 2
 
     
