@@ -87,17 +87,17 @@ class Agendador(object):
             self.__pacoteFilaVozIndice[canal] = 1
             self.__pacoteIndiceServicoDeCanal[canal] += 1
             
-            if self.__testeDeCorretude == True:
-                self.__pacoteFilaVozTotal[canal] = 22
-                return self.__pacoteIndiceServicoDeCanal[canal], self.__pacoteFilaVozIndice[canal], espera_previa + 650
+            quantidadePacotes = 22
+            tempoDeEspera = espera_previa + 650
+            if self.__testeDeCorretude == False:
+                quantidadePacotes = int(round(numpy.random.geometric(p=1.0/22.0)))
+                tempoDeEspera = espera_previa + random.expovariate(1.0/650)
             
             # Definindo a quantidade de pacotes que virao na nova remessa
-            p = 1.0/22.0
-            n = numpy.random.geometric(p=p)
-            self.__pacoteFilaVozTotal[canal] = int(round(n))
-
+            self.__pacoteFilaVozTotal[canal] = quantidadePacotes
+            
             # Calculando o tempo de silencio necessario para a nova remessa comecar
-            return self.__pacoteIndiceServicoDeCanal[canal], self.__pacoteFilaVozIndice[canal], espera_previa + random.expovariate(1.0/650)
+            return self.__pacoteIndiceServicoDeCanal[canal], self.__pacoteFilaVozIndice[canal], tempoDeEspera
 
         self.__pacoteFilaVozIndice[canal] += 1
         return self.__pacoteIndiceServicoDeCanal[canal], self.__pacoteFilaVozIndice[canal], 16
