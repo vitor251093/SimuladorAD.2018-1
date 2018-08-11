@@ -114,10 +114,8 @@ class Agendador(object):
     def deveAgendarChegadaFilaVoz(self, canal, servico, filaVoz): 
         total  = self.__pacoteFilaVozTotal[canal]
         indice = self.__pacoteFilaVozIndice[canal]
-        if total == 0:
-            return True
-
-        if indice == total and filaVoz.numeroDePacotesNaFilaDeCanal(canal) > 0:
+        
+        if indice == total and total != 0 and filaVoz.numeroDePacotesNaFilaDeCanal(canal) > 1:
             return False
         
         return True
@@ -138,7 +136,8 @@ class Agendador(object):
         total  = self.__pacoteFilaVozTotal[canal]
 
         if indice == total and filaVoz.numeroDePacotesNaFilaDeCanal(canal) == 1:
-            self.__pacoteFilaVozTempoDeAguardo[canal] = tempo + 16
+            if self.__pacoteFilaVozTempoDeAguardo[canal] == 0:
+                self.__pacoteFilaVozTempoDeAguardo[canal] = tempo + 16
 
         return tempo
 
