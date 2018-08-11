@@ -322,7 +322,7 @@ class Simulacao(object):
         pacote = self.__filaVoz.retirarPacoteEmAtendimento()
         pacote.setTempoTerminoServico(self.__tempoAtual)
 
-        if pacote.getIndiceDaCor == self.__fase.getID():
+        if pacote.getIndiceDaCor() == self.__fase.getID():
             self.__fase.adicionarEventoVozAContagem()
         
         self.adicionarEvento(pacote, "terminou o atendimento", self.__filaVoz.getID(), self.__tempoAtual)
@@ -370,7 +370,7 @@ class Simulacao(object):
         pacote = self.__filaDados.retirarPacoteEmAtendimento()
         pacote.setTempoTerminoServico(self.__tempoAtual)
 
-        if pacote.getIndiceDaCor == self.__fase.getID():
+        if pacote.getIndiceDaCor() == self.__fase.getID():
             self.__fase.adicionarEventoDadosAContagem()
         
         self.adicionarEvento(pacote, "terminou o atendimento", self.__filaDados.getID(), self.__tempoAtual)
