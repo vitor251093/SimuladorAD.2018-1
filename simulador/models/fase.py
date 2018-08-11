@@ -66,10 +66,10 @@ class Fase(object):
         
     def adicionarPacote(self, pacote):
         self.__pacotes.append(pacote)
-        if pacote.getCanal() == -1:
-            self.__pacotesDados.append(pacote)
-        else: 
+        if pacote.ehPacoteDeVoz():
             self.__pacotesVoz.append(pacote)
+        else: 
+            self.__pacotesDados.append(pacote)
 
     # Getters
     def getID(self):
@@ -124,7 +124,7 @@ class Fase(object):
                 somatorioT1 += pacote.getTempoTotalSistema()
         if countT1 == 0:
             return -1
-        return somatorioT1/countT1
+        return somatorioT1/countT1 if countT1 > 0 else 0
 
     def getEsperancaDeTDados(self):
         countT2 = 0
@@ -135,7 +135,7 @@ class Fase(object):
                 somatorioT2 += pacote.getTempoTotalSistema()
         if countT2 == 0:
             return -1
-        return somatorioT2/countT2
+        return somatorioT2/countT2 if countT2 > 0 else 0
 
     def getEsperancaDeWVoz(self):
         countW1 = 0
@@ -146,7 +146,7 @@ class Fase(object):
                 somatorioW1 += pacote.getTempoEsperaFila()
         if countW1 == 0:
             return -1
-        return somatorioW1/len(self.__pacotesVoz)
+        return somatorioW1/len(self.__pacotesVoz) if len(self.__pacotesVoz) > 0 else 0
 
     def getEsperancaDeWDados(self):
         countW2 = 0
@@ -157,23 +157,23 @@ class Fase(object):
                 somatorioW2 += pacote.getTempoEsperaFila()
         if countW2 == 0:
             return -1
-        return somatorioW2/len(self.__pacotesDados)
+        return somatorioW2/len(self.__pacotesDados) if len(self.__pacotesDados) > 0 else 0
 
     def getVarianciaDeW1(self):
         EW1 = self.getEsperancaDeWVoz()
         somatorioVW1 = 0.0
-        for Pacote in self.__pacotesVoz:
-            if Pacote.getTempoServico() != 0:
-                somatorioVW1 += Pacote.getVarianciaTempoEsperaFila(EW1)
-        return somatorioVW1/len(self.__pacotesVoz)
+        for pacote in self.__pacotesVoz:
+            if pacote.getTempoServico() != 0:
+                somatorioVW1 += pacote.getVarianciaTempoEsperaFila(EW1)
+        return somatorioVW1/len(self.__pacotesVoz) if len(self.__pacotesVoz) > 0 else 0
 
     def getVarianciaDeW2(self):
         EW2 = self.getEsperancaDeWDados()
         somatorioVW2 = 0.0
-        for Pacote in self.__pacotesDados:
-            if Pacote.getTempoTerminoServico() != 0:
-                somatorioVW2 += Pacote.getVarianciaTempoEsperaFila(EW2)
-        return somatorioVW2/len(self.__pacotesDados)
+        for pacote in self.__pacotesDados:
+            if pacote.getTempoTerminoServico() != 0:
+                somatorioVW2 += pacote.getVarianciaTempoEsperaFila(EW2)
+        return somatorioVW2/len(self.__pacotesDados) if len(self.__pacotesDados) > 0 else 0
 
     def inserirNumeroDePacotesPorTempoNaFilaVoz(self, numeroDePacotes, tempo):
         self.__pacotesFilaVozPorTempo.append(numeroDePacotes)
@@ -212,17 +212,16 @@ class Fase(object):
                 somatorioT1 += pacote.getTempoTotalSistema()
                 divisorT1 += 1
                 
-                somatorioX1 += pacote.getTempoServico()
+                somatorioX1 += pacote.getTempoTotalServico()
                 divisorX1 += 1
-
-            if pacote.getTempoChegadaServico() != 0:                
+        
                 somatorioW1 += pacote.getTempoEsperaFila()
                 divisorW1 += 1
 
         self.__ET1 = None if divisorT1 == 0 else somatorioT1/divisorT1
         self.__EW1 = None if divisorW1 == 0 else somatorioW1/divisorW1
         self.__EX1 = None if divisorX1 == 0 else somatorioX1/divisorX1
-
+        
 
         somatorioT2 = 0.0
         somatorioW2 = 0.0
@@ -236,10 +235,9 @@ class Fase(object):
                 somatorioT2 += pacote.getTempoTotalSistema()
                 divisorT2 += 1
 
-                somatorioX2 += pacote.getTempoServico()
+                somatorioX2 += pacote.getTempoTotalServico()
                 divisorX2 += 1
 
-            if pacote.getTempoChegadaServico() != 0:                
                 somatorioW2 += pacote.getTempoEsperaFila()
                 divisorW2 += 1
 
