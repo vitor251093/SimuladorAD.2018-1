@@ -24,19 +24,19 @@ class CalculadoraVoz(object):
 
         mediaIntervaloDeChegadaPorPeriodo = []
         for indice in range(len(somatorioJ)):
-            if somatorioJ[indice] != -1:
-                mediaIntervaloDeChegadaPorPeriodo.append(somatorioJ[indice]/len(valoresJ[indice]) if len(valoresJ[indice]) != 0 else 0)
+            mediaIntervaloDeChegadaPorPeriodo.append(somatorioJ[indice]/len(valoresJ[indice]) if len(valoresJ[indice]) != 0 else 0)
 
         varianciaPorPeriodos = [] # Delta J
         for servico in range(len(valoresJ)):
-            varianciaPorPeriodo = 0
-            if len(valoresJ[servico]) > 0:
-                for canal in range(len(valoresJ[servico])):
-                    varianciaPorCanal = (valoresJ[servico][canal] - mediaIntervaloDeChegadaPorPeriodo[servico]) ** 2
-                    varianciaPorPeriodo += varianciaPorCanal
-                
-                varianciaPorPeriodo /= len(valoresJ[servico])
-                varianciaPorPeriodos.append(varianciaPorPeriodo)
+            if mediaIntervaloDeChegadaPorPeriodo[servico] != 0:
+                varianciaPorPeriodo = 0
+                if len(valoresJ[servico]) > 0:
+                    for canal in range(len(valoresJ[servico])):
+                        varianciaPorCanal = (valoresJ[servico][canal] - mediaIntervaloDeChegadaPorPeriodo[servico]) ** 2
+                        varianciaPorPeriodo += varianciaPorCanal
+                    
+                    varianciaPorPeriodo /= len(valoresJ[servico])
+                    varianciaPorPeriodos.append(varianciaPorPeriodo)
 
         return varianciaPorPeriodos
 
