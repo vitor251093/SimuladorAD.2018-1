@@ -28,7 +28,7 @@ class Pacote(object):
 
     def setTempoTerminoServico(self, tempo):
         self.__tempoTerminoServico = tempo
-
+        
     def setTempoDecorridoServico(self, tempo):
         self.__tempoDecorridoServico = tempo
 
@@ -77,6 +77,7 @@ class Pacote(object):
     
     def getTempoTotalSistema(self): # T1/2
         return self.getTempoTerminoServico() - self.getTempoChegadaFila()
+
 
     def getVarianciaTempoEsperaFila(self, esperancaTempoEsperaFila): # VW1/2
         return (self.getTempoEsperaFila() - esperancaTempoEsperaFila) ** 2

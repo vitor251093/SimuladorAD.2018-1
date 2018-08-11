@@ -8,16 +8,14 @@ class Fila(object):
 
     # Retorna Pacote e remove do topo da array
     def retirarPacoteEmAtendimento(self):
-        Pacote = self.__pacotes[0]
-        self.__pacotes.pop(0)
-        return Pacote
+        return self.__pacotes.pop(0)
 
     # Entra com um Pacote
-    def adicionarPacoteAFila(self, Pacote):
-        self.__pacotes.append(Pacote)
+    def adicionarPacoteAFila(self, pacote):
+        self.__pacotes.append(pacote)
 
     # Retorna o Pacote no indice zero (ponteiro)
-    def PacoteEmAtendimento(self):
+    def pacoteEmAtendimento(self):
         return self.__pacotes[0]
 
     # Numero de pacotes na fila
