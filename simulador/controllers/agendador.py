@@ -88,9 +88,11 @@ class Agendador(object):
             self.__pacoteIndiceServicoDeCanal[canal] += 1
             
             quantidadePacotes = 22
-            tempoDeEspera = espera_previa + 650
             if self.__testeDeCorretude == False:
                 quantidadePacotes = int(round(numpy.random.geometric(p=1.0/22.0)))
+
+            tempoDeEspera = espera_previa + 650
+            if self.__pacoteFilaVozTotal[canal] == 0 or self.__testeDeCorretude == False:
                 tempoDeEspera = espera_previa + random.expovariate(1.0/650)
             
             # Definindo a quantidade de pacotes que virao na nova remessa
