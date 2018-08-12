@@ -119,7 +119,7 @@ class Simulacao(object):
             return
 
         
-        EWt = self.__fase.getEsperancaDeWDados()
+        EWt = self.__fase.getEsperancaDeWVoz()
 
 
         # Daqui para baixo, essa funcao realiza o calculo que define quando
@@ -161,6 +161,7 @@ class Simulacao(object):
                 self.__variancia2 += (self.__eventosDaVariancia2[indiceEvento] - media2)**2
             self.__variancia2 /= (self.__quantidadeDeEventosPorVariancia - 1)
 
+            print abs(self.__variancia1 - self.__variancia2)
             if abs(self.__variancia1 - self.__variancia2) < self.__diferencaAceitavelDasVariancias:
                 print "Fase transiente finalizada"
                 self.__faseTransienteFinalizada = True
