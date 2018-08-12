@@ -604,12 +604,12 @@ def mainFlask():
     output = ''
     for i in range(simulacoes):
         print "SIMULACAO %d" % (i+1)
-        start = timeit.timeit()
+        start = timeit.default_timer()
         tempSeed = randomNumberDistantFrom(seedsList, seedsDistance)
         newSeed = int(tempSeed*1000000000) if sementeForcada == 0 else sementeForcada
         sOutput = Simulacao().executarSimulacao(newSeed, lambdaValue, transienteAmostras, transienteMargem, interrupcoes, numeroDeEventosVozPorRodada, numeroDeEventosDadosPorRodada, rodadas, outputFile, variavelDeSaida, testeDeCorretude, intervaloDeConfianca, desabilitarvoz, desabilitardados)
         seedsList.append(tempSeed)
-        end = timeit.timeit()
+        end = timeit.default_timer()
         print "Tempo de execucao: %f" % (end - start)
         output = "%s\n%s" % (output, sOutput)
     return output
