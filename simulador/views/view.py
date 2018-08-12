@@ -26,6 +26,7 @@ class View(object):
 
     """Imprime textos para o programa"""
     def imprimir(self, texto):
+        print texto
         self.__output_text = "%s\n%s" % (self.__output_text, texto)
 
         if self.__save_at_file == True:
