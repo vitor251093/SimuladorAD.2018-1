@@ -42,5 +42,8 @@ class CalculadoraIC(object):
         intervaloBaixo = mediaAmostral - variancaoDoIntervalo
         intervaloAlto  = mediaAmostral + variancaoDoIntervalo
 
-        return intervaloBaixo, intervaloAlto
+        intervaloValido = (variancaoDoIntervalo*10 < mediaAmostral)
+        intervaloValidoString = "válido" if intervaloValido else "inválido"
+
+        return intervaloBaixo, intervaloAlto, intervaloValidoString
 
