@@ -38,7 +38,7 @@ class CalculadoraIC(object):
         desvioPadrao /= grausDeLiberdade
         desvioPadrao = math.sqrt(desvioPadrao)
 
-        variancaoDoIntervalo = tc * (desvioPadrao / math.sqrt(n))
+        variancaoDoIntervalo = abs(tc * (desvioPadrao / math.sqrt(n)))
         intervaloBaixo = mediaAmostral - variancaoDoIntervalo
         intervaloAlto  = mediaAmostral + variancaoDoIntervalo
 
