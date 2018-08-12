@@ -14,7 +14,6 @@ class Pacote(object):
         self.__tempoChegadaFila = tempoChegadaNoSistema
         self.__tempoChegadaServico = 0.0
         self.__tempoServico = 0.0
-        self.__tempoDecorridoServico = 0.0 # Usada em caso de interrupcao
         self.__tempoTerminoServico = 0.0
 
     ##############
@@ -28,9 +27,6 @@ class Pacote(object):
 
     def setTempoTerminoServico(self, tempo):
         self.__tempoTerminoServico = tempo
-        
-    def setTempoDecorridoServico(self, tempo):
-        self.__tempoDecorridoServico = tempo
 
     ###############
     ## Getters
@@ -64,9 +60,6 @@ class Pacote(object):
 
     def getTempoTerminoServico(self):
         return self.__tempoTerminoServico
-
-    def getTempoDecorridoServico(self):
-        return self.__tempoDecorridoServico
 
     ### Getters para calculos estatisticos
     def getTempoEsperaFila(self): # W1/2

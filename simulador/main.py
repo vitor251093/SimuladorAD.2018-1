@@ -226,10 +226,7 @@ class Simulacao(object):
         if self.__filaVoz.numeroDePacotesNaFila() == 1: # So o atual se encontra na fila
             if self.__interrupcoes == True and self.__filaDados.numeroDePacotesNaFila() > 0: 
                 # Interrompe individuo da fila de dados em servico
-                PacoteInterrompido = self.__filaDados.pacoteEmAtendimento()
-                PacoteInterrompido.setTempoDecorridoServico(PacoteInterrompido.getTempoDecorridoServico() + tempoAvancado)
-
-                # Removendo evento de completude do individuo interrompido
+                # removendo evento de completude do individuo interrompido
                 for eventoIndex in range(len(self.__lista_de_eventos)):
                     if len(self.__lista_de_eventos) > eventoIndex and self.__lista_de_eventos[eventoIndex].tipo() == EVENTO_PACOTE_DADOS_FINALIZADO:
                         self.__lista_de_eventos.pop(eventoIndex)
@@ -346,9 +343,9 @@ class Simulacao(object):
         else:
             if self.__filaDados.numeroDePacotesNaFila() > 0:
                 proximoPacote = self.__filaDados.pacoteEmAtendimento()
-                if proximoPacote.getTempoDecorridoServico() > 0: 
+                if proximoPacote.getTempoServico() > 0: 
                     # Pacote da fila de dados que foi interrompido anteriormente retorna
-                    tempoAAvancar = proximoPacote.getTempoServico() - proximoPacote.getTempoDecorridoServico()
+                    tempoAAvancar = proximoPacote.getTempoServico()
                     novoEvento = Evento(EVENTO_PACOTE_DADOS_FINALIZADO, proximoPacote.getCanal(), tempoAAvancar)
                     self.__lista_de_eventos.append(novoEvento)
                     
