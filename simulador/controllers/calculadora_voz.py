@@ -7,20 +7,21 @@ class CalculadoraVoz(object):
         somatorioJ = []
         
         for pacote in todosOsPacotesVoz:
-            servico = pacote.getServico() # 0+
-            indice = pacote.getIndiceEmCanal() # 1+
-            canal = pacote.getCanal() # 0+
-            
-            indiceValor = (servico*30 + canal)
-            while indiceValor >= len(somatorioJ):
-                valoresJ.append([])
-                somatorioJ.append(-1)
+            if pacote.getTempoChegadaServico() != 0:
+                servico = pacote.getServico() # 0+
+                indice = pacote.getIndiceEmCanal() # 1+
+                canal = pacote.getCanal() # 0+
                 
-            chegada = pacote.getTempoChegadaFila()/1000.0 # segundos
-            valoresJ[indiceValor].append(chegada)
-            if somatorioJ[indiceValor] == -1:
-                somatorioJ[indiceValor] = 0
-            somatorioJ[indiceValor] += chegada
+                indiceValor = (servico*30 + canal)
+                while indiceValor >= len(somatorioJ):
+                    valoresJ.append([])
+                    somatorioJ.append(-1)
+                    
+                chegada = pacote.getTempoChegadaServico()/1000.0 # segundos
+                valoresJ[indiceValor].append(chegada)
+                if somatorioJ[indiceValor] == -1:
+                    somatorioJ[indiceValor] = 0
+                somatorioJ[indiceValor] += chegada
 
         mediaIntervaloDeChegadaPorPeriodo = []
         for indice in range(len(somatorioJ)):
