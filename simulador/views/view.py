@@ -3,12 +3,13 @@ from time import gmtime, strftime
 import shutil
 
 class View(object):
-    def __init__(self):
+    def __init__(self, printing):
         self.__save_at_file = False
         self.__output_file = None
         self.__output_text = ""
         self.__index = -1
         self.__entries_per_file = 100
+        self.__printing = printing
         shutil.rmtree('/simulador/templates/plot')
         newpath = r'/simulador/templates/plot'
         os.makedirs(newpath)
@@ -26,7 +27,9 @@ class View(object):
 
     """Imprime textos para o programa"""
     def imprimir(self, texto):
-        #print texto
+        if self.__printing:
+            print texto
+
         self.__output_text = "%s\n%s" % (self.__output_text, texto)
 
         if self.__save_at_file == True:

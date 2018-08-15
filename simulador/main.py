@@ -467,7 +467,7 @@ class Simulacao(object):
         self.__diferencaAceitavelDasVariancias = transienteMargem
         
         self.__output_type = variavelDeSaida
-        self.__view = View()
+        self.__view = View(variavelDeSaida == 0 or variavelDeSaida == 12)
         self.__view.setImprimirEmArquivo(hasOutputFile)
 
         self.__agendador.setTesteDeCorretude(testeDeCorretudeChegadaVoz, testeDeCorretudeChegadaDados, testeDeCorretudePacotesVoz, testeDeCorretudeServicoDados)
