@@ -84,31 +84,32 @@ class Simulacao(object):
             self.__fase.inserirNumeroDePacotesPorTempoNaFilaEsperaDados(0, tempo)
 
     def adicionarEvento (self, pacote, evento, fila, momento):
-        if self.__output_type == 1:
-            self.__view.imprimir("%f,%d" % (self.__fase.getEsperancaDeN(momento), self.__fase.id))
-        if self.__output_type == 2:
-            self.__view.imprimir("%f,%d" % (self.__fase.getEsperancaDeN1(momento), self.__fase.id))
-        if self.__output_type == 3:
-            self.__view.imprimir("%f,%d" % (self.__fase.getEsperancaDeN2(momento), self.__fase.id))
-        if self.__output_type == 4:
-            self.__view.imprimir("%f,%d" % (self.__fase.getEsperancaDeNq1(momento), self.__fase.id))
-        if self.__output_type == 5:
-            self.__view.imprimir("%f,%d" % (self.__fase.getEsperancaDeNq2(momento), self.__fase.id))
-        if self.__output_type == 6:
-            self.__view.imprimir("%f,%d" % (self.__fase.getEsperancaDeTVoz(), self.__fase.id))
-        if self.__output_type == 7:
-            self.__view.imprimir("%f,%d" % (self.__fase.getEsperancaDeTDados(), self.__fase.id))
-        if self.__output_type == 8:
-            self.__view.imprimir("%f,%d" % (self.__fase.getEsperancaDeWVoz(), self.__fase.id))
-        if self.__output_type == 9:
-            self.__view.imprimir("%f,%d" % (self.__fase.getEsperancaDeWDados(), self.__fase.id))
-        if self.__output_type == 10:
-            self.__view.imprimir("%f,%d" % (self.__fase.getVarianciaDeW1(), self.__fase.id))
-        if self.__output_type == 11:
-            self.__view.imprimir("%f,%d" % (self.__fase.getVarianciaDeW2(), self.__fase.id))
-        if self.__output_type == 12:
-            tipo = ("de voz de canal %d (%d)" % (pacote.canal + 1,pacote.indiceEmCanal)) if pacote.canal != -1 else "de dados"
-            self.__view.imprimir("%f: Pacote %s (%d) de rodada %d %s na fila %d" % (momento, tipo, pacote.id, pacote.indiceDaCor, evento, fila))
+        if self.__output_type != 0:
+            if self.__output_type == 1:
+                self.__view.imprimir("%f,%d" % (self.__fase.getEsperancaDeN(momento), self.__fase.id))
+            elif self.__output_type == 2:
+                self.__view.imprimir("%f,%d" % (self.__fase.getEsperancaDeN1(momento), self.__fase.id))
+            elif self.__output_type == 3:
+                self.__view.imprimir("%f,%d" % (self.__fase.getEsperancaDeN2(momento), self.__fase.id))
+            elif self.__output_type == 4:
+                self.__view.imprimir("%f,%d" % (self.__fase.getEsperancaDeNq1(momento), self.__fase.id))
+            elif self.__output_type == 5:
+                self.__view.imprimir("%f,%d" % (self.__fase.getEsperancaDeNq2(momento), self.__fase.id))
+            elif self.__output_type == 6:
+                self.__view.imprimir("%f,%d" % (self.__fase.getEsperancaDeTVoz(), self.__fase.id))
+            elif self.__output_type == 7:
+                self.__view.imprimir("%f,%d" % (self.__fase.getEsperancaDeTDados(), self.__fase.id))
+            elif self.__output_type == 8:
+                self.__view.imprimir("%f,%d" % (self.__fase.getEsperancaDeWVoz(), self.__fase.id))
+            elif self.__output_type == 9:
+                self.__view.imprimir("%f,%d" % (self.__fase.getEsperancaDeWDados(), self.__fase.id))
+            elif self.__output_type == 10:
+                self.__view.imprimir("%f,%d" % (self.__fase.getVarianciaDeW1(), self.__fase.id))
+            elif self.__output_type == 11:
+                self.__view.imprimir("%f,%d" % (self.__fase.getVarianciaDeW2(), self.__fase.id))
+            elif self.__output_type == 12:
+                tipo = ("de voz de canal %d (%d)" % (pacote.canal + 1,pacote.indiceEmCanal)) if pacote.canal != -1 else "de dados"
+                self.__view.imprimir("%f: Pacote %s (%d) de rodada %d %s na fila %d" % (momento, tipo, pacote.id, pacote.indiceDaCor, evento, fila))
 
         
         if self.__faseTransienteFinalizada == True:
@@ -444,7 +445,8 @@ class Simulacao(object):
     def media(self, listaOriginal):
         value = 0
         count = 0
-        for item in listaOriginal:
+        lista = list(listaOriginal) # Transformando generator em lista
+        for item in lista:
             if item != None:
                 value += item
                 count += 1
