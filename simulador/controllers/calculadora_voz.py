@@ -7,32 +7,32 @@ class CalculadoraVoz(object):
         somatorioJ = []
         
         for pacote in todosOsPacotesVoz:
-            if pacote.getTempoChegadaServico() != 0:
-                servico = pacote.getServico() # 0+
-                indice = pacote.getIndiceEmCanal() # 1+
-                canal = pacote.getCanal() # 0+
+            if pacote.tempoChegadaServico != 0:
+                servico = pacote.servico # 0+
+                indice = pacote.indiceEmCanal # 1+
+                canal = pacote.canal # 0+
                 
                 indiceValor = (servico*30 + canal)
                 while indiceValor >= len(somatorioJ):
                     valoresJ.append([])
                     somatorioJ.append(-1)
                     
-                chegada = pacote.getTempoChegadaServico()/1000.0 # segundos
+                chegada = pacote.tempoChegadaServico/1000.0 # segundos
                 valoresJ[indiceValor].append(chegada)
                 if somatorioJ[indiceValor] == -1:
                     somatorioJ[indiceValor] = 0
                 somatorioJ[indiceValor] += chegada
 
         mediaIntervaloDeChegadaPorPeriodo = []
-        for indice in range(len(somatorioJ)):
+        for indice in xrange(len(somatorioJ)):
             mediaIntervaloDeChegadaPorPeriodo.append(somatorioJ[indice]/len(valoresJ[indice]) if len(valoresJ[indice]) != 0 else 0)
 
         varianciaPorPeriodos = [] # Delta J
-        for servico in range(len(valoresJ)):
+        for servico in xrange(len(valoresJ)):
             if mediaIntervaloDeChegadaPorPeriodo[servico] != 0:
                 varianciaPorPeriodo = 0
                 if len(valoresJ[servico]) > 0:
-                    for canal in range(len(valoresJ[servico])):
+                    for canal in xrange(len(valoresJ[servico])):
                         varianciaPorCanal = (valoresJ[servico][canal] - mediaIntervaloDeChegadaPorPeriodo[servico]) ** 2
                         varianciaPorPeriodo += varianciaPorCanal
                     
@@ -63,7 +63,7 @@ class CalculadoraVoz(object):
             vdeltaJ = 0
             varianciaPorPeriodos = fase.varianciaPorPeriodosDeChegadasDePacotesDeVoz() # Delta J
             for varianciaPorPeriodo in varianciaPorPeriodos:
-                vdeltaJ += ((varianciaPorPeriodo - esperancaDaVarianciaPorFase[fase.getID()]) ** 2)
+                vdeltaJ += ((varianciaPorPeriodo - esperancaDaVarianciaPorFase[fase.id]) ** 2)
             vdeltaJ /= (len(varianciaPorPeriodos) - 1)
             varianciaDaVarianciaPorFase.append(vdeltaJ)
 

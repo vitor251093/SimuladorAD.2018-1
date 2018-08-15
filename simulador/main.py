@@ -85,30 +85,30 @@ class Simulacao(object):
 
     def adicionarEvento (self, pacote, evento, fila, momento):
         if self.__output_type == 1:
-            self.__view.imprimir("%f,%d" % (self.__fase.getEsperancaDeN(momento), self.__fase.getID()))
+            self.__view.imprimir("%f,%d" % (self.__fase.getEsperancaDeN(momento), self.__fase.id))
         if self.__output_type == 2:
-            self.__view.imprimir("%f,%d" % (self.__fase.getEsperancaDeN1(momento), self.__fase.getID()))
+            self.__view.imprimir("%f,%d" % (self.__fase.getEsperancaDeN1(momento), self.__fase.id))
         if self.__output_type == 3:
-            self.__view.imprimir("%f,%d" % (self.__fase.getEsperancaDeN2(momento), self.__fase.getID()))
+            self.__view.imprimir("%f,%d" % (self.__fase.getEsperancaDeN2(momento), self.__fase.id))
         if self.__output_type == 4:
-            self.__view.imprimir("%f,%d" % (self.__fase.getEsperancaDeNq1(momento), self.__fase.getID()))
+            self.__view.imprimir("%f,%d" % (self.__fase.getEsperancaDeNq1(momento), self.__fase.id))
         if self.__output_type == 5:
-            self.__view.imprimir("%f,%d" % (self.__fase.getEsperancaDeNq2(momento), self.__fase.getID()))
+            self.__view.imprimir("%f,%d" % (self.__fase.getEsperancaDeNq2(momento), self.__fase.id))
         if self.__output_type == 6:
-            self.__view.imprimir("%f,%d" % (self.__fase.getEsperancaDeTVoz(), self.__fase.getID()))
+            self.__view.imprimir("%f,%d" % (self.__fase.getEsperancaDeTVoz(), self.__fase.id))
         if self.__output_type == 7:
-            self.__view.imprimir("%f,%d" % (self.__fase.getEsperancaDeTDados(), self.__fase.getID()))
+            self.__view.imprimir("%f,%d" % (self.__fase.getEsperancaDeTDados(), self.__fase.id))
         if self.__output_type == 8:
-            self.__view.imprimir("%f,%d" % (self.__fase.getEsperancaDeWVoz(), self.__fase.getID()))
+            self.__view.imprimir("%f,%d" % (self.__fase.getEsperancaDeWVoz(), self.__fase.id))
         if self.__output_type == 9:
-            self.__view.imprimir("%f,%d" % (self.__fase.getEsperancaDeWDados(), self.__fase.getID()))
+            self.__view.imprimir("%f,%d" % (self.__fase.getEsperancaDeWDados(), self.__fase.id))
         if self.__output_type == 10:
-            self.__view.imprimir("%f,%d" % (self.__fase.getVarianciaDeW1(), self.__fase.getID()))
+            self.__view.imprimir("%f,%d" % (self.__fase.getVarianciaDeW1(), self.__fase.id))
         if self.__output_type == 11:
-            self.__view.imprimir("%f,%d" % (self.__fase.getVarianciaDeW2(), self.__fase.getID()))
+            self.__view.imprimir("%f,%d" % (self.__fase.getVarianciaDeW2(), self.__fase.id))
         if self.__output_type == 12:
-            tipo = ("de voz de canal %d (%d)" % (pacote.getCanal() + 1,pacote.getIndiceEmCanal())) if pacote.getCanal() != -1 else "de dados"
-            self.__view.imprimir("%f: Pacote %s (%d) de rodada %d %s na fila %d" % (momento, tipo, pacote.getID(), pacote.getIndiceDaCor(), evento, fila))
+            tipo = ("de voz de canal %d (%d)" % (pacote.canal + 1,pacote.indiceEmCanal)) if pacote.canal != -1 else "de dados"
+            self.__view.imprimir("%f: Pacote %s (%d) de rodada %d %s na fila %d" % (momento, tipo, pacote.id, pacote.indiceDaCor, evento, fila))
 
         
         if self.__faseTransienteFinalizada == True:
@@ -132,13 +132,13 @@ class Simulacao(object):
             if len(self.__eventosDaVariancia1) == self.__quantidadeDeEventosPorVariancia:
                 media1 = 0
                 duracao1 = 0
-                for indiceEvento in range(self.__quantidadeDeEventosPorVariancia):
+                for indiceEvento in xrange(self.__quantidadeDeEventosPorVariancia):
                     media1 += self.__eventosDaVariancia1[indiceEvento]*self.__duracaoEventosDaVariancia1[indiceEvento]
                     duracao1 += self.__duracaoEventosDaVariancia1[indiceEvento]
                 media1 /= duracao1
                 
                 self.__variancia1 = 0
-                for indiceEvento in range(self.__quantidadeDeEventosPorVariancia):
+                for indiceEvento in xrange(self.__quantidadeDeEventosPorVariancia):
                     self.__variancia1 += (self.__eventosDaVariancia1[indiceEvento] - media1)**2
                 self.__variancia1 /= (self.__quantidadeDeEventosPorVariancia - 1)
 
@@ -151,13 +151,13 @@ class Simulacao(object):
         if len(self.__eventosDaVariancia2) == self.__quantidadeDeEventosPorVariancia:
             media2 = 0
             duracao2 = 0
-            for indiceEvento in range(self.__quantidadeDeEventosPorVariancia):
+            for indiceEvento in xrange(self.__quantidadeDeEventosPorVariancia):
                 media2 += self.__eventosDaVariancia2[indiceEvento]*self.__duracaoEventosDaVariancia2[indiceEvento]
                 duracao2 += self.__duracaoEventosDaVariancia2[indiceEvento]
             media2 /= duracao2
             
             self.__variancia2 = 0
-            for indiceEvento in range(self.__quantidadeDeEventosPorVariancia):
+            for indiceEvento in xrange(self.__quantidadeDeEventosPorVariancia):
                 self.__variancia2 += (self.__eventosDaVariancia2[indiceEvento] - media2)**2
             self.__variancia2 /= (self.__quantidadeDeEventosPorVariancia - 1)
 
@@ -185,13 +185,13 @@ class Simulacao(object):
         if self.__indice_primeiro_pacote_nao_transiente == 0: 
             corDoPacote = -1
         else:
-            indiceDaFase = self.__fase.getID()
-            if indiceDaFase == -1 or (self.__fase.quantidadeDeEventosVoz() >= self.__numero_de_eventos_voz_por_fase and self.__fase.quantidadeDeEventosDados() >= self.__numero_de_eventos_dados_por_fase):
+            indiceDaFase = self.__fase.id
+            if indiceDaFase == -1 or (self.__fase.quantidadeDeEventosVoz >= self.__numero_de_eventos_voz_por_fase and self.__fase.quantidadeDeEventosDados >= self.__numero_de_eventos_dados_por_fase):
                 indiceDaFase += 1
 
             # A entrada nesse 'if' indica o fim de uma fase e o inicio de uma nova
-            if indiceDaFase > self.__fase.getID(): 
-                if self.__output_type == 0 and self.__fase.getID() != -1:
+            if indiceDaFase > self.__fase.id: 
+                if self.__output_type == 0 and self.__fase.id != -1:
                     self.__fase.calcularEstatisticas(tempoAnterior, self.__view, self.__intervaloDeConfianca, self.__lambd)
 
                 print "Iniciada rodada %d" % (indiceDaFase + 1)
@@ -223,25 +223,25 @@ class Simulacao(object):
         self.__fase.adicionarPacote(pacote)
         self.__filaVoz.adicionarPacoteAFila(pacote)
 
-        self.adicionarEvento(pacote, "chegou", self.__filaVoz.getID(), self.__tempoAtual)
+        self.adicionarEvento(pacote, "chegou", self.__filaVoz.id, self.__tempoAtual)
         if self.__filaVoz.numeroDePacotesNaFila() == 1: # So o atual se encontra na fila
             if self.__interrupcoes == True and self.__filaDados.numeroDePacotesNaFila() > 0: 
                 # Interrompe individuo da fila de dados em servico
                 # removendo evento de completude do individuo interrompido
-                for eventoIndex in range(len(self.__lista_de_eventos)):
-                    if len(self.__lista_de_eventos) > eventoIndex and self.__lista_de_eventos[eventoIndex].tipo() == EVENTO_PACOTE_DADOS_FINALIZADO:
+                for eventoIndex in xrange(len(self.__lista_de_eventos)):
+                    if len(self.__lista_de_eventos) > eventoIndex and self.__lista_de_eventos[eventoIndex].tipo == EVENTO_PACOTE_DADOS_FINALIZADO:
                         self.__lista_de_eventos.pop(eventoIndex)
                         eventoIndex -= 1
 
             if self.__interrupcoes == True or self.__filaDados.numeroDePacotesNaFila() == 0:
-                pacote.setTempoChegadaServico(self.__tempoAtual)
+                pacote.tempoChegadaServico = self.__tempoAtual
                 
-                tempoAAvancar = self.__agendador.agendarTempoDeServicoFilaVoz(pacote.getCanal(),pacote.getServico(),self.__filaVoz)
-                novoEvento = Evento(EVENTO_PACOTE_VOZ_FINALIZADO, pacote.getCanal(), tempoAAvancar)
+                tempoAAvancar = self.__agendador.agendarTempoDeServicoFilaVoz(pacote.canal,pacote.servico,self.__filaVoz)
+                novoEvento = Evento(EVENTO_PACOTE_VOZ_FINALIZADO, pacote.canal, tempoAAvancar)
                 self.__lista_de_eventos.append(novoEvento)
-                pacote.setTempoServico(tempoAAvancar)
+                pacote.tempoServico = tempoAAvancar
 
-                subcanal = pacote.getCanal()
+                subcanal = pacote.canal
                 if self.__agendador.deveAgendarChegadaServicoVoz(subcanal,self.__filaVoz) and self.podeAdicionarEventoDeTipoECanalALista(EVENTO_PACOTE_VOZ_CHEGADA, subcanal):
                     servico, indice, tempoAAvancar = self.__agendador.agendarChegadaFilaVoz(subcanal)
                     if tempoAAvancar != None:
@@ -249,18 +249,18 @@ class Simulacao(object):
                         self.__lista_de_eventos.append(novoEvento)
 
         if self.__faseTransienteFinalizada == False:
-            if self.__agendador.deveAgendarChegadaFilaVoz(pacote.getCanal(),pacote.getServico(),self.__filaVoz) and self.podeAdicionarEventoDeTipoECanalALista(EVENTO_PACOTE_VOZ_CHEGADA, pacote.getCanal()):
-                servico, indice, tempoAAvancar = self.__agendador.agendarChegadaFilaVoz(pacote.getCanal())
+            if self.__agendador.deveAgendarChegadaFilaVoz(pacote.canal,pacote.servico,self.__filaVoz) and self.podeAdicionarEventoDeTipoECanalALista(EVENTO_PACOTE_VOZ_CHEGADA, pacote.canal):
+                servico, indice, tempoAAvancar = self.__agendador.agendarChegadaFilaVoz(pacote.canal)
                 if tempoAAvancar != None:
-                    novoEvento = Evento(EVENTO_PACOTE_VOZ_CHEGADA, pacote.getCanal(), tempoAAvancar, indice, servico)
+                    novoEvento = Evento(EVENTO_PACOTE_VOZ_CHEGADA, pacote.canal, tempoAAvancar, indice, servico)
                     self.__lista_de_eventos.append(novoEvento)
             return
 
-        if self.__fase.getID() + 1 != self.__numero_de_fases or self.__fase.quantidadeDeEventosVoz() < self.__numero_de_eventos_voz_por_fase or self.__fase.quantidadeDeEventosDados() < self.__numero_de_eventos_dados_por_fase:
-            if self.__agendador.deveAgendarChegadaFilaVoz(pacote.getCanal(),pacote.getServico(),self.__filaVoz) and self.podeAdicionarEventoDeTipoECanalALista(EVENTO_PACOTE_VOZ_CHEGADA, pacote.getCanal()):
-                servico, indice, tempoAAvancar = self.__agendador.agendarChegadaFilaVoz(pacote.getCanal())
+        if self.__fase.id + 1 != self.__numero_de_fases or self.__fase.quantidadeDeEventosVoz < self.__numero_de_eventos_voz_por_fase or self.__fase.quantidadeDeEventosDados < self.__numero_de_eventos_dados_por_fase:
+            if self.__agendador.deveAgendarChegadaFilaVoz(pacote.canal,pacote.servico,self.__filaVoz) and self.podeAdicionarEventoDeTipoECanalALista(EVENTO_PACOTE_VOZ_CHEGADA, pacote.canal):
+                servico, indice, tempoAAvancar = self.__agendador.agendarChegadaFilaVoz(pacote.canal)
                 if tempoAAvancar != None:
-                    novoEvento = Evento(EVENTO_PACOTE_VOZ_CHEGADA, pacote.getCanal(), tempoAAvancar, indice, servico)
+                    novoEvento = Evento(EVENTO_PACOTE_VOZ_CHEGADA, pacote.canal, tempoAAvancar, indice, servico)
                     self.__lista_de_eventos.append(novoEvento)
 
 
@@ -280,33 +280,33 @@ class Simulacao(object):
         self.__fase.adicionarPacote(pacote)
         self.__filaDados.adicionarPacoteAFila(pacote)
 
-        self.adicionarEvento(pacote, "chegou", self.__filaDados.getID(), self.__tempoAtual)
+        self.adicionarEvento(pacote, "chegou", self.__filaDados.id, self.__tempoAtual)
         if self.__filaVoz.numeroDePacotesNaFila() == 0 and self.__filaDados.numeroDePacotesNaFila() == 1:
-            pacote.setTempoChegadaServico(self.__tempoAtual)
+            pacote.tempoChegadaServico = self.__tempoAtual
             
             tempoAAvancar = self.__agendador.agendarTempoDeServicoFilaDados()
-            novoEvento = Evento(EVENTO_PACOTE_DADOS_FINALIZADO, pacote.getCanal(), tempoAAvancar)
+            novoEvento = Evento(EVENTO_PACOTE_DADOS_FINALIZADO, pacote.canal, tempoAAvancar)
             self.__lista_de_eventos.append(novoEvento)
-            pacote.setTempoServico(novoEvento.tempoRestante())
+            pacote.tempoServico = novoEvento.tempoRestante
 
         if self.__faseTransienteFinalizada == False:
             tempoAAvancar = self.__agendador.agendarChegadaFilaDados(self.__lambd)
             if tempoAAvancar != None:
-                novoEvento = Evento(EVENTO_PACOTE_DADOS_CHEGADA, pacote.getCanal(), tempoAAvancar)
+                novoEvento = Evento(EVENTO_PACOTE_DADOS_CHEGADA, pacote.canal, tempoAAvancar)
                 self.__lista_de_eventos.append(novoEvento)
             return
 
-        if self.__fase.getID() + 1 != self.__numero_de_fases:
+        if self.__fase.id + 1 != self.__numero_de_fases:
             tempoAAvancar = self.__agendador.agendarChegadaFilaDados(self.__lambd)
             if tempoAAvancar != None:
-                novoEvento = Evento(EVENTO_PACOTE_DADOS_CHEGADA, pacote.getCanal(), tempoAAvancar)
+                novoEvento = Evento(EVENTO_PACOTE_DADOS_CHEGADA, pacote.canal, tempoAAvancar)
                 self.__lista_de_eventos.append(novoEvento)
             return
 
-        if self.__fase.quantidadeDeEventosVoz() < self.__numero_de_eventos_voz_por_fase or self.__fase.quantidadeDeEventosDados() < self.__numero_de_eventos_dados_por_fase:
+        if self.__fase.quantidadeDeEventosVoz < self.__numero_de_eventos_voz_por_fase or self.__fase.quantidadeDeEventosDados < self.__numero_de_eventos_dados_por_fase:
             tempoAAvancar = self.__agendador.agendarChegadaFilaDados(self.__lambd)
             if tempoAAvancar != None:
-                novoEvento = Evento(EVENTO_PACOTE_DADOS_CHEGADA, pacote.getCanal(), tempoAAvancar)
+                novoEvento = Evento(EVENTO_PACOTE_DADOS_CHEGADA, pacote.canal, tempoAAvancar)
                 self.__lista_de_eventos.append(novoEvento)
 
 
@@ -319,23 +319,23 @@ class Simulacao(object):
 
     def PacoteTerminaServicoNaFilaVoz(self):
         pacote = self.__filaVoz.retirarPacoteEmAtendimento()
-        pacote.setTempoTerminoServico(self.__tempoAtual)
+        pacote.tempoTerminoServico = self.__tempoAtual
 
-        if pacote.getIndiceDaCor() == self.__fase.getID():
-            self.__fase.adicionarEventoVozAContagem()
+        if pacote.indiceDaCor == self.__fase.id:
+            self.__fase.quantidadeDeEventosVoz += 1
         
-        self.adicionarEvento(pacote, "terminou o atendimento", self.__filaVoz.getID(), self.__tempoAtual)
+        self.adicionarEvento(pacote, "terminou o atendimento", self.__filaVoz.id, self.__tempoAtual)
 
         if self.__filaVoz.numeroDePacotesNaFila() > 0:
             novoPacote = self.__filaVoz.pacoteEmAtendimento()
-            novoPacote.setTempoChegadaServico(self.__tempoAtual)
+            novoPacote.tempoChegadaServico = self.__tempoAtual
             
-            tempoAAvancar = self.__agendador.agendarTempoDeServicoFilaVoz(novoPacote.getCanal(),novoPacote.getServico(),self.__filaVoz)
-            novoEvento = Evento(EVENTO_PACOTE_VOZ_FINALIZADO, novoPacote.getCanal(), tempoAAvancar)
+            tempoAAvancar = self.__agendador.agendarTempoDeServicoFilaVoz(novoPacote.canal,novoPacote.servico,self.__filaVoz)
+            novoEvento = Evento(EVENTO_PACOTE_VOZ_FINALIZADO, novoPacote.canal, tempoAAvancar)
             self.__lista_de_eventos.append(novoEvento)
-            novoPacote.setTempoServico(novoEvento.tempoRestante())
+            novoPacote.tempoServico = novoEvento.tempoRestante
 
-            subcanal = novoPacote.getCanal()
+            subcanal = novoPacote.canal
             if self.__agendador.deveAgendarChegadaServicoVoz(subcanal,self.__filaVoz) and self.podeAdicionarEventoDeTipoECanalALista(EVENTO_PACOTE_VOZ_CHEGADA, subcanal):
                 servico, indice, tempoAAvancar = self.__agendador.agendarChegadaFilaVoz(subcanal)
                 if tempoAAvancar != None:
@@ -344,20 +344,20 @@ class Simulacao(object):
         else:
             if self.__filaDados.numeroDePacotesNaFila() > 0:
                 proximoPacote = self.__filaDados.pacoteEmAtendimento()
-                if proximoPacote.getTempoServico() > 0: 
+                if proximoPacote.tempoServico > 0: 
                     # Pacote da fila de dados que foi interrompido anteriormente retorna
-                    tempoAAvancar = proximoPacote.getTempoServico()
-                    novoEvento = Evento(EVENTO_PACOTE_DADOS_FINALIZADO, proximoPacote.getCanal(), tempoAAvancar)
+                    tempoAAvancar = proximoPacote.tempoServico
+                    novoEvento = Evento(EVENTO_PACOTE_DADOS_FINALIZADO, proximoPacote.canal, tempoAAvancar)
                     self.__lista_de_eventos.append(novoEvento)
                     
                 else: 
                     # Pacote da fila de dados eh atendido pela primeira vez
-                    proximoPacote.setTempoChegadaServico(self.__tempoAtual)
+                    proximoPacote.tempoChegadaServico = self.__tempoAtual
                     
                     tempoAAvancar = self.__agendador.agendarTempoDeServicoFilaDados()
-                    novoEvento = Evento(EVENTO_PACOTE_DADOS_FINALIZADO, proximoPacote.getCanal(), tempoAAvancar)
+                    novoEvento = Evento(EVENTO_PACOTE_DADOS_FINALIZADO, proximoPacote.canal, tempoAAvancar)
                     self.__lista_de_eventos.append(novoEvento)
-                    proximoPacote.setTempoServico(novoEvento.tempoRestante())
+                    proximoPacote.tempoServico = novoEvento.tempoRestante
 
 
     """Evento: Fim de servico na fila de dados
@@ -367,23 +367,23 @@ class Simulacao(object):
 
     def PacoteTerminaServicoNaFilaDados(self):
         pacote = self.__filaDados.retirarPacoteEmAtendimento()
-        pacote.setTempoTerminoServico(self.__tempoAtual)
+        pacote.tempoTerminoServico = self.__tempoAtual
 
-        if pacote.getIndiceDaCor() == self.__fase.getID():
-            self.__fase.adicionarEventoDadosAContagem()
+        if pacote.indiceDaCor == self.__fase.id:
+            self.__fase.quantidadeDeEventosDados += 1
         
-        self.adicionarEvento(pacote, "terminou o atendimento", self.__filaDados.getID(), self.__tempoAtual)
+        self.adicionarEvento(pacote, "terminou o atendimento", self.__filaDados.id, self.__tempoAtual)
         
         if self.__interrupcoes == False and self.__filaVoz.numeroDePacotesNaFila() > 0:
             novoPacote = self.__filaVoz.pacoteEmAtendimento()
-            novoPacote.setTempoChegadaServico(self.__tempoAtual)
+            novoPacote.tempoChegadaServico = self.__tempoAtual
             
-            tempoAAvancar = self.__agendador.agendarTempoDeServicoFilaVoz(novoPacote.getCanal(),novoPacote.getServico(),self.__filaVoz)
-            novoEvento = Evento(EVENTO_PACOTE_VOZ_FINALIZADO, novoPacote.getCanal(), tempoAAvancar)
+            tempoAAvancar = self.__agendador.agendarTempoDeServicoFilaVoz(novoPacote.canal,novoPacote.servico,self.__filaVoz)
+            novoEvento = Evento(EVENTO_PACOTE_VOZ_FINALIZADO, novoPacote.canal, tempoAAvancar)
             self.__lista_de_eventos.append(novoEvento)
-            novoPacote.setTempoServico(novoEvento.tempoRestante())
+            novoPacote.tempoServico = novoEvento.tempoRestante
 
-            subcanal = novoPacote.getCanal()
+            subcanal = novoPacote.canal
             if self.__agendador.deveAgendarChegadaServicoVoz(subcanal,self.__filaVoz) and self.podeAdicionarEventoDeTipoECanalALista(EVENTO_PACOTE_VOZ_CHEGADA, subcanal):
                 servico, indice, tempoAAvancar = self.__agendador.agendarChegadaFilaVoz(subcanal)
                 if tempoAAvancar != None:
@@ -392,22 +392,22 @@ class Simulacao(object):
         else:
             if self.__filaDados.numeroDePacotesNaFila() > 0:
                 proximoPacote = self.__filaDados.pacoteEmAtendimento()
-                proximoPacote.setTempoChegadaServico(self.__tempoAtual)
+                proximoPacote.tempoChegadaServico = self.__tempoAtual
                 
                 tempoAAvancar = self.__agendador.agendarTempoDeServicoFilaDados()
-                novoEvento = Evento(EVENTO_PACOTE_DADOS_FINALIZADO, proximoPacote.getCanal(), tempoAAvancar)
+                novoEvento = Evento(EVENTO_PACOTE_DADOS_FINALIZADO, proximoPacote.canal, tempoAAvancar)
                 self.__lista_de_eventos.append(novoEvento)
-                proximoPacote.setTempoServico(novoEvento.tempoRestante())
+                proximoPacote.tempoServico = novoEvento.tempoRestante
 
 
     def podeAdicionarEventoDeTipoECanalALista(self, tipo, canal):
-        subeventos = [evento for evento in self.__lista_de_eventos if evento.tipo() == tipo and evento.canal() == canal]
+        subeventos = [evento for evento in self.__lista_de_eventos if evento.tipo == tipo and evento.canal == canal]
         return len(subeventos) == 0
 
     def eventoDeDuracaoMinima(self):
 
         def tempoRestanteDeEvento(e):
-            return e.tempoRestante()
+            return e.tempoRestante
         self.__lista_de_eventos.sort(key=tempoRestanteDeEvento)
 
         return self.__lista_de_eventos.pop(0) if len(self.__lista_de_eventos) > 0 else None
@@ -418,9 +418,10 @@ class Simulacao(object):
     def executarProximoEvento(self):
 
         proximoEvento = self.eventoDeDuracaoMinima()
-        tempoRestante = proximoEvento.tempoRestante()
+        tempoRestante = proximoEvento.tempoRestante
+        tipo = proximoEvento.tipo
         for evento in self.__lista_de_eventos:
-            evento.avancarTempo(tempoRestante)
+            evento.tempoRestante -= tempoRestante
 
         tempoAnterior = self.__tempoAtual
         self.__tempoAtual += tempoRestante
@@ -428,23 +429,22 @@ class Simulacao(object):
         self.agregarEmSomatorioPacotesPorTempo(tempoRestante)
 
         # Tres eventos principais, tres ifs principais.
-        if proximoEvento.tipo() == EVENTO_PACOTE_VOZ_CHEGADA:
-            self.PacoteEntraNaFilaVoz(proximoEvento.canal(), tempoAnterior, tempoRestante, proximoEvento.indiceEmCanal(), proximoEvento.servico())
+        if tipo == EVENTO_PACOTE_VOZ_CHEGADA:
+            self.PacoteEntraNaFilaVoz(proximoEvento.canal, tempoAnterior, tempoRestante, proximoEvento.indiceEmCanal, proximoEvento.servico)
 
-        if proximoEvento.tipo() == EVENTO_PACOTE_DADOS_CHEGADA:
+        elif tipo == EVENTO_PACOTE_DADOS_CHEGADA:
             self.PacoteEntraNaFilaDados(tempoAnterior)
 
-        if proximoEvento.tipo() == EVENTO_PACOTE_VOZ_FINALIZADO:
+        elif tipo == EVENTO_PACOTE_VOZ_FINALIZADO:
             self.PacoteTerminaServicoNaFilaVoz()
 
-        if proximoEvento.tipo() == EVENTO_PACOTE_DADOS_FINALIZADO:
+        elif tipo == EVENTO_PACOTE_DADOS_FINALIZADO:
             self.PacoteTerminaServicoNaFilaDados()
         
     def media(self, listaOriginal):
         value = 0
         count = 0
-        lista = list(listaOriginal) # Transformando generator em lista
-        for item in lista:
+        for item in listaOriginal:
             if item != None:
                 value += item
                 count += 1
@@ -492,35 +492,35 @@ class Simulacao(object):
 
 
         # Loop principal da simulacao
-        while self.__numero_de_fases > self.__fase.getID() + 1 or self.__fase.quantidadeDeEventosVoz() < self.__numero_de_eventos_voz_por_fase or self.__fase.quantidadeDeEventosDados() < self.__numero_de_eventos_dados_por_fase:
+        while self.__numero_de_fases > self.__fase.id + 1 or self.__fase.quantidadeDeEventosVoz < self.__numero_de_eventos_voz_por_fase or self.__fase.quantidadeDeEventosDados < self.__numero_de_eventos_dados_por_fase:
             self.executarProximoEvento()
 
         if self.__output_type == 0:
             self.__fase.calcularEstatisticas(self.__tempoAtual, self.__view, self.__intervaloDeConfianca, self.__lambd)
             
             tamanho = len(self.__fases)
-            p = (self.media((f.EX1() for f in self.__fases))*lambdaValue)/1000
+            p = (self.media((f.EX1 for f in self.__fases))*lambdaValue)/1000
             calculadora = CalculadoraIC(self.__intervaloDeConfianca)
             EDeltaK, EDelta, VDeltaK, VDelta = CalculadoraVoz.esperancaEVarianciaDaVarianciaDeChegadasDePacotesDeVoz(self.__fases)
             
             self.__view.imprimir("p (Dados):      %f" % (p))
             self.__view.imprimir("Fila e estavel: %s" % ("Sim" if p <= 0.8314 else "Nao"))
             self.__view.imprimir("")
-            self.__view.imprimir("E[T]     (Dados):  %f" % (self.media((f.ET1()  for f in self.__fases))))
-            self.__view.imprimir("IC E[T]  (Dados):  %f - %f - Intervalo %s" % (calculadora.intervaloDeConfiancaDeAmostras((f.ET1()  for f in self.__fases),tamanho)))
-            self.__view.imprimir("E[W]     (Dados):  %f" % (self.media((f.EW1()  for f in self.__fases))))
-            self.__view.imprimir("IC E[W]  (Dados):  %f - %f - Intervalo %s" % (calculadora.intervaloDeConfiancaDeAmostras((f.EW1()  for f in self.__fases),tamanho)))
-            self.__view.imprimir("E[X]     (Dados):  %f" % (self.media((f.EX1()  for f in self.__fases))))
-            self.__view.imprimir("IC E[X]  (Dados):  %f - %f - Intervalo %s" % (calculadora.intervaloDeConfiancaDeAmostras((f.EX1()  for f in self.__fases),tamanho)))
-            self.__view.imprimir("E[Nq]    (Dados):  %f" % (self.media((f.ENq1() for f in self.__fases))))
-            self.__view.imprimir("IC E[Nq] (Dados):  %f - %f - Intervalo %s" % (calculadora.intervaloDeConfiancaDeAmostras((f.ENq1() for f in self.__fases),tamanho)))
+            self.__view.imprimir("E[T]     (Dados):  %f" % (self.media((f.ET1  for f in self.__fases))))
+            self.__view.imprimir("IC E[T]  (Dados):  %f - %f - Intervalo %s" % (calculadora.intervaloDeConfiancaDeAmostras((f.ET1  for f in self.__fases),tamanho)))
+            self.__view.imprimir("E[W]     (Dados):  %f" % (self.media((f.EW1  for f in self.__fases))))
+            self.__view.imprimir("IC E[W]  (Dados):  %f - %f - Intervalo %s" % (calculadora.intervaloDeConfiancaDeAmostras((f.EW1  for f in self.__fases),tamanho)))
+            self.__view.imprimir("E[X]     (Dados):  %f" % (self.media((f.EX1  for f in self.__fases))))
+            self.__view.imprimir("IC E[X]  (Dados):  %f - %f - Intervalo %s" % (calculadora.intervaloDeConfiancaDeAmostras((f.EX1  for f in self.__fases),tamanho)))
+            self.__view.imprimir("E[Nq]    (Dados):  %f" % (self.media((f.ENq1 for f in self.__fases))))
+            self.__view.imprimir("IC E[Nq] (Dados):  %f - %f - Intervalo %s" % (calculadora.intervaloDeConfiancaDeAmostras((f.ENq1 for f in self.__fases),tamanho)))
             self.__view.imprimir("")
-            self.__view.imprimir("E[T]     (Voz): %f" % (self.media((f.ET2()  for f in self.__fases))))
-            self.__view.imprimir("IC E[T]  (Voz): %f - %f - Intervalo %s" % (calculadora.intervaloDeConfiancaDeAmostras((f.ET2()  for f in self.__fases),tamanho)))
-            self.__view.imprimir("E[W]     (Voz): %f" % (self.media((f.EW2()  for f in self.__fases))))
-            self.__view.imprimir("IC E[W]  (Voz): %f - %f - Intervalo %s" % (calculadora.intervaloDeConfiancaDeAmostras((f.EW2()  for f in self.__fases),tamanho)))
-            self.__view.imprimir("E[Nq]    (Voz): %f" % (self.media((f.ENq2() for f in self.__fases))))
-            self.__view.imprimir("IC E[Nq] (Voz): %f - %f - Intervalo %s" % (calculadora.intervaloDeConfiancaDeAmostras((f.ENq2() for f in self.__fases),tamanho)))
+            self.__view.imprimir("E[T]     (Voz): %f" % (self.media((f.ET2  for f in self.__fases))))
+            self.__view.imprimir("IC E[T]  (Voz): %f - %f - Intervalo %s" % (calculadora.intervaloDeConfiancaDeAmostras((f.ET2  for f in self.__fases),tamanho)))
+            self.__view.imprimir("E[W]     (Voz): %f" % (self.media((f.EW2  for f in self.__fases))))
+            self.__view.imprimir("IC E[W]  (Voz): %f - %f - Intervalo %s" % (calculadora.intervaloDeConfiancaDeAmostras((f.EW2  for f in self.__fases),tamanho)))
+            self.__view.imprimir("E[Nq]    (Voz): %f" % (self.media((f.ENq2 for f in self.__fases))))
+            self.__view.imprimir("IC E[Nq] (Voz): %f - %f - Intervalo %s" % (calculadora.intervaloDeConfiancaDeAmostras((f.ENq2 for f in self.__fases),tamanho)))
             self.__view.imprimir("")
             self.__view.imprimir("Inicio da transmissao de pacotes de voz:")
             self.__view.imprimir("E[Delta]:     %f" % (EDelta))
@@ -528,16 +528,16 @@ class Simulacao(object):
             self.__view.imprimir("V(Delta):     %f" % (VDelta))
             self.__view.imprimir("IC V(Delta):  %f - %f - Intervalo %s" % (calculadora.intervaloDeConfiancaDeAmostras(VDeltaK, len(VDeltaK))))
             self.__view.imprimir("")
-            self.__view.imprimir("E[X]    (Voz):   %f" % (self.media((f.EX2()  for f in self.__fases))))
-            self.__view.imprimir("IC E[X] (Voz):   %f - %f - Intervalo %s" % (calculadora.intervaloDeConfiancaDeAmostras((f.EX2()  for f in self.__fases),tamanho)))
-            self.__view.imprimir("E[N]    (Dados): %f" % (self.media((f.EN1()  for f in self.__fases))))
-            self.__view.imprimir("IC E[N] (Dados): %f - %f - Intervalo %s" % (calculadora.intervaloDeConfiancaDeAmostras((f.EN1()  for f in self.__fases),tamanho)))
-            self.__view.imprimir("V(W)    (Dados): %f" % (self.media((f.EVW1() for f in self.__fases))))
-            self.__view.imprimir("IC V(W) (Dados): %f - %f - Intervalo %s" % (calculadora.intervaloDeConfiancaDeAmostras((f.EVW1() for f in self.__fases),tamanho)))
-            self.__view.imprimir("E[N]    (Voz):   %f" % (self.media((f.EN2()  for f in self.__fases))))
-            self.__view.imprimir("IC E[N] (Voz):   %f - %f - Intervalo %s" % (calculadora.intervaloDeConfiancaDeAmostras((f.EN2()  for f in self.__fases),tamanho)))
-            self.__view.imprimir("V(W)    (Voz):   %f" % (self.media((f.EVW2() for f in self.__fases))))
-            self.__view.imprimir("IC V(W) (Voz):   %f - %f - Intervalo %s" % (calculadora.intervaloDeConfiancaDeAmostras((f.EVW2() for f in self.__fases),tamanho)))
+            self.__view.imprimir("E[X]    (Voz):   %f" % (self.media((f.EX2  for f in self.__fases))))
+            self.__view.imprimir("IC E[X] (Voz):   %f - %f - Intervalo %s" % (calculadora.intervaloDeConfiancaDeAmostras((f.EX2  for f in self.__fases),tamanho)))
+            self.__view.imprimir("E[N]    (Dados): %f" % (self.media((f.EN1  for f in self.__fases))))
+            self.__view.imprimir("IC E[N] (Dados): %f - %f - Intervalo %s" % (calculadora.intervaloDeConfiancaDeAmostras((f.EN1  for f in self.__fases),tamanho)))
+            self.__view.imprimir("V(W)    (Dados): %f" % (self.media((f.EVW1 for f in self.__fases))))
+            self.__view.imprimir("IC V(W) (Dados): %f - %f - Intervalo %s" % (calculadora.intervaloDeConfiancaDeAmostras((f.EVW1 for f in self.__fases),tamanho)))
+            self.__view.imprimir("E[N]    (Voz):   %f" % (self.media((f.EN2  for f in self.__fases))))
+            self.__view.imprimir("IC E[N] (Voz):   %f - %f - Intervalo %s" % (calculadora.intervaloDeConfiancaDeAmostras((f.EN2  for f in self.__fases),tamanho)))
+            self.__view.imprimir("V(W)    (Voz):   %f" % (self.media((f.EVW2 for f in self.__fases))))
+            self.__view.imprimir("IC V(W) (Voz):   %f - %f - Intervalo %s" % (calculadora.intervaloDeConfiancaDeAmostras((f.EVW2 for f in self.__fases),tamanho)))
 
         return self.__view.gravarArquivoDeSaida()
         
@@ -582,19 +582,19 @@ def getPlotCsv(index):
 
 @app.route("/simulator", methods=['GET', 'POST'])
 def mainFlask():
-    numeroDeEventosVozPorRodada   = int(request.args.get('eventosporrodadavoz',   default='100000'))
-    numeroDeEventosDadosPorRodada = int(request.args.get('eventosporrodadadados', default='100000'))
-    lambdaValue          = float(request.args.get('lambda',       default='0.3'))
-    rodadas              = int(  request.args.get('rodadas',      default='100'))
-    simulacoes           = int(  request.args.get('simulacoes',   default='1'))
-    outputFile           = (     request.args.get('progressivo',  default='false') == 'true')
-    interrupcoes         = (     request.args.get('interrupcoes', default='false') == 'true')
-    testeDeCorretude     = (     request.args.get('teste',        default='false') == 'true')
-    variavelDeSaida      = int(  request.args.get('variavel',     default='1'))
-    intervaloDeConfianca = float(request.args.get('confianca',    default='0.95'))
-    sementeForcada       = int(  request.args.get('semente',      default='0'))
-    transienteAmostras   = int(  request.args.get('transamostra', default='1000'))
-    transienteMargem     = float(request.args.get('transmargem',  default='0.002'))
+    numeroDeEventosVozPorRodada   = int(  request.args.get('eventosporrodadavoz',   default='100000'))
+    numeroDeEventosDadosPorRodada = int(  request.args.get('eventosporrodadadados', default='100000'))
+    lambdaValue                   = float(request.args.get('lambda',                default='0.3'))
+    rodadas                       = int(  request.args.get('rodadas',               default='100'))
+    simulacoes                    = int(  request.args.get('simulacoes',            default='1'))
+    outputFile                    = (     request.args.get('progressivo',           default='false') == 'true')
+    interrupcoes                  = (     request.args.get('interrupcoes',          default='false') == 'true')
+    testeDeCorretude              = (     request.args.get('teste',                 default='false') == 'true')
+    variavelDeSaida               = int(  request.args.get('variavel',              default='1'))
+    intervaloDeConfianca          = float(request.args.get('confianca',             default='0.95'))
+    sementeForcada                = int(  request.args.get('semente',               default='0'))
+    transienteAmostras            = int(  request.args.get('transamostra',          default='1000'))
+    transienteMargem              = float(request.args.get('transmargem',           default='0.002'))
     
     desabilitarvoz   = (request.args.get('desabilitarvoz',   default='false') == 'true')
     desabilitardados = (request.args.get('desabilitardados', default='false') == 'true')
@@ -603,7 +603,7 @@ def mainFlask():
     seedsList = []
 
     output = ''
-    for i in range(simulacoes):
+    for i in xrange(simulacoes):
         print "SIMULACAO %d" % (i+1)
         start = timeit.default_timer()
         tempSeed = randomNumberDistantFrom(seedsList, seedsDistance)

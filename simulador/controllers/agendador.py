@@ -19,14 +19,14 @@ class Agendador(object):
         self.__pacoteFilaVozTotal = []
         self.__pacoteFilaVozTempoDeAguardo = []
         self.__pacoteIndiceServicoDeCanal = []
-        for indice in range(30):
+        for indice in xrange(30):
             self.__pacoteFilaVozIndice.append(0)
             self.__pacoteFilaVozTotal.append(0)
             self.__pacoteFilaVozTempoDeAguardo.append(0)
             self.__pacoteIndiceServicoDeCanal.append(-1)
 
         self.__probabilidade_de_L = []
-        for indice in range(1500 - 64 + 1):
+        for indice in xrange(1500 - 64 + 1):
             x = indice + 64
             p = 0.0
 

@@ -14,11 +14,9 @@ class CalculadoraIC(object):
         if n <= 1:
             return 0, 0
 
-        amostras = list(amostrasOriginal)
-
         countAmostral = 0
         mediaAmostral = 0.0
-        for amostra in amostras:
+        for amostra in amostrasOriginal:
             if amostra != None:
                 mediaAmostral += amostra
                 countAmostral += 1
@@ -32,7 +30,7 @@ class CalculadoraIC(object):
         tc = self.tabelaTStudent(grausDeLiberdade)
 
         desvioPadrao = 0.0
-        for amostra in amostras:
+        for amostra in amostrasOriginal:
             if amostra != None:
                 desvioPadrao += (amostra - mediaAmostral) ** 2
         desvioPadrao /= grausDeLiberdade

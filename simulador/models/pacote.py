@@ -4,75 +4,34 @@
 class Pacote(object):
 
     def __init__(self, id, tempoChegadaNoSistema, indiceDaCor, canal=-1, indiceEmCanal=0, servico=0):
-        self.__id = id
+        self.id = id
 
-        self.__indiceDaCor = indiceDaCor
-        self.__canal = canal # Usado apenas por pacotes de voz (0 a 29)
-        self.__indice_em_canal = indiceEmCanal
-        self.__servico = servico
+        self.indiceDaCor = indiceDaCor
+        self.canal = canal # Usado apenas por pacotes de voz (0 a 29)
+        self.indiceEmCanal = indiceEmCanal
+        self.servico = servico
 
-        self.__tempoChegadaFila = tempoChegadaNoSistema
-        self.__tempoChegadaServico = 0.0
-        self.__tempoServico = 0.0
-        self.__tempoTerminoServico = 0.0
-
-    ##############
-    ## Setters
-    ##############
-    def setTempoChegadaServico(self, tempo):
-        self.__tempoChegadaServico = tempo
-
-    def setTempoServico(self, tempo):
-        self.__tempoServico = tempo
-
-    def setTempoTerminoServico(self, tempo):
-        self.__tempoTerminoServico = tempo
+        self.tempoChegadaFila = tempoChegadaNoSistema
+        self.tempoChegadaServico = 0.0
+        self.tempoServico = 0.0
+        self.tempoTerminoServico = 0.0
 
     ###############
     ## Getters
     ###############
-    def getID(self):
-        return self.__id
-
-    def getIndiceDaCor(self):
-        return self.__indiceDaCor
-
-    def getServico(self):
-        return self.__servico
     
-    def getCanal(self):
-        return self.__canal
-
-    def getIndiceEmCanal(self):
-        return self.__indice_em_canal
-
-    def ehPacoteDeVoz(self):
-        return self.__canal != -1
-    
-    def getTempoChegadaFila(self):
-        return self.__tempoChegadaFila
-
-    def getTempoChegadaServico(self):
-        return self.__tempoChegadaServico
-
-    def getTempoServico(self):
-        return self.__tempoServico
-
-    def getTempoTerminoServico(self):
-        return self.__tempoTerminoServico
-
     ### Getters para calculos estatisticos
     def getTempoEsperaFila(self): # W1/2
-        return self.getTempoChegadaServico() - self.getTempoChegadaFila()
+        return self.tempoChegadaServico - self.tempoChegadaFila
 
     def getTempoTotalServico(self): # X1/2
-        return self.getTempoTerminoServico() - self.getTempoChegadaServico()
+        return self.tempoTerminoServico - self.tempoChegadaServico
     
     def getTempoTotalSistema(self): # T1/2
-        return self.getTempoTerminoServico() - self.getTempoChegadaFila()
+        return self.tempoTerminoServico - self.tempoChegadaFila
 
 
     def getVarianciaTempoEsperaFila(self, esperancaTempoEsperaFila): # VW1/2
-        return (self.getTempoEsperaFila() - esperancaTempoEsperaFila) ** 2
+        return ((self.tempoChegadaServico - self.tempoChegadaFila) - esperancaTempoEsperaFila) ** 2
 
     

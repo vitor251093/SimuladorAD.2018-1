@@ -3,7 +3,7 @@ from pacote import *
 class Fila(object):
 
     def __init__(self, id):
-        self.__id = id
+        self.id = id
         self.__pacotes = []
 
     # Retorna Pacote e remove do topo da array
@@ -25,14 +25,6 @@ class Fila(object):
     def numeroDePacotesNaFilaDeCanal(self, canal):
         count = 0
         for pacote in self.__pacotes:
-            if pacote.ehPacoteDeVoz() and pacote.getCanal() == canal:
+            if pacote.canal == canal:
                 count += 1
         return count
-
-    # Getters
-    def getID(self):
-        return self.__id
-
-    # Setters
-    def setID(self,id):
-        self.__id = id
