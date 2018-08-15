@@ -487,10 +487,8 @@ class Simulacao(object):
                     self.__lista_de_eventos.append(novoEvento)
         
         if desabilitardados == False:
-            tempoAAvancar = self.__agendador.agendarChegadaFilaDados(self.__lambd)
-            if tempoAAvancar != None:
-                novoEvento = Evento(EVENTO_PACOTE_DADOS_CHEGADA, -1, tempoAAvancar)
-                self.__lista_de_eventos.append(novoEvento)
+            novoEvento = Evento(EVENTO_PACOTE_DADOS_CHEGADA, -1, 0)
+            self.__lista_de_eventos.append(novoEvento)
 
 
         # Loop principal da simulacao
