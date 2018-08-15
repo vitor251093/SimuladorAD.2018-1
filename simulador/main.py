@@ -455,7 +455,7 @@ class Simulacao(object):
         return value / count
     
     """ Principal metodo da classe Simulacao. Aqui a simulacao eh iniciada. """
-    def executarSimulacao(self, seed, lambdaValue, transienteAmostras, transienteMargem, interrupcoes, numeroDeEventosVozPorRodada, numeroDeEventosDadosPorRodada, fases, hasOutputFile, variavelDeSaida, testeDeCorretude, intervaloDeConfianca, desabilitarvoz, desabilitardados):
+    def executarSimulacao(self, seed, lambdaValue, transienteAmostras, transienteMargem, interrupcoes, numeroDeEventosVozPorRodada, numeroDeEventosDadosPorRodada, fases, hasOutputFile, variavelDeSaida, testeDeCorretudeChegadaVoz, testeDeCorretudeChegadaDados, testeDeCorretudePacotesVoz, testeDeCorretudeServicoDados, intervaloDeConfianca, desabilitarvoz, desabilitardados):
         self.__lambd = lambdaValue
         self.__interrupcoes = interrupcoes
         self.__numero_de_eventos_voz_por_fase = numeroDeEventosVozPorRodada
@@ -470,7 +470,7 @@ class Simulacao(object):
         self.__view = View()
         self.__view.setImprimirEmArquivo(hasOutputFile)
 
-        self.__agendador.setTesteDeCorretude(testeDeCorretude)
+        self.__agendador.setTesteDeCorretude(testeDeCorretudeChegadaVoz, testeDeCorretudeChegadaDados, testeDeCorretudePacotesVoz, testeDeCorretudeServicoDados)
         self.__agendador.setDesabilitarVoz(desabilitarvoz)
         self.__agendador.setDesabilitarDados(desabilitardados)
 
@@ -591,7 +591,10 @@ def mainFlask():
     simulacoes                    = int(  request.args.get('simulacoes',            default='1'))
     outputFile                    = (     request.args.get('progressivo',           default='false') == 'true')
     interrupcoes                  = (     request.args.get('interrupcoes',          default='false') == 'true')
-    testeDeCorretude              = (     request.args.get('teste',                 default='false') == 'true')
+    testeDeCorretudeChegadaVoz    = (     request.args.get('testechegadavoz',       default='false') == 'true')
+    testeDeCorretudeChegadaDados  = (     request.args.get('testechegadadados',     default='false') == 'true')
+    testeDeCorretudePacotesVoz    = (     request.args.get('testepacotesvoz',       default='false') == 'true')
+    testeDeCorretudeServicoDados  = (     request.args.get('testeservicodados',     default='false') == 'true')
     variavelDeSaida               = int(  request.args.get('variavel',              default='1'))
     intervaloDeConfianca          = float(request.args.get('confianca',             default='0.95'))
     sementeForcada                = int(  request.args.get('semente',               default='0'))
@@ -610,7 +613,7 @@ def mainFlask():
         start = timeit.default_timer()
         tempSeed = randomNumberDistantFrom(seedsList, seedsDistance)
         newSeed = int(tempSeed*1000000000) if sementeForcada == 0 else sementeForcada
-        sOutput = Simulacao().executarSimulacao(newSeed, lambdaValue, transienteAmostras, transienteMargem, interrupcoes, numeroDeEventosVozPorRodada, numeroDeEventosDadosPorRodada, rodadas, outputFile, variavelDeSaida, testeDeCorretude, intervaloDeConfianca, desabilitarvoz, desabilitardados)
+        sOutput = Simulacao().executarSimulacao(newSeed, lambdaValue, transienteAmostras, transienteMargem, interrupcoes, numeroDeEventosVozPorRodada, numeroDeEventosDadosPorRodada, rodadas, outputFile, variavelDeSaida, testeDeCorretudeChegadaVoz, testeDeCorretudeChegadaDados, testeDeCorretudePacotesVoz, testeDeCorretudeServicoDados, intervaloDeConfianca, desabilitarvoz, desabilitardados)
         seedsList.append(tempSeed)
         end = timeit.default_timer()
         print "Tempo de execucao: %f" % (end - start)

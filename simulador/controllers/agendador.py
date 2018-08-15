@@ -8,7 +8,11 @@ import math
 class Agendador(object):
 
     def __init__(self):
-        self.__testeDeCorretude = False
+        self.__testeDeCorretudeChegadaVoz   = False
+        self.__testeDeCorretudeChegadaDados = False
+        self.__testeDeCorretudePacotesVoz   = False
+        self.__testeDeCorretudeServicoDados = False
+
         self.__desabilitarVoz = False
         self.__desabilitarDados = False
 
@@ -53,8 +57,11 @@ class Agendador(object):
             index += 1
         return index + 64
 
-    def setTesteDeCorretude(self, testeDeCorretude):
-        self.__testeDeCorretude = testeDeCorretude
+    def setTesteDeCorretude(self, testeDeCorretudeChegadaVoz, testeDeCorretudeChegadaDados, testeDeCorretudePacotesVoz, testeDeCorretudeServicoDados):
+        self.__testeDeCorretudeChegadaVoz   = testeDeCorretudeChegadaVoz
+        self.__testeDeCorretudeChegadaDados = testeDeCorretudeChegadaDados
+        self.__testeDeCorretudePacotesVoz   = testeDeCorretudePacotesVoz
+        self.__testeDeCorretudeServicoDados = testeDeCorretudeServicoDados
 
     def setDesabilitarVoz(self, desabilitarVoz):
         self.__desabilitarVoz = desabilitarVoz
@@ -63,55 +70,9 @@ class Agendador(object):
         self.__desabilitarDados = desabilitarDados
 
     def configurarSemente(self, seed):
-        if self.__testeDeCorretude == True:
-            return
-        
         print "Semente: %d" % (seed)
         random.seed(seed)
         numpy.random.RandomState(seed=seed)
-
-    def agendarChegadaFilaVoz(self, canal): 
-        if self.__desabilitarVoz == True:
-            return None, None, None
-
-        espera_previa = 0
-        
-        indice = self.__pacoteFilaVozIndice[canal]
-        total  = self.__pacoteFilaVozTotal[canal]
-        if indice == total: # Inicio de uma nova remessa de pacotes de voz
-            espera_previa = self.__pacoteFilaVozTempoDeAguardo[canal]
-            self.__pacoteFilaVozTempoDeAguardo[canal] = 0
-            indice = 0
-
-        if indice == 0:
-            self.__pacoteFilaVozIndice[canal] = 1
-            self.__pacoteIndiceServicoDeCanal[canal] += 1
-            
-            quantidadePacotes = 22
-            if self.__testeDeCorretude == False:
-                quantidadePacotes = int(round(numpy.random.geometric(p=1.0/22.0)))
-
-            tempoDeEspera = espera_previa + 650
-            if self.__pacoteFilaVozTotal[canal] == 0 or self.__testeDeCorretude == False:
-                tempoDeEspera = espera_previa + random.expovariate(1.0/650)
-            
-            # Definindo a quantidade de pacotes que virao na nova remessa
-            self.__pacoteFilaVozTotal[canal] = quantidadePacotes
-            
-            # Calculando o tempo de silencio necessario para a nova remessa comecar
-            return self.__pacoteIndiceServicoDeCanal[canal], self.__pacoteFilaVozIndice[canal], tempoDeEspera
-
-        self.__pacoteFilaVozIndice[canal] += 1
-        return self.__pacoteIndiceServicoDeCanal[canal], self.__pacoteFilaVozIndice[canal], 16
-
-    def agendarChegadaFilaDados(self, lambd):
-        if self.__desabilitarDados == True:
-            return None
-
-        if self.__testeDeCorretude == True:
-            return 1000.0/lambd
-
-        return random.expovariate(lambd/1000)
 
     def deveAgendarChegadaFilaVoz(self, canal, servico, filaVoz): 
         total  = self.__pacoteFilaVozTotal[canal]
@@ -131,6 +92,51 @@ class Agendador(object):
         
         return False
 
+    def agendarChegadaFilaVoz(self, canal): 
+        if self.__desabilitarVoz == True:
+            return None, None, None
+
+        espera_previa = 0
+        
+        indice = self.__pacoteFilaVozIndice[canal]
+        total  = self.__pacoteFilaVozTotal[canal]
+        if indice == total: # Inicio de uma nova remessa de pacotes de voz
+            espera_previa = self.__pacoteFilaVozTempoDeAguardo[canal]
+            self.__pacoteFilaVozTempoDeAguardo[canal] = 0
+            indice = 0
+
+        if indice == 0:
+            self.__pacoteFilaVozIndice[canal] = 1
+            self.__pacoteIndiceServicoDeCanal[canal] += 1
+            
+            quantidadePacotes = 22
+            if self.__testeDeCorretudePacotesVoz == False:
+                quantidadePacotes = int(round(numpy.random.geometric(p=1.0/22.0)))
+
+            tempoDeEspera = 0
+            if self.__testeDeCorretudeChegadaVoz == True:
+                tempoDeEspera = espera_previa + numpy.random.geometric(p=1.0/650)
+            else:
+                tempoDeEspera = espera_previa + random.expovariate(1.0/650)
+            
+            # Definindo a quantidade de pacotes que virao na nova remessa
+            self.__pacoteFilaVozTotal[canal] = quantidadePacotes
+            
+            # Calculando o tempo de silencio necessario para a nova remessa comecar
+            return self.__pacoteIndiceServicoDeCanal[canal], self.__pacoteFilaVozIndice[canal], tempoDeEspera
+
+        self.__pacoteFilaVozIndice[canal] += 1
+        return self.__pacoteIndiceServicoDeCanal[canal], self.__pacoteFilaVozIndice[canal], 16
+
+    def agendarChegadaFilaDados(self, lambd):
+        if self.__desabilitarDados == True:
+            return None
+
+        if self.__testeDeCorretudeChegadaDados == True:
+            return numpy.random.geometric(p=lambd/1000)
+
+        return random.expovariate(lambd/1000)
+
     def agendarTempoDeServicoFilaVoz(self, canal, servico, filaVoz):
         tempo = self.__tamanhoPacoteVoz/self.__taxaDeTransmissao # 0.256 ms
 
@@ -144,8 +150,8 @@ class Agendador(object):
         return tempo
 
     def agendarTempoDeServicoFilaDados(self):
-        if self.__testeDeCorretude == True:
-            return (754.8*8.0)/self.__taxaDeTransmissao # 3.0192 ms
+        if self.__testeDeCorretudeServicoDados == True:
+            return (754.8*8.0)/self.__taxaDeTransmissao 
 
         Lbytes = self.valorDeLComProbabilidade(random.random())
-        return (Lbytes*8.0)/self.__taxaDeTransmissao
+        return (Lbytes*8.0)/self.__taxaDeTransmissao # Esperanca: 3.0192 ms

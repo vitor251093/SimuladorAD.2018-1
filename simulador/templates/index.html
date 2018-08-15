@@ -46,8 +46,11 @@
         <label>Número de simulações*:</label>   <input type="text" id="simulacoes"       style="width:70px;" value="1"/><br>
         <label>Intervalo de confiança*:</label> <input type="text" id="confianca"        style="width:70px;" value="0.9"/><br>
         <input type="checkbox" id="interrupcoes" checked> Interrupções<br>
-        <input type="checkbox" id="progressiveLoad"> Carregar progressivamente<br>
-        <input type="checkbox" id="teste"> Teste de corretude<br>
+        <input type="checkbox" id="progressiveLoad"  > Carregar progressivamente<br>
+        <input type="checkbox" id="testeChegadaVoz"  > Teste de corretude (chegada de voz)<br>
+        <input type="checkbox" id="testeChegadaDados"> Teste de corretude (chegada de dados)<br>
+        <input type="checkbox" id="testePacotesVoz"  > Teste de corretude (pacotes de voz)<br>
+        <input type="checkbox" id="testeServicoDados"> Teste de corretude (serviço de dados)<br>
         <input type="checkbox" id="desabilitarvoz"> Desabilitar voz<br>
         <input type="checkbox" id="desabilitardados"> Desabilitar dados<br>
         <label>Semente:</label> <input type="text" id="semente" style="width:70px;" value=""/><br>
@@ -161,18 +164,21 @@
 
             var eventosporrodadavoz   = document.getElementById("eventosporrodadavoz").value;
             var eventosporrodadadados = document.getElementById("eventosporrodadadados").value;
-            var lambda           = document.getElementById("lambda").value;
-            var rodadas          = document.getElementById("rodadas").value;
-            var simulacoes       = document.getElementById("simulacoes").value;
-            var confianca        = document.getElementById("confianca").value;
-            var semente          = document.getElementById("semente").value || "0";
-            var transamostra     = document.getElementById("transamostra").value;
-            var transmargem      = document.getElementById("transmargem").value;
-            var teste            = document.getElementById("teste").checked;
-            var interrupcoes     = document.getElementById("interrupcoes").checked;
-            var progressiveLoad  = document.getElementById("progressiveLoad").checked;
-            var desabilitarvoz   = document.getElementById("desabilitarvoz").checked;
-            var desabilitardados = document.getElementById("desabilitardados").checked;
+            var lambda            = document.getElementById("lambda").value;
+            var rodadas           = document.getElementById("rodadas").value;
+            var simulacoes        = document.getElementById("simulacoes").value;
+            var confianca         = document.getElementById("confianca").value;
+            var semente           = document.getElementById("semente").value || "0";
+            var transamostra      = document.getElementById("transamostra").value;
+            var transmargem       = document.getElementById("transmargem").value;
+            var testeChegadaVoz   = document.getElementById("testeChegadaVoz").checked;
+            var testeChegadaDados = document.getElementById("testeChegadaDados").checked;
+            var testePacotesVoz   = document.getElementById("testePacotesVoz").checked;
+            var testeServicoDados = document.getElementById("testeServicoDados").checked;
+            var interrupcoes      = document.getElementById("interrupcoes").checked;
+            var progressiveLoad   = document.getElementById("progressiveLoad").checked;
+            var desabilitarvoz    = document.getElementById("desabilitarvoz").checked;
+            var desabilitardados  = document.getElementById("desabilitardados").checked;
 
             if (parseInt(rodadas) < 30) {
                 alert("São necessárias pelo menos 30 rodadas para que haja um intervalo de confiança.");
@@ -209,7 +215,10 @@
                         simulacoes: simulacoes,
                         progressivo: progressiveLoad.toString(),
                         interrupcoes: interrupcoes,
-                        teste: teste,
+                        testechegadavoz: testeChegadaVoz,
+                        testechegadadados: testeChegadaDados,
+                        testepacotesvoz: testePacotesVoz,
+                        testeservicodados: testeServicoDados,
                         variavel: variavelAtiva,
                         confianca: confianca,
                         semente: semente,
