@@ -17,7 +17,7 @@ class Agendador(object):
         self.__desabilitarDados = False
 
         self.__tamanhoPacoteVoz = 512.0 # 512 bits = 64 bytes
-        self.__taxaDeTransmissao = (2.0*1000*1000)/1000 ## 2 Megabits per segundo (em ms)
+        self.__taxaDeTransmissao = (2.0*1000*1000)/1000 ## 2 Megabits por segundo (em ms)
         
         self.__pacoteFilaVozIndice = []
         self.__pacoteFilaVozTotal = []
@@ -29,33 +29,33 @@ class Agendador(object):
             self.__pacoteFilaVozTempoDeAguardo.append(0)
             self.__pacoteIndiceServicoDeCanal.append(-1)
 
-        self.__probabilidade_de_L = []
-        for indice in xrange(1500 - 64 + 1):
-            x = indice + 64
-            p = 0.0
-
-            # Delta de Jirac
-            if x == 64:
-               p += 0.3
-            if x == 512:
-               p += 0.1
-            if x == 1500:
-               p += 0.3
-
-            # Funcao degrau
-            if x >= 64:
-                p += (3.0/(10*1436))
-            if x >= 1500:
-                p -= (3.0/(10*1436))
-            self.__probabilidade_de_L.append(p)
     
     def valorDeLComProbabilidade(self, prob):
         newProb = prob
-        index = 0
-        while newProb > self.__probabilidade_de_L[index]:
-            newProb -= self.__probabilidade_de_L[index]
-            index += 1
-        return index + 64
+
+        # 64
+        if newProb < (0.3 + 3.0/(10*1436)): # Delta de Jirac e Funcao Degrau
+            return 64
+        newProb -= (0.3 + 3.0/(10*1436))
+
+        # Os 447 numeros entre 64 e 512
+        if newProb < 447*(3.0/(10*1436)): # Delta de Jirac
+            return 65 + int(newProb / (3.0/(10*1436)))
+        newProb -= 447*(3.0/(10*1436))
+
+        # 512
+        if newProb < (0.1 + 3.0/(10*1436)): # Delta de Jirac e Funcao Degrau
+            return 512
+        newProb -= (0.1 + 3.0/(10*1436))
+
+        # Os 987 numeros entre 512 e 1500
+        if newProb < 987*(3.0/(10*1436)): # Delta de Jirac
+            return 513 + int(newProb / (3.0/(10*1436)))
+
+        # 1500
+        # Seria Delta de Jirac e Funcao Degrau
+        # Mas nao eh preciso calcular sendo que eh o resto da probabilidade
+        return 1500
 
     def setTesteDeCorretude(self, testeDeCorretudeChegadaVoz, testeDeCorretudeChegadaDados, testeDeCorretudePacotesVoz, testeDeCorretudeServicoDados):
         self.__testeDeCorretudeChegadaVoz   = testeDeCorretudeChegadaVoz
@@ -109,8 +109,10 @@ class Agendador(object):
             self.__pacoteFilaVozIndice[canal] = 1
             self.__pacoteIndiceServicoDeCanal[canal] += 1
             
-            quantidadePacotes = 22
-            if self.__testeDeCorretudePacotesVoz == False:
+            quantidadePacotes = 0
+            if self.__testeDeCorretudePacotesVoz == True:
+                quantidadePacotes = int(round(random.expovariate(1.0/22.0)))
+            else:
                 quantidadePacotes = int(round(numpy.random.geometric(p=1.0/22.0)))
 
             tempoDeEspera = 0
@@ -151,7 +153,7 @@ class Agendador(object):
 
     def agendarTempoDeServicoFilaDados(self):
         if self.__testeDeCorretudeServicoDados == True:
-            return (754.8*8.0)/self.__taxaDeTransmissao 
+            return (755*8.0)/self.__taxaDeTransmissao 
 
         Lbytes = self.valorDeLComProbabilidade(random.random())
         return (Lbytes*8.0)/self.__taxaDeTransmissao # Esperanca: 3.0192 ms
