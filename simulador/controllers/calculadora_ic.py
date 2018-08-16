@@ -12,7 +12,7 @@ class CalculadoraIC(object):
     def intervaloDeConfiancaDeAmostras(self, amostrasOriginal, tamanho):
         n = tamanho
         if n <= 1:
-            return 0, 0
+            return 0, 0, "invalido"
 
         amostras = list(amostrasOriginal)
 
@@ -24,7 +24,10 @@ class CalculadoraIC(object):
                 countAmostral += 1
         
         if countAmostral == 0:
-            return -1, -1
+            return -1, -1, "invalido"
+
+        if countAmostral == 1:
+            return -2, -2, "invalido"
 
         mediaAmostral /= countAmostral
 
