@@ -116,6 +116,7 @@
         };
 
         window.onload = function () {
+            Chart.defaults.global.legend.display = false;
             var ctx = document.getElementById('canvas').getContext('2d');
             window.myLine = new Chart(ctx, config);
         };
@@ -153,6 +154,23 @@
             xhr.open("GET", url, true);
             xhr.timeout = timeout;
             xhr.send(null);
+        }
+
+        function reduceArray(list, maxValues) {
+            if (list.length <= maxValues) return list;
+
+            var jumpSize = list.length/maxValues; 
+            var reducedList = [];
+            for (var i = 0; i < maxValues; i++) {
+                reducedList.push(list[(i*jumpSize | 0)]);
+
+                // 
+                // Razão para o método de arredondamento escolhido:
+                // https://stackoverflow.com/questions/596467/
+                // 
+            }
+            
+            return reducedList;
         }
 
         
@@ -256,32 +274,30 @@
                         return {value:parseFloat(entry[0]), group:parseInt(entry[1])};
                     });
                     var simulatorValues = simulatorComponents.map(function(entry) {return entry.value;});
-                    // var simulatorColors = simulatorComponents.map(function(entry) {return entry.group;});
+                    var simulatorColors = simulatorComponents.map(function(entry) {return entry.group;});
                     
-                    // var roundIndex = 0;
-                    // var datasets = [];
-                    // while (simulatorColors.indexOf(roundIndex) != -1) {
-                    //     var index = simulatorColors.indexOf(roundIndex);
-                    //     var finalIndex = simulatorColors.indexOf(roundIndex + 1);
-                    //     if (finalIndex == -1) finalIndex = simulatorColors.length;
-                    //     simulatorColors.splice(index, finalIndex - index);
+                    var roundIndex = 0;
+                    var datasets = [];
+                    while (simulatorColors.indexOf(roundIndex) != -1) {
+                        var index = simulatorColors.indexOf(roundIndex);
+                        var finalIndex = simulatorColors.indexOf(roundIndex + 1);
+                        if (finalIndex == -1) finalIndex = simulatorColors.length;
+                        simulatorColors.splice(index, finalIndex - index);
                         
-                    //     datasets.push({
-                    //         label: 'Rodada ' + (roundIndex + 1),
-                    //         backgroundColor: takeChartColor(roundIndex),
-                    //         borderColor: takeChartColor(roundIndex),
-                    //         data: simulatorValues.splice(index, finalIndex - index),
-                    //         fill: false,
-                    //     });
+                        datasets.push({
+                            label: 'Rodada ' + (roundIndex + 1),
+                            backgroundColor: takeChartColor(roundIndex),
+                            borderColor: takeChartColor(roundIndex),
+                            data: reduceArray(simulatorValues.splice(index, finalIndex - index), 1000),
+                            fill: false,
+                        });
                         
-                    //     roundIndex += 1;
-                    // }
+                        roundIndex += 1;
+                    }
                     
-                    // config.data.labels = [];
-                    // config.data.datasets = datasets;
-
                     config.data.labels = [];
-                    config.data.datasets[0].data = simulatorValues;
+                    config.data.datasets = datasets;
+
                     window.myLine.update();
                 }
             });
