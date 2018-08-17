@@ -109,11 +109,13 @@ class Agendador(object):
             self.__pacoteFilaVozIndice[canal] = 1
             self.__pacoteIndiceServicoDeCanal[canal] += 1
             
+            quantidadePacotesExp = int(math.ceil(random.expovariate(1.0/22.0)))
+            quantidadePacotesGeo = int(math.ceil(numpy.random.geometric(p=1.0/22.0)))
             quantidadePacotes = 0
             if self.__testeDeCorretudePacotesVoz == True:
-                quantidadePacotes = int(round(random.expovariate(1.0/22.0)))
+                quantidadePacotes = quantidadePacotesExp
             else:
-                quantidadePacotes = int(round(numpy.random.geometric(p=1.0/22.0)))
+                quantidadePacotes = quantidadePacotesGeo
 
             tempoDeEspera = 0
             if self.__testeDeCorretudeChegadaVoz == True:
