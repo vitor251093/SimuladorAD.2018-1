@@ -159,10 +159,11 @@
         function reduceArray(list, maxValues) {
             if (list.length <= maxValues) return list;
 
-            var jumpSize = list.length/maxValues; 
+            var skipFirstItemsCount = 30
+            var jumpSize = (parseFloat(list.length)-1-skipFirstItemsCount)/(maxValues-1); 
             var reducedList = [];
             for (var i = 0; i < maxValues; i++) {
-                reducedList.push(list[(i*jumpSize | 0)]);
+                reducedList.push(list[((skipFirstItemsCount + i*jumpSize) | 0)]);
 
                 // 
                 // Razão para o método de arredondamento escolhido:
@@ -198,10 +199,10 @@
             var desabilitarvoz    = document.getElementById("desabilitarvoz").checked;
             var desabilitardados  = document.getElementById("desabilitardados").checked;
 
-            if (parseInt(rodadas) < 30) {
-                alert("São necessárias pelo menos 30 rodadas para que haja um intervalo de confiança.");
-                return;
-            }
+            // if (parseInt(rodadas) < 30) {
+            //     alert("São necessárias pelo menos 30 rodadas para que haja um intervalo de confiança.");
+            //     return;
+            // }
             
             config.data.labels = [];
             config.data.datasets[0].data = [];
@@ -276,6 +277,7 @@
                     var simulatorValues = simulatorComponents.map(function(entry) {return entry.value;});
                     var simulatorColors = simulatorComponents.map(function(entry) {return entry.group;});
                     
+                    var numberOfPoints = 200;
                     var roundIndex = 0;
                     var datasets = [];
                     while (simulatorColors.indexOf(roundIndex) != -1) {
@@ -288,14 +290,14 @@
                             label: 'Rodada ' + (roundIndex + 1),
                             backgroundColor: takeChartColor(roundIndex),
                             borderColor: takeChartColor(roundIndex),
-                            data: reduceArray(simulatorValues.splice(index, finalIndex - index), 100),
+                            data: reduceArray(simulatorValues.splice(index, finalIndex - index), numberOfPoints),
                             fill: false,
                         });
                         
                         roundIndex += 1;
                     }
                     
-                    config.data.labels = [];
+                    config.data.labels = new Array(numberOfPoints);
                     config.data.datasets = datasets;
 
                     window.myLine.update();
