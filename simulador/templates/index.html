@@ -66,12 +66,27 @@
             'rgb(153, 102, 255)', // purple
             'rgb(201, 203, 207)'  // grey
         ];
+        window.chartICColors = [ // lighter versions of the same colors
+            'rgb(255, 163, 196)', // red
+            'rgb(255, 223, 128)', // orange
+            'rgb(139, 255, 255)', // green
+            'rgb(118, 226, 299)', // blue
+            'rgb(217, 166, 255)', // purple
+            'rgb(255, 255, 255)'  // grey
+        ];
         function takeChartColor(color) {
             var index = color;
             while (window.chartColors.length <= index) {
                 index -= window.chartColors.length;
             }
             return window.chartColors[index];
+        }
+        function takeChartICColor(color) {
+            var index = color;
+            while (window.chartICColors.length <= index) {
+                index -= window.chartICColors.length;
+            }
+            return window.chartICColors[index];
         }
 
         var config = {
@@ -156,10 +171,10 @@
             xhr.send(null);
         }
 
-        function reduceArray(list, maxValues) {
+        function reduceArray(list, maxValues, fimDeRodadas) {
             if (list.length <= maxValues) return list;
 
-            var skipFirstItemsCount = 30
+            var skipFirstItemsCount = fimDeRodadas ? 0 : 30
             var jumpSize = (parseFloat(list.length)-1-skipFirstItemsCount)/(maxValues-1); 
             var reducedList = [];
             for (var i = 0; i < maxValues; i++) {
@@ -198,6 +213,7 @@
             var progressiveLoad   = document.getElementById("progressiveLoad").checked;
             var desabilitarvoz    = document.getElementById("desabilitarvoz").checked;
             var desabilitardados  = document.getElementById("desabilitardados").checked;
+            var fimDeRodadas      = parseInt(rodadas) > 1;
 
             // if (parseInt(rodadas) < 30) {
             //     alert("São necessárias pelo menos 30 rodadas para que haja um intervalo de confiança.");
@@ -272,27 +288,71 @@
                     }
                     simulatorComponents = simulatorComponents.map(function(comp) {
                         var entry = comp.split(',');
-                        return {value:parseFloat(entry[0]), group:parseInt(entry[1])};
+                        return {value:parseFloat(entry[0]), ic:{l:parseFloat(entry[1]), h:parseFloat(entry[2])}, group:parseInt(entry[3])};
                     });
                     var simulatorValues = simulatorComponents.map(function(entry) {return entry.value;});
+                    var simulatorICsL   = simulatorComponents.map(function(entry) {return entry.ic.l;});
+                    var simulatorICsH   = simulatorComponents.map(function(entry) {return entry.ic.h;});
                     var simulatorColors = simulatorComponents.map(function(entry) {return entry.group;});
                     
-                    var numberOfPoints = 200;
+                    var numberOfPoints = fimDeRodadas ? simulatorValues.length : 200;
                     var roundIndex = 0;
                     var datasets = [];
-                    while (simulatorColors.indexOf(roundIndex) != -1) {
-                        var index = simulatorColors.indexOf(roundIndex);
-                        var finalIndex = simulatorColors.indexOf(roundIndex + 1);
-                        if (finalIndex == -1) finalIndex = simulatorColors.length;
-                        simulatorColors.splice(index, finalIndex - index);
+                    while ((!fimDeRodadas && simulatorColors.indexOf(roundIndex) != -1) || (fimDeRodadas && roundIndex == 0)) {
+                        var index;
+                        var finalIndex;
+
+                        if (fimDeRodadas) {
+                            index = 0;
+                            finalIndex = simulatorColors.length;
+                        }
+                        else {
+                            index = simulatorColors.indexOf(roundIndex);
+                            finalIndex = simulatorColors.indexOf(roundIndex + 1);
+                            if (finalIndex == -1) finalIndex = simulatorColors.length;
+                            simulatorColors.splice(index, finalIndex - index);
+                        }
                         
+                        var zeroLine = new Array(numberOfPoints);
+                        zeroLine.fill(0);
+                        datasets.push({
+                            label: '',
+                            backgroundColor: takeChartColor(roundIndex),
+                            borderColor: takeChartColor(roundIndex),
+                            data: zeroLine,
+                            fill: false
+                        });
                         datasets.push({
                             label: 'Rodada ' + (roundIndex + 1),
                             backgroundColor: takeChartColor(roundIndex),
                             borderColor: takeChartColor(roundIndex),
-                            data: reduceArray(simulatorValues.splice(index, finalIndex - index), numberOfPoints),
+                            data: reduceArray(simulatorValues.splice(index, finalIndex - index), numberOfPoints, fimDeRodadas),
                             fill: false,
                         });
+                        var highLine = new Array(numberOfPoints);
+                        highLine.fill(0.4);
+                        datasets.push({
+                            label: '',
+                            backgroundColor: takeChartColor(roundIndex),
+                            borderColor: takeChartColor(roundIndex),
+                            data: highLine,
+                            fill: false
+                        });
+
+                        // datasets.push({
+                        //     label: '',
+                        //     backgroundColor: takeChartICColor(roundIndex),
+                        //     borderColor: takeChartICColor(roundIndex),
+                        //     data: reduceArray(simulatorICsL.splice(index, finalIndex - index), numberOfPoints, fimDeRodadas),
+                        //     fill: '+2',
+                        // });
+                        // datasets.push({
+                        //     label: '',
+                        //     backgroundColor: takeChartICColor(roundIndex),
+                        //     borderColor: takeChartICColor(roundIndex),
+                        //     data: reduceArray(simulatorICsH.splice(index, finalIndex - index), numberOfPoints, fimDeRodadas),
+                        //     fill: 8,
+                        // });
                         
                         roundIndex += 1;
                     }
