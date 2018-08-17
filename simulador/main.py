@@ -70,9 +70,11 @@ class Simulacao(object):
     """ Esse metodo apenas fica responsavel por relizar os somatorios
         para o calculo do numero medio de pacotes nas duas filas (E[Ns]). """
     def agregarEmSomatorioPacotesPorTempo (self, tempo):
+        # E[N]
         self.__fase.inserirNumeroDePacotesPorTempoNaFilaVoz(self.__filaVoz.numeroDePacotesNaFila(), tempo)
         self.__fase.inserirNumeroDePacotesPorTempoNaFilaDados(self.__filaDados.numeroDePacotesNaFila(), tempo)
 
+        # E[Nq]
         if self.__filaVoz.numeroDePacotesNaFila() > 0:
             self.__fase.inserirNumeroDePacotesPorTempoNaFilaEsperaVoz(self.__filaVoz.numeroDePacotesNaFila() - 1, tempo)
         else:
@@ -136,12 +138,20 @@ class Simulacao(object):
                 for indiceEvento in xrange(self.__quantidadeDeEventosPorVariancia):
                     media1 += self.__eventosDaVariancia1[indiceEvento]*self.__duracaoEventosDaVariancia1[indiceEvento]
                     duracao1 += self.__duracaoEventosDaVariancia1[indiceEvento]
-                media1 /= duracao1
+                
+                if duracao1 > 0:
+                    media1 /= duracao1
+                else:
+                    media1 = 0
                 
                 self.__variancia1 = 0
                 for indiceEvento in xrange(self.__quantidadeDeEventosPorVariancia):
                     self.__variancia1 += (self.__eventosDaVariancia1[indiceEvento] - media1)**2
-                self.__variancia1 /= (self.__quantidadeDeEventosPorVariancia - 1)
+
+                if self.__quantidadeDeEventosPorVariancia > 1:
+                    self.__variancia1 /= (self.__quantidadeDeEventosPorVariancia - 1)
+                else:
+                    self.__variancia1 = 0
 
             return
 
@@ -155,15 +165,23 @@ class Simulacao(object):
             for indiceEvento in xrange(self.__quantidadeDeEventosPorVariancia):
                 media2 += self.__eventosDaVariancia2[indiceEvento]*self.__duracaoEventosDaVariancia2[indiceEvento]
                 duracao2 += self.__duracaoEventosDaVariancia2[indiceEvento]
-            media2 /= duracao2
+            
+            if duracao2 > 0:
+                media2 /= duracao2
+            else:
+                media2 = 0
             
             self.__variancia2 = 0
             for indiceEvento in xrange(self.__quantidadeDeEventosPorVariancia):
                 self.__variancia2 += (self.__eventosDaVariancia2[indiceEvento] - media2)**2
-            self.__variancia2 /= (self.__quantidadeDeEventosPorVariancia - 1)
+            
+            if self.__quantidadeDeEventosPorVariancia > 1:
+                self.__variancia2 /= (self.__quantidadeDeEventosPorVariancia - 1)
+            else:
+                self.__variancia2 = 0
 
             print abs(self.__variancia1 - self.__variancia2)
-            if abs(self.__variancia1 - self.__variancia2) < self.__diferencaAceitavelDasVariancias:
+            if abs(self.__variancia1 - self.__variancia2) <= self.__diferencaAceitavelDasVariancias:
                 print "Fase transiente finalizada"
                 self.__faseTransienteFinalizada = True
                 return
