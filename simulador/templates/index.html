@@ -19,7 +19,7 @@
     <br>
     <br>
     <div style="width:24%; float:left;">
-        <label>Gráfico:</label>
+        <label>Saída:</label>
         <form action="">
             <input type="radio" name="variavel" value="0" checked> Estatísticas<br>
             <input type="radio" name="variavel" value="1" > E[N]<br>
@@ -51,8 +51,9 @@
         <input type="checkbox" id="testeChegadaDados"> Teste de corretude (chegada de dados)<br>
         <input type="checkbox" id="testePacotesVoz"  > Teste de corretude (pacotes de voz)<br>
         <input type="checkbox" id="testeServicoDados"> Teste de corretude (serviço de dados)<br>
-        <input type="checkbox" id="desabilitarvoz"> Desabilitar voz<br>
-        <input type="checkbox" id="desabilitardados"> Desabilitar dados<br>
+        <input type="checkbox" id="desabilitarvoz"   > Desabilitar voz<br>
+        <input type="checkbox" id="desabilitardados" > Desabilitar dados<br>
+        <input type="checkbox" id="plotarics"        > Plotar ICs<br>
         <label>Semente:</label> <input type="text" id="semente" style="width:70px;" value=""/><br>
         <button id="runSimulator">Executar simulador</button>
     </div>
@@ -213,6 +214,7 @@
             var progressiveLoad   = document.getElementById("progressiveLoad").checked;
             var desabilitarvoz    = document.getElementById("desabilitarvoz").checked;
             var desabilitardados  = document.getElementById("desabilitardados").checked;
+            var plotarics         = document.getElementById("plotarics").checked;
             var fimDeRodadas      = parseInt(rodadas) > 1;
 
             // if (parseInt(rodadas) < 30) {
@@ -313,15 +315,15 @@
                             simulatorColors.splice(index, finalIndex - index);
                         }
                         
-                        var zeroLine = new Array(numberOfPoints);
-                        zeroLine.fill(0);
-                        datasets.push({
-                            label: '',
-                            backgroundColor: takeChartColor(roundIndex),
-                            borderColor: takeChartColor(roundIndex),
-                            data: zeroLine,
-                            fill: false
-                        });
+                        // var zeroLine = new Array(numberOfPoints);
+                        // zeroLine.fill(0);
+                        // datasets.push({
+                        //     label: '',
+                        //     backgroundColor: takeChartColor(roundIndex),
+                        //     borderColor: takeChartColor(roundIndex),
+                        //     data: zeroLine,
+                        //     fill: false
+                        // });
                         datasets.push({
                             label: 'Rodada ' + (roundIndex + 1),
                             backgroundColor: takeChartColor(roundIndex),
@@ -329,30 +331,32 @@
                             data: reduceArray(simulatorValues.splice(index, finalIndex - index), numberOfPoints, fimDeRodadas),
                             fill: false,
                         });
-                        var highLine = new Array(numberOfPoints);
-                        highLine.fill(0.4);
-                        datasets.push({
-                            label: '',
-                            backgroundColor: takeChartColor(roundIndex),
-                            borderColor: takeChartColor(roundIndex),
-                            data: highLine,
-                            fill: false
-                        });
+                        // var highLine = new Array(numberOfPoints);
+                        // highLine.fill(0.7);
+                        // datasets.push({
+                        //     label: '',
+                        //     backgroundColor: takeChartColor(roundIndex),
+                        //     borderColor: takeChartColor(roundIndex),
+                        //     data: highLine,
+                        //     fill: false
+                        // });
 
-                        // datasets.push({
-                        //     label: '',
-                        //     backgroundColor: takeChartICColor(roundIndex),
-                        //     borderColor: takeChartICColor(roundIndex),
-                        //     data: reduceArray(simulatorICsL.splice(index, finalIndex - index), numberOfPoints, fimDeRodadas),
-                        //     fill: '+2',
-                        // });
-                        // datasets.push({
-                        //     label: '',
-                        //     backgroundColor: takeChartICColor(roundIndex),
-                        //     borderColor: takeChartICColor(roundIndex),
-                        //     data: reduceArray(simulatorICsH.splice(index, finalIndex - index), numberOfPoints, fimDeRodadas),
-                        //     fill: 8,
-                        // });
+                        if (plotarics) {
+                            datasets.push({
+                                label: '',
+                                backgroundColor: takeChartICColor(roundIndex),
+                                borderColor: takeChartICColor(roundIndex),
+                                data: reduceArray(simulatorICsL.splice(index, finalIndex - index), numberOfPoints, fimDeRodadas),
+                                fill: false,
+                            });
+                            datasets.push({
+                                label: '',
+                                backgroundColor: takeChartICColor(roundIndex),
+                                borderColor: takeChartICColor(roundIndex),
+                                data: reduceArray(simulatorICsH.splice(index, finalIndex - index), numberOfPoints, fimDeRodadas),
+                                fill: '-1',
+                            });
+                        }
                         
                         roundIndex += 1;
                     }
@@ -383,7 +387,7 @@
                             }
                             simulatorComponents = simulatorComponents.map(function(comp) {
                                 var entry = comp.split(',');
-                                return {value:parseFloat(entry[0]), group:parseInt(entry[1])};
+                                return {value:parseFloat(entry[0]), group:parseInt(entry[3])};
                             });
 
                             simulatorValues = simulatorComponents.map(function(entry) {return entry.value;});
