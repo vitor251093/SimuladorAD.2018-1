@@ -57,6 +57,54 @@ class Agendador(object):
         # Mas nao eh preciso calcular sendo que eh o resto da probabilidade
         return 1500
 
+    def valorDeLComProbabilidadeTeste(self,prob):
+        newProb = prob
+        
+        # p = p1
+        # p += (0.3/1436)*(x - 64)
+        # p += p2*(1 se x >= 512) 
+        # p += p3*(1 se x = 1500) 
+        # p -= (0.3/1436)*(1500 se =1500)
+        totalProb = (1500 - 64 + 1)*0.3 
+        totalProb += (0.3/1436)*sum(range(1,1500 - 64 + 1)) 
+        totalProb += 0.1*(1500 - 512 + 1)
+        totalProb += 0.3 
+        totalProb -= (0.3/1436)*1500
+
+        newProb *= totalProb
+
+        # 64
+        if newProb < (0.3): # Delta de Jirac e Funcao Degrau
+            return 64
+        newProb -= (0.3)
+
+        # Os 447 numeros entre 64 e 512
+        if newProb < (447*0.3 + sum(range(1,511-64))*3.0/(10*1436)): # Delta de Jirac
+            index = 1
+            while newProb >= (0.3 + index*3.0/(10*1436)):
+                newProb -= (0.3 + index*3.0/(10*1436))
+                index += 1
+            return 65 + index - 1
+        newProb -= (447*0.3 + sum(range(1,511-64))*3.0/(10*1436))
+
+        # 512
+        if newProb < (0.3 + (512-64)*3.0/(10*1436) + 0.1): # Delta de Jirac e Funcao Degrau
+            return 512
+        newProb -= (0.3 + (512-64)*3.0/(10*1436) + 0.1)
+
+        # Os 987 numeros entre 512 e 1500
+        if newProb < (987*0.3 + sum(range(512-64+1,1500-64))*3.0/(10*1436) + 987*0.1): # Delta de Jirac
+            index = 512-64+1
+            while newProb >= (0.3 + index*3.0/(10*1436) + 0.1):
+                newProb -= (0.3 + index*3.0/(10*1436) + 0.1)
+                index += 1
+            return 513 + index - (512-64+1)
+
+        # 1500
+        # Seria Delta de Jirac e Funcao Degrau
+        # Mas nao eh preciso calcular sendo que eh o resto da probabilidade
+        return 1500
+
     def setTesteDeCorretude(self, testeDeCorretudeChegadaVoz, testeDeCorretudeChegadaDados, testeDeCorretudePacotesVoz, testeDeCorretudeServicoDados):
         self.__testeDeCorretudeChegadaVoz   = testeDeCorretudeChegadaVoz
         self.__testeDeCorretudeChegadaDados = testeDeCorretudeChegadaDados
@@ -155,7 +203,8 @@ class Agendador(object):
 
     def agendarTempoDeServicoFilaDados(self):
         if self.__testeDeCorretudeServicoDados == True:
-            return (755*8.0)/self.__taxaDeTransmissao 
+            Lbytes = self.valorDeLComProbabilidadeTeste(random.random())
+            return (Lbytes*8.0)/self.__taxaDeTransmissao
 
         Lbytes = self.valorDeLComProbabilidade(random.random())
         return (Lbytes*8.0)/self.__taxaDeTransmissao # Esperanca: 3.0192 ms
