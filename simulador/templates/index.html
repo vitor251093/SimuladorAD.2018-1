@@ -33,7 +33,8 @@
             <input type="radio" name="variavel" value="9" > E[W] (Dados)<br>
             <input type="radio" name="variavel" value="10"> V(W) (Voz)<br>
             <input type="radio" name="variavel" value="11"> V(W) (Dados)<br>
-            <input type="radio" name="variavel" value="12"> Eventos (Terminal)
+            <input type="radio" name="variavel" value="12"> E[X] (Dados)<br>
+            <input type="radio" name="variavel" value="13"> Eventos (Terminal)
         </form>
         <br/><b>Fase transiente:</b><br/>
         <label>Tamanho de amostra*:</label>  <input type="text" id="transamostra" style="width:70px;" value="1000"/><br>
@@ -197,8 +198,10 @@
             runningMainIndex += 1;
             var runningIndex = runningMainIndex;
 
-            var eventosporrodadavoz   = document.getElementById("eventosporrodadavoz").value;
-            var eventosporrodadadados = document.getElementById("eventosporrodadadados").value;
+            var desabilitarvoz    = document.getElementById("desabilitarvoz").checked;
+            var desabilitardados  = document.getElementById("desabilitardados").checked;
+            var eventosporrodadavoz   = desabilitarvoz   ? 0 : document.getElementById("eventosporrodadavoz").value;
+            var eventosporrodadadados = desabilitardados ? 0 : document.getElementById("eventosporrodadadados").value;
             var lambda            = document.getElementById("lambda").value;
             var rodadas           = document.getElementById("rodadas").value;
             var simulacoes        = document.getElementById("simulacoes").value;
@@ -212,8 +215,6 @@
             var testeServicoDados = document.getElementById("testeServicoDados").checked;
             var interrupcoes      = document.getElementById("interrupcoes").checked;
             var progressiveLoad   = document.getElementById("progressiveLoad").checked;
-            var desabilitarvoz    = document.getElementById("desabilitarvoz").checked;
-            var desabilitardados  = document.getElementById("desabilitardados").checked;
             var plotarics         = document.getElementById("plotarics").checked;
             var fimDeRodadas      = parseInt(rodadas) > 1;
 
@@ -332,7 +333,7 @@
                             fill: false,
                         });
                         // var highLine = new Array(numberOfPoints);
-                        // highLine.fill(0.7);
+                        // highLine.fill(0.012);
                         // datasets.push({
                         //     label: '',
                         //     backgroundColor: takeChartColor(roundIndex),

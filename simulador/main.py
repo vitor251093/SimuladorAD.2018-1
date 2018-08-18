@@ -61,6 +61,7 @@ class Simulacao(object):
         self.__EN2_history = []
         self.__ENq1_history = []
         self.__ENq2_history = []
+        self.__EX1_history = []
         self.__ET1_history = []
         self.__ET2_history = []
         self.__EW1_history = []
@@ -191,6 +192,14 @@ class Simulacao(object):
                 self.__view.imprimir("%f,%f,%f,%d" % (newValue,icl,ich,self.__fase.id))
 
             elif self.__output_type == 12:
+                newValue = self.__fase.getEsperancaDeX1()
+                self.__EX1_history.append(newValue)
+                media,icl,ich,status = calculadora.intervaloDeConfiancaDeAmostras(self.__EX1_history,len(self.__EX1_history))
+                if self.__numero_de_fases > 1 and requisitosTermino:
+                    newValue = media
+                self.__view.imprimir("%f,%f,%f,%d" % (newValue,icl,ich,self.__fase.id))
+
+            elif self.__output_type == 13:
                 tipo = ("de voz de canal %d (%d)" % (pacote.canal + 1,pacote.indiceEmCanal)) if pacote.canal != -1 else "de dados"
                 self.__view.imprimir("%f: Pacote %s (%d) de rodada %d %s na fila %d" % (momento, tipo, pacote.id, pacote.indiceDaCor, evento, fila))
 
@@ -566,7 +575,7 @@ class Simulacao(object):
         self.__diferencaAceitavelDasVariancias = transienteMargem
         
         self.__output_type = variavelDeSaida
-        self.__view = View(variavelDeSaida == 0 or variavelDeSaida == 12)
+        self.__view = View(variavelDeSaida == 0 or variavelDeSaida == 13)
         self.__view.setImprimirEmArquivo(hasOutputFile)
 
         self.__agendador.setTesteDeCorretude(testeDeCorretudeChegadaVoz, testeDeCorretudeChegadaDados, testeDeCorretudePacotesVoz, testeDeCorretudeServicoDados)

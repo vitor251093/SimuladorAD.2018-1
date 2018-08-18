@@ -90,6 +90,17 @@ class Fase(object):
             return -1
         return somatorioT2/countT2 if countT2 > 0 else 0
 
+    def getEsperancaDeX1(self):
+        countX1 = 0
+        somatorioX1 = 0.0
+        for pacote in self.__pacotesDados:
+            if pacote.tempoTerminoServico != 0:
+                countX1 += 1
+                somatorioX1 += pacote.getTempoTotalServico()
+        if countX1 == 0:
+            return -1
+        return somatorioX1/countX1 if countX1 > 0 else 0
+
     def getEsperancaDeWVoz(self):
         countW1 = 0
         somatorioW1 = 0.0
