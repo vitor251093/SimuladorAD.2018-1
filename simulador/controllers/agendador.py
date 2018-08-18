@@ -144,7 +144,7 @@ class Agendador(object):
         if self.__desabilitarVoz == True:
             return None, None, None
 
-        espera_previa = 0
+        espera_previa = 0.0
         
         indice = self.__pacoteFilaVozIndice[canal]
         total  = self.__pacoteFilaVozTotal[canal]
@@ -158,7 +158,7 @@ class Agendador(object):
             self.__pacoteIndiceServicoDeCanal[canal] += 1
             
             quantidadePacotesExp = int(math.ceil(random.expovariate(1.0/22.0)))
-            quantidadePacotesGeo = int(math.ceil(numpy.random.geometric(p=1.0/22.0)))
+            quantidadePacotesGeo = int(numpy.random.geometric(p=1.0/22.0))
             quantidadePacotes = 0
             if self.__testeDeCorretudePacotesVoz == True:
                 quantidadePacotes = quantidadePacotesExp
@@ -167,7 +167,7 @@ class Agendador(object):
 
             tempoDeEspera = 0
             if self.__testeDeCorretudeChegadaVoz == True:
-                tempoDeEspera = espera_previa + numpy.random.geometric(p=1.0/650)
+                tempoDeEspera = espera_previa + float(numpy.random.geometric(p=1.0/(650*1000)))/1000
             else:
                 tempoDeEspera = espera_previa + random.expovariate(1.0/650)
             
@@ -184,10 +184,13 @@ class Agendador(object):
         if self.__desabilitarDados == True:
             return None
 
-        if self.__testeDeCorretudeChegadaDados == True:
-            return numpy.random.geometric(p=lambd/1000)
+        chegadaDadosExp = random.expovariate(lambd/1000.0)
+        chegadaDadosGeo = float(numpy.random.geometric(p=lambd/(1000.0*1000.0)))/1000
 
-        return random.expovariate(lambd/1000)
+        if self.__testeDeCorretudeChegadaDados == True:
+            return chegadaDadosGeo
+        else:
+            return chegadaDadosExp
 
     def agendarTempoDeServicoFilaVoz(self, canal, servico, filaVoz):
         tempo = self.__tamanhoPacoteVoz/self.__taxaDeTransmissao # 0.256 ms
