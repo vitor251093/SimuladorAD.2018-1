@@ -41,12 +41,12 @@
         <label>Margem de variância*:</label> <input type="text" id="transmargem"  style="width:70px;" value="0.0001"/><br>
         <br/><b>Geral:</b><br/>
         <label>Lambda*:</label>                 <input type="text" id="lambda"           style="width:70px;" value="33.1125827815"/><br>
-        <label>Atendimentos por rodada (voz)*:</label>   <input type="text" id="eventosporrodadavoz"   style="width:55px;" value="1000"/><br>
-        <label>Atendimentos por rodada (dados)*:</label> <input type="text" id="eventosporrodadadados" style="width:55px;" value="1000"/><br>
-        <label>Número de rodadas*:</label>      <input type="text" id="rodadas"          style="width:70px;" value="100"/><br>
+        <label>Atendimentos por rodada (voz)*:</label>   <input type="text" id="eventosporrodadavoz"   style="width:55px;" value="1200"/><br>
+        <label>Atendimentos por rodada (dados)*:</label> <input type="text" id="eventosporrodadadados" style="width:55px;" value="1200"/><br>
+        <label>Número de rodadas*:</label>      <input type="text" id="rodadas"          style="width:70px;" value="600"/><br>
         <label>Número de simulações*:</label>   <input type="text" id="simulacoes"       style="width:70px;" value="1"/><br>
         <label>Intervalo de confiança*:</label> <input type="text" id="confianca"        style="width:70px;" value="0.9"/><br>
-        <input type="checkbox" id="interrupcoes" checked> Interrupções<br>
+        <input type="checkbox" id="interrupcoes"     > Interrupções<br>
         <input type="checkbox" id="progressiveLoad"  > Carregar progressivamente<br>
         <input type="checkbox" id="testeChegadaVoz"  > Teste de corretude (chegada de voz)<br>
         <input type="checkbox" id="testeChegadaDados"> Teste de corretude (chegada de dados)<br>
@@ -55,6 +55,8 @@
         <input type="checkbox" id="desabilitarvoz"   > Desabilitar voz<br>
         <input type="checkbox" id="desabilitardados" > Desabilitar dados<br>
         <input type="checkbox" id="plotarics"        > Plotar ICs<br>
+        <input type="checkbox" id="separarrodadas"   > Separar rodadas<br>
+        <input type="checkbox" id="terminarcomdemanda" checked> Terminar com demanda<br>
         <label>Semente:</label> <input type="text" id="semente" style="width:70px;" value=""/><br>
         <button id="runSimulator">Executar simulador</button>
     </div>
@@ -200,8 +202,8 @@
 
             var desabilitarvoz    = document.getElementById("desabilitarvoz").checked;
             var desabilitardados  = document.getElementById("desabilitardados").checked;
-            var eventosporrodadavoz   = desabilitarvoz   ? 0 : document.getElementById("eventosporrodadavoz").value;
-            var eventosporrodadadados = desabilitardados ? 0 : document.getElementById("eventosporrodadadados").value;
+            var eventosporrodadavoz   = desabilitarvoz   ? '0' : document.getElementById("eventosporrodadavoz").value;
+            var eventosporrodadadados = desabilitardados ? '0' : document.getElementById("eventosporrodadadados").value;
             var lambda            = document.getElementById("lambda").value;
             var rodadas           = document.getElementById("rodadas").value;
             var simulacoes        = document.getElementById("simulacoes").value;
@@ -216,7 +218,9 @@
             var interrupcoes      = document.getElementById("interrupcoes").checked;
             var progressiveLoad   = document.getElementById("progressiveLoad").checked;
             var plotarics         = document.getElementById("plotarics").checked;
-            var fimDeRodadas      = parseInt(rodadas) > 1;
+            var separarrodadas    = document.getElementById("separarrodadas").checked;
+            var terminarcomdemanda= document.getElementById("terminarcomdemanda").checked;
+            var fimDeRodadas      = !separarrodadas && parseInt(rodadas) > 1;
 
             // if (parseInt(rodadas) < 30) {
             //     alert("São necessárias pelo menos 30 rodadas para que haja um intervalo de confiança.");
@@ -262,6 +266,7 @@
                         semente: semente,
                         transamostra: transamostra,
                         transmargem: transmargem,
+                        terminarcomdemanda: terminarcomdemanda,
                         desabilitarvoz: desabilitarvoz, 
                         desabilitardados: desabilitardados};
 
@@ -301,6 +306,7 @@
                     var numberOfPoints = fimDeRodadas ? simulatorValues.length : 200;
                     var roundIndex = 0;
                     var datasets = [];
+                    var labelLength = 0;
                     while ((!fimDeRodadas && simulatorColors.indexOf(roundIndex) != -1) || (fimDeRodadas && roundIndex == 0)) {
                         var index;
                         var finalIndex;
@@ -308,12 +314,14 @@
                         if (fimDeRodadas) {
                             index = 0;
                             finalIndex = simulatorColors.length;
+                            labelLength = finalIndex;
                         }
                         else {
                             index = simulatorColors.indexOf(roundIndex);
                             finalIndex = simulatorColors.indexOf(roundIndex + 1);
                             if (finalIndex == -1) finalIndex = simulatorColors.length;
                             simulatorColors.splice(index, finalIndex - index);
+                            labelLength = (labelLength > finalIndex - index) ? labelLength : (finalIndex - index);
                         }
                         
                         // var zeroLine = new Array(numberOfPoints);
@@ -333,7 +341,7 @@
                             fill: false,
                         });
                         // var highLine = new Array(numberOfPoints);
-                        // highLine.fill(0.012);
+                        // highLine.fill(0.5);
                         // datasets.push({
                         //     label: '',
                         //     backgroundColor: takeChartColor(roundIndex),
@@ -361,8 +369,13 @@
                         
                         roundIndex += 1;
                     }
-                    
-                    config.data.labels = new Array(numberOfPoints);
+
+                    function range(start, end) {
+                        return Array(end - start + 1).fill().map((_, idx) => start + idx)
+                    }
+                    config.data.labels = range(1,labelLength);
+                
+
                     config.data.datasets = datasets;
 
                     window.myLine.update();

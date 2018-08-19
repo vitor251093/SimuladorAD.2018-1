@@ -42,7 +42,7 @@ class Simulacao(object):
         
         self.__agendador = Agendador()
         
-        self.__pacotes = []
+        self.__numero_de_pacotes_que_passaram_pelo_sistema = 0
         self.__filaVoz = Fila(1)
         self.__filaDados = Fila(2)
         
@@ -68,6 +68,9 @@ class Simulacao(object):
         self.__EW2_history = []
         self.__VW1_history = []
         self.__VW2_history = []
+
+        self.__possivel_terminar_sob_demanda = False
+        self.__forcar_termino = False
 
         ### Atributos usados para determinar o fim da fase transiente
         self.__quantidadeDeEventosPorVariancia = 1000
@@ -98,111 +101,164 @@ class Simulacao(object):
         else: 
             self.__fase.inserirNumeroDePacotesPorTempoNaFilaEsperaDados(0, tempo)
 
-    def adicionarEvento (self, pacote, evento, fila, momento):
-        requisitosTermino = (self.__fase.quantidadeDeEventosVoz >= self.__numero_de_eventos_voz_por_fase and self.__fase.quantidadeDeEventosDados >= self.__numero_de_eventos_dados_por_fase)
+    def adicionarEvento(self, pacote, evento, fila, momento):
+        declararFinal = False
+        diferencaDeclararFinal = 0.0001
+        requisitosTermino = (self.__fase.quantidadeDeEventosVoz >= self.__numero_de_eventos_voz_por_fase and self.__fase.quantidadeDeEventosDados >= self.__numero_de_eventos_dados_por_fase and self.__faseTransienteFinalizada)
         if self.__output_type != 0 and ((self.__numero_de_fases > 1 and requisitosTermino) or self.__numero_de_fases == 1):
             calculadora = CalculadoraIC(self.__intervaloDeConfianca)
 
             if self.__output_type == 1:
                 newValue = self.__fase.getEsperancaDeN(momento)
-                self.__EN_history.append(newValue)
-                media,icl,ich,status = calculadora.intervaloDeConfiancaDeAmostras(self.__EN_history,len(self.__EN_history))
-                if self.__numero_de_fases > 1 and requisitosTermino:
-                    newValue = media
-                self.__view.imprimir("%f,%f,%f,%d" % (newValue,icl,ich,self.__fase.id))
+                if len(self.__EN_history) == 0 or abs(self.__EN_history[len(self.__EN_history)-1] - newValue) != 0:
+                    mediaold,iclold,ichold,statusold = calculadora.intervaloDeConfiancaDeAmostras(self.__EN_history,len(self.__EN_history))
+                    self.__EN_history.append(newValue)
+                    media,icl,ich,status = calculadora.intervaloDeConfiancaDeAmostras(self.__EN_history,len(self.__EN_history))
+                    if len(self.__EN_history) > 0:
+                        declararFinal = abs(mediaold - media) < diferencaDeclararFinal
+                    if self.__numero_de_fases > 1 and requisitosTermino:
+                        newValue = media
+                    self.__view.imprimir("%f,%f,%f,%d" % (newValue,icl,ich,self.__fase.id))
 
             elif self.__output_type == 2:
                 newValue = self.__fase.getEsperancaDeN1(momento)
-                self.__EN1_history.append(newValue)
-                media,icl,ich,status = calculadora.intervaloDeConfiancaDeAmostras(self.__EN1_history,len(self.__EN1_history))
-                if self.__numero_de_fases > 1 and requisitosTermino:
-                    newValue = media
-                self.__view.imprimir("%f,%f,%f,%d" % (newValue,icl,ich,self.__fase.id))
+                if len(self.__EN1_history) == 0 or abs(self.__EN1_history[len(self.__EN1_history)-1] - newValue) != 0:
+                    mediaold,iclold,ichold,statusold = calculadora.intervaloDeConfiancaDeAmostras(self.__EN1_history,len(self.__EN1_history))
+                    self.__EN1_history.append(newValue)
+                    media,icl,ich,status = calculadora.intervaloDeConfiancaDeAmostras(self.__EN1_history,len(self.__EN1_history))
+                    if len(self.__EN1_history) > 0:
+                        declararFinal = abs(mediaold - media) < diferencaDeclararFinal
+                    if self.__numero_de_fases > 1 and requisitosTermino:
+                        newValue = media
+                    self.__view.imprimir("%f,%f,%f,%d" % (newValue,icl,ich,self.__fase.id))
 
             elif self.__output_type == 3:
                 newValue = self.__fase.getEsperancaDeN2(momento)
-                self.__EN2_history.append(newValue)
-                media,icl,ich,status = calculadora.intervaloDeConfiancaDeAmostras(self.__EN2_history,len(self.__EN2_history))
-                if self.__numero_de_fases > 1 and requisitosTermino:
-                    newValue = media
-                self.__view.imprimir("%f,%f,%f,%d" % (newValue,icl,ich,self.__fase.id))
+                if len(self.__EN2_history) == 0 or abs(self.__EN2_history[len(self.__EN2_history)-1] - newValue) != 0:
+                    mediaold,iclold,ichold,statusold = calculadora.intervaloDeConfiancaDeAmostras(self.__EN2_history,len(self.__EN2_history))
+                    self.__EN2_history.append(newValue)
+                    media,icl,ich,status = calculadora.intervaloDeConfiancaDeAmostras(self.__EN2_history,len(self.__EN2_history))
+                    if len(self.__EN2_history) > 0:
+                        declararFinal = abs(mediaold - media) < diferencaDeclararFinal
+                    if self.__numero_de_fases > 1 and requisitosTermino:
+                        newValue = media
+                    self.__view.imprimir("%f,%f,%f,%d" % (newValue,icl,ich,self.__fase.id))
 
             elif self.__output_type == 4:
                 newValue = self.__fase.getEsperancaDeNq1(momento)
-                self.__ENq1_history.append(newValue)
-                media,icl,ich,status = calculadora.intervaloDeConfiancaDeAmostras(self.__ENq1_history,len(self.__ENq1_history))
-                if self.__numero_de_fases > 1 and requisitosTermino:
-                    newValue = media
-                self.__view.imprimir("%f,%f,%f,%d" % (newValue,icl,ich,self.__fase.id))
+                if len(self.__ENq1_history) == 0 or abs(self.__ENq1_history[len(self.__ENq1_history)-1] - newValue) != 0:
+                    mediaold,iclold,ichold,statusold = calculadora.intervaloDeConfiancaDeAmostras(self.__ENq1_history,len(self.__ENq1_history))
+                    self.__ENq1_history.append(newValue)
+                    media,icl,ich,status = calculadora.intervaloDeConfiancaDeAmostras(self.__ENq1_history,len(self.__ENq1_history))
+                    if len(self.__ENq1_history) > 0:
+                        declararFinal = abs(mediaold - media) < diferencaDeclararFinal
+                    if self.__numero_de_fases > 1 and requisitosTermino:
+                        newValue = media
+                    self.__view.imprimir("%f,%f,%f,%d" % (newValue,icl,ich,self.__fase.id))
 
             elif self.__output_type == 5:
                 newValue = self.__fase.getEsperancaDeNq2(momento)
-                self.__ENq2_history.append(newValue)
-                media,icl,ich,status = calculadora.intervaloDeConfiancaDeAmostras(self.__ENq2_history,len(self.__ENq2_history))
-                if self.__numero_de_fases > 1 and requisitosTermino:
-                    newValue = media
-                self.__view.imprimir("%f,%f,%f,%d" % (newValue,icl,ich,self.__fase.id))
+                if len(self.__ENq2_history) == 0 or abs(self.__ENq2_history[len(self.__ENq2_history)-1] - newValue) != 0:
+                    mediaold,iclold,ichold,statusold = calculadora.intervaloDeConfiancaDeAmostras(self.__ENq2_history,len(self.__ENq2_history))
+                    self.__ENq2_history.append(newValue)
+                    media,icl,ich,status = calculadora.intervaloDeConfiancaDeAmostras(self.__ENq2_history,len(self.__ENq2_history))
+                    if len(self.__ENq2_history) > 0:
+                        declararFinal = abs(mediaold - media) < diferencaDeclararFinal
+                    if self.__numero_de_fases > 1 and requisitosTermino:
+                        newValue = media
+                    self.__view.imprimir("%f,%f,%f,%d" % (newValue,icl,ich,self.__fase.id))
 
             elif self.__output_type == 6:
                 newValue = self.__fase.getEsperancaDeTVoz()
-                self.__ET1_history.append(newValue)
-                media,icl,ich,status = calculadora.intervaloDeConfiancaDeAmostras(self.__ET1_history,len(self.__ET1_history))
-                if self.__numero_de_fases > 1 and requisitosTermino:
-                    newValue = media
-                self.__view.imprimir("%f,%f,%f,%d" % (newValue,icl,ich,self.__fase.id))
+                if len(self.__ET1_history) == 0 or abs(self.__ET1_history[len(self.__ET1_history)-1] - newValue) != 0:
+                    mediaold,iclold,ichold,statusold = calculadora.intervaloDeConfiancaDeAmostras(self.__ET1_history,len(self.__ET1_history))
+                    self.__ET1_history.append(newValue)
+                    media,icl,ich,status = calculadora.intervaloDeConfiancaDeAmostras(self.__ET1_history,len(self.__ET1_history))
+                    if len(self.__ET1_history) > 0:
+                        declararFinal = abs(mediaold - media) < diferencaDeclararFinal
+                    if self.__numero_de_fases > 1 and requisitosTermino:
+                        newValue = media
+                    self.__view.imprimir("%f,%f,%f,%d" % (newValue,icl,ich,self.__fase.id))
 
             elif self.__output_type == 7:
                 newValue = self.__fase.getEsperancaDeTDados()
-                self.__ET2_history.append(newValue)
-                media,icl,ich,status = calculadora.intervaloDeConfiancaDeAmostras(self.__ET2_history,len(self.__ET2_history))
-                if self.__numero_de_fases > 1 and requisitosTermino:
-                    newValue = media
-                self.__view.imprimir("%f,%f,%f,%d" % (newValue,icl,ich,self.__fase.id))
+                if len(self.__ET2_history) == 0 or abs(self.__ET2_history[len(self.__ET2_history)-1] - newValue) != 0:
+                    mediaold,iclold,ichold,statusold = calculadora.intervaloDeConfiancaDeAmostras(self.__ET2_history,len(self.__ET2_history))
+                    self.__ET2_history.append(newValue)
+                    media,icl,ich,status = calculadora.intervaloDeConfiancaDeAmostras(self.__ET2_history,len(self.__ET2_history))
+                    if len(self.__ET2_history) > 0:
+                        declararFinal = abs(mediaold - media) < diferencaDeclararFinal
+                    if self.__numero_de_fases > 1 and requisitosTermino:
+                        newValue = media
+                    self.__view.imprimir("%f,%f,%f,%d" % (newValue,icl,ich,self.__fase.id))
 
             elif self.__output_type == 8:
                 newValue = self.__fase.getEsperancaDeWVoz()
-                self.__EW1_history.append(newValue)
-                media,icl,ich,status = calculadora.intervaloDeConfiancaDeAmostras(self.__EW1_history,len(self.__EW1_history))
-                if self.__numero_de_fases > 1 and requisitosTermino:
-                    newValue = media
-                self.__view.imprimir("%f,%f,%f,%d" % (newValue,icl,ich,self.__fase.id))
+                if len(self.__EW1_history) == 0 or abs(self.__EW1_history[len(self.__EW1_history)-1] - newValue) != 0:
+                    mediaold,iclold,ichold,statusold = calculadora.intervaloDeConfiancaDeAmostras(self.__EW1_history,len(self.__EW1_history))
+                    self.__EW1_history.append(newValue)
+                    media,icl,ich,status = calculadora.intervaloDeConfiancaDeAmostras(self.__EW1_history,len(self.__EW1_history))
+                    if len(self.__EW1_history) > 0:
+                        declararFinal = abs(mediaold - media) < diferencaDeclararFinal
+                    if self.__numero_de_fases > 1 and requisitosTermino:
+                        newValue = media
+                    self.__view.imprimir("%f,%f,%f,%d" % (newValue,icl,ich,self.__fase.id))
                 
             elif self.__output_type == 9:
                 newValue = self.__fase.getEsperancaDeWDados()
-                self.__EW2_history.append(newValue)
-                media,icl,ich,status = calculadora.intervaloDeConfiancaDeAmostras(self.__EW2_history,len(self.__EW2_history))
-                if self.__numero_de_fases > 1 and requisitosTermino:
-                    newValue = media
-                self.__view.imprimir("%f,%f,%f,%d" % (newValue,icl,ich,self.__fase.id))
+                if len(self.__EW2_history) == 0 or abs(self.__EW2_history[len(self.__EW2_history)-1] - newValue) != 0:
+                    mediaold,iclold,ichold,statusold = calculadora.intervaloDeConfiancaDeAmostras(self.__EW2_history,len(self.__EW2_history))
+                    self.__EW2_history.append(newValue)
+                    media,icl,ich,status = calculadora.intervaloDeConfiancaDeAmostras(self.__EW2_history,len(self.__EW2_history))
+                    if len(self.__EW2_history) > 1:
+                        declararFinal = abs(mediaold - media) < diferencaDeclararFinal
+                    if self.__numero_de_fases > 1 and requisitosTermino:
+                        newValue = media
+                    self.__view.imprimir("%f,%f,%f,%d" % (newValue,icl,ich,self.__fase.id))
 
             elif self.__output_type == 10:
                 newValue = self.__fase.getVarianciaDeW1()
-                self.__VW1_history.append(newValue)
-                media,icl,ich,status = calculadora.intervaloDeConfiancaDeAmostras(self.__VW1_history,len(self.__VW1_history))
-                if self.__numero_de_fases > 1 and requisitosTermino:
-                    newValue = media
-                self.__view.imprimir("%f,%f,%f,%d" % (newValue,icl,ich,self.__fase.id))
+                if len(self.__VW1_history) == 0 or abs(self.__VW1_history[len(self.__VW1_history)-1] - newValue) != 0:
+                    mediaold,iclold,ichold,statusold = calculadora.intervaloDeConfiancaDeAmostras(self.__VW1_history,len(self.__VW1_history))
+                    self.__VW1_history.append(newValue)
+                    media,icl,ich,status = calculadora.intervaloDeConfiancaDeAmostras(self.__VW1_history,len(self.__VW1_history))
+                    if len(self.__VW1_history) > 0:
+                        declararFinal = abs(mediaold - media) < diferencaDeclararFinal
+                    if self.__numero_de_fases > 1 and requisitosTermino:
+                        newValue = media
+                    self.__view.imprimir("%f,%f,%f,%d" % (newValue,icl,ich,self.__fase.id))
 
             elif self.__output_type == 11:
                 newValue = self.__fase.getVarianciaDeW2()
-                self.__VW2_history.append(newValue)
-                media,icl,ich,status = calculadora.intervaloDeConfiancaDeAmostras(self.__VW2_history,len(self.__VW2_history))
-                if self.__numero_de_fases > 1 and requisitosTermino:
-                    newValue = media
-                self.__view.imprimir("%f,%f,%f,%d" % (newValue,icl,ich,self.__fase.id))
+                if len(self.__VW2_history) == 0 or abs(self.__VW2_history[len(self.__VW2_history)-1] - newValue) != 0:
+                    mediaold,iclold,ichold,statusold = calculadora.intervaloDeConfiancaDeAmostras(self.__VW2_history,len(self.__VW2_history))
+                    self.__VW2_history.append(newValue)
+                    media,icl,ich,status = calculadora.intervaloDeConfiancaDeAmostras(self.__VW2_history,len(self.__VW2_history))
+                    if len(self.__VW2_history) > 0:
+                        declararFinal = abs(mediaold - media) < diferencaDeclararFinal
+                    if self.__numero_de_fases > 1 and requisitosTermino:
+                        newValue = media
+                    self.__view.imprimir("%f,%f,%f,%d" % (newValue,icl,ich,self.__fase.id))
 
             elif self.__output_type == 12:
                 newValue = self.__fase.getEsperancaDeX1()
-                self.__EX1_history.append(newValue)
-                media,icl,ich,status = calculadora.intervaloDeConfiancaDeAmostras(self.__EX1_history,len(self.__EX1_history))
-                if self.__numero_de_fases > 1 and requisitosTermino:
-                    newValue = media
-                self.__view.imprimir("%f,%f,%f,%d" % (newValue,icl,ich,self.__fase.id))
+                if len(self.__EX1_history) == 0 or abs(self.__EX1_history[len(self.__EX1_history)-1] - newValue) != 0:
+                    mediaold,iclold,ichold,statusold = calculadora.intervaloDeConfiancaDeAmostras(self.__EX1_history,len(self.__EX1_history))
+                    self.__EX1_history.append(newValue)
+                    media,icl,ich,status = calculadora.intervaloDeConfiancaDeAmostras(self.__EX1_history,len(self.__EX1_history))
+                    if len(self.__EX1_history) > 0:
+                        declararFinal = abs(mediaold - media) < diferencaDeclararFinal
+                    if self.__numero_de_fases > 1 and requisitosTermino:
+                        newValue = media
+                    self.__view.imprimir("%f,%f,%f,%d" % (newValue,icl,ich,self.__fase.id))
 
             elif self.__output_type == 13:
                 tipo = ("de voz de canal %d (%d)" % (pacote.canal + 1,pacote.indiceEmCanal)) if pacote.canal != -1 else "de dados"
                 self.__view.imprimir("%f: Pacote %s (%d) de rodada %d %s na fila %d" % (momento, tipo, pacote.id, pacote.indiceDaCor, evento, fila))
 
+        if declararFinal and self.__possivel_terminar_sob_demanda:
+            self.__forcar_termino = True
+            return
         
         if self.__faseTransienteFinalizada == True:
             self.__eventosDaVariancia1 = []
@@ -273,6 +329,7 @@ class Simulacao(object):
             print abs(self.__variancia1 - self.__variancia2)
             if abs(self.__variancia1 - self.__variancia2) <= self.__diferencaAceitavelDasVariancias:
                 print "Fase transiente finalizada"
+                print "Finalizada com %d pacotes" % (len(self.__fase.pacotes))
                 self.__faseTransienteFinalizada = True
                 return
 
@@ -303,6 +360,7 @@ class Simulacao(object):
                 if self.__output_type == 0 and self.__fase.id != -1:
                     self.__fase.calcularEstatisticas(tempoAnterior, self.__view, self.__intervaloDeConfianca, self.__lambd)
 
+                print "Finalizada rodada %d com %d pacotes" % (indiceDaFase, len(self.__fase.pacotes))
                 print "Iniciada rodada %d" % (indiceDaFase + 1)
                 self.__fase = Fase(indiceDaFase, self.__tempoAtual)
                 self.__fases.append(self.__fase)
@@ -332,6 +390,7 @@ class Simulacao(object):
         self.__fase.adicionarPacote(pacote)
         self.__filaVoz.adicionarPacoteAFila(pacote)
 
+        self.__numero_de_pacotes_que_passaram_pelo_sistema += 1
         self.adicionarEvento(pacote, "chegou", self.__filaVoz.id, self.__tempoAtual)
         if self.__filaVoz.numeroDePacotesNaFila() == 1: # So o atual se encontra na fila
             if self.__interrupcoes == True and self.__filaDados.numeroDePacotesNaFila() > 0: 
@@ -389,6 +448,7 @@ class Simulacao(object):
         self.__fase.adicionarPacote(pacote)
         self.__filaDados.adicionarPacoteAFila(pacote)
 
+        self.__numero_de_pacotes_que_passaram_pelo_sistema += 1
         self.adicionarEvento(pacote, "chegou", self.__filaDados.id, self.__tempoAtual)
         if self.__filaVoz.numeroDePacotesNaFila() == 0 and self.__filaDados.numeroDePacotesNaFila() == 1:
             pacote.tempoChegadaServico = self.__tempoAtual
@@ -563,13 +623,14 @@ class Simulacao(object):
         return value / count
     
     """ Principal metodo da classe Simulacao. Aqui a simulacao eh iniciada. """
-    def executarSimulacao(self, seed, lambdaValue, transienteAmostras, transienteMargem, interrupcoes, numeroDeEventosVozPorRodada, numeroDeEventosDadosPorRodada, fases, hasOutputFile, variavelDeSaida, testeDeCorretudeChegadaVoz, testeDeCorretudeChegadaDados, testeDeCorretudePacotesVoz, testeDeCorretudeServicoDados, intervaloDeConfianca, desabilitarvoz, desabilitardados):
+    def executarSimulacao(self, seed, lambdaValue, transienteAmostras, transienteMargem, interrupcoes, numeroDeEventosVozPorRodada, numeroDeEventosDadosPorRodada, fases, hasOutputFile, variavelDeSaida, testeDeCorretudeChegadaVoz, testeDeCorretudeChegadaDados, testeDeCorretudePacotesVoz, testeDeCorretudeServicoDados, terminarcomdemanda, intervaloDeConfianca, desabilitarvoz, desabilitardados):
         self.__lambd = lambdaValue
         self.__interrupcoes = interrupcoes
         self.__numero_de_eventos_voz_por_fase = numeroDeEventosVozPorRodada
         self.__numero_de_eventos_dados_por_fase = numeroDeEventosDadosPorRodada
         self.__numero_de_fases = fases
         self.__intervaloDeConfianca = intervaloDeConfianca
+        self.__possivel_terminar_sob_demanda = terminarcomdemanda
 
         self.__quantidadeDeEventosPorVariancia = transienteAmostras
         self.__diferencaAceitavelDasVariancias = transienteMargem
@@ -600,8 +661,12 @@ class Simulacao(object):
 
 
         # Loop principal da simulacao
-        while self.__numero_de_fases > self.__fase.id + 1 or self.__fase.quantidadeDeEventosVoz < self.__numero_de_eventos_voz_por_fase or self.__fase.quantidadeDeEventosDados < self.__numero_de_eventos_dados_por_fase:
+        while self.__forcar_termino == False and (self.__numero_de_fases > self.__fase.id + 1 or self.__fase.quantidadeDeEventosVoz < self.__numero_de_eventos_voz_por_fase or self.__fase.quantidadeDeEventosDados < self.__numero_de_eventos_dados_por_fase):
             self.executarProximoEvento()
+
+        if self.__forcar_termino == True:
+            print "Terminado com %d rodadas com %d pacotes" % (self.__fase.id + 1, self.__numero_de_pacotes_que_passaram_pelo_sistema)
+            self.__forcar_termino = False
 
         if self.__output_type == 0:
             self.__fase.calcularEstatisticas(self.__tempoAtual, self.__view, self.__intervaloDeConfianca, self.__lambd)
@@ -687,6 +752,7 @@ def mainFlask():
     testeDeCorretudeChegadaDados  = (     request.args.get('testechegadadados',     default='false') == 'true')
     testeDeCorretudePacotesVoz    = (     request.args.get('testepacotesvoz',       default='false') == 'true')
     testeDeCorretudeServicoDados  = (     request.args.get('testeservicodados',     default='false') == 'true')
+    terminarcomdemanda            = (     request.args.get('terminarcomdemanda',    default='false') == 'true')
     variavelDeSaida               = int(  request.args.get('variavel',              default='1'))
     intervaloDeConfianca          = float(request.args.get('confianca',             default='0.95'))
     sementeForcada                = int(  request.args.get('semente',               default='0'))
@@ -705,7 +771,7 @@ def mainFlask():
         start = timeit.default_timer()
         tempSeed = randomNumberDistantFrom(seedsList, seedsDistance)
         newSeed = int(tempSeed*1000000000) if sementeForcada == 0 else sementeForcada
-        sOutput = Simulacao().executarSimulacao(newSeed, lambdaValue, transienteAmostras, transienteMargem, interrupcoes, numeroDeEventosVozPorRodada, numeroDeEventosDadosPorRodada, rodadas, outputFile, variavelDeSaida, testeDeCorretudeChegadaVoz, testeDeCorretudeChegadaDados, testeDeCorretudePacotesVoz, testeDeCorretudeServicoDados, intervaloDeConfianca, desabilitarvoz, desabilitardados)
+        sOutput = Simulacao().executarSimulacao(newSeed, lambdaValue, transienteAmostras, transienteMargem, interrupcoes, numeroDeEventosVozPorRodada, numeroDeEventosDadosPorRodada, rodadas, outputFile, variavelDeSaida, testeDeCorretudeChegadaVoz, testeDeCorretudeChegadaDados, testeDeCorretudePacotesVoz, testeDeCorretudeServicoDados, terminarcomdemanda, intervaloDeConfianca, desabilitarvoz, desabilitardados)
         seedsList.append(tempSeed)
         end = timeit.default_timer()
         print "Tempo de execucao: %f" % (end - start)
