@@ -64,9 +64,9 @@ class Agendador(object):
         # p += (0.3/1436)*(x - 64)
         # p += p2*(1 se x >= 512) 
         # p += p3*(1 se x = 1500) 
-        # p -= (0.3/1436)*(1500 se =1500)
+        # p -= (0.3/1436)*(1500 se x = 1500)
         totalProb = (1500 - 64 + 1)*0.3 
-        totalProb += (0.3/1436)*sum(range(1,1500 - 64 + 1)) 
+        totalProb += (0.3/1436)*sum(range(1,1500 - 64 + 1 + 1)) 
         totalProb += 0.1*(1500 - 512 + 1)
         totalProb += 0.3 
         totalProb -= (0.3/1436)*1500
@@ -79,13 +79,13 @@ class Agendador(object):
         newProb -= (0.3)
 
         # Os 447 numeros entre 64 e 512
-        if newProb < (447*0.3 + sum(range(1,511-64))*3.0/(10*1436)): # Delta de Jirac
+        if newProb < (447*0.3 + sum(range(1,511-64 + 1))*3.0/(10*1436)): # Delta de Jirac
             index = 1
             while newProb >= (0.3 + index*3.0/(10*1436)):
                 newProb -= (0.3 + index*3.0/(10*1436))
                 index += 1
             return 65 + index - 1
-        newProb -= (447*0.3 + sum(range(1,511-64))*3.0/(10*1436))
+        newProb -= (447*0.3 + sum(range(1,511-64 + 1))*3.0/(10*1436))
 
         # 512
         if newProb < (0.3 + (512-64)*3.0/(10*1436) + 0.1): # Delta de Jirac e Funcao Degrau
@@ -93,7 +93,7 @@ class Agendador(object):
         newProb -= (0.3 + (512-64)*3.0/(10*1436) + 0.1)
 
         # Os 987 numeros entre 512 e 1500
-        if newProb < (987*0.3 + sum(range(512-64+1,1500-64))*3.0/(10*1436) + 987*0.1): # Delta de Jirac
+        if newProb < (987*0.3 + sum(range(512-64+1,1500-64 + 1))*3.0/(10*1436) + 987*0.1): # Delta de Jirac
             index = 512-64+1
             while newProb >= (0.3 + index*3.0/(10*1436) + 0.1):
                 newProb -= (0.3 + index*3.0/(10*1436) + 0.1)
@@ -207,6 +207,7 @@ class Agendador(object):
     def agendarTempoDeServicoFilaDados(self):
         if self.__testeDeCorretudeServicoDados == True:
             Lbytes = self.valorDeLComProbabilidadeTeste(random.random())
+            #Lbytes = int(numpy.random.geometric(p=1.0/755))
             return (Lbytes*8.0)/self.__taxaDeTransmissao
 
         Lbytes = self.valorDeLComProbabilidade(random.random())
